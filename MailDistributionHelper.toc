@@ -1,0 +1,17 @@
+## Interface: 100108
+## Notes: 
+## Title: MailDistributionHelper
+## Author: Cacetinho-Nightslayer 
+## Version: 0.1
+## SavedVariables: MDHdatabase
+
+# XMLs
+embeds.xml
+
+# LUAs
+MailDistributionHelper.lua
+Modules/Utils.lua
+Modules/MailButtons.lua
+Modules/NewPreset.lua
+Modules/LoadPreset.lua
+Modules/ManagePreset.lua
