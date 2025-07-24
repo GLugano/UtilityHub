@@ -130,7 +130,7 @@ MDH.ItemGroupOptions = {
                 "Lesser Magic Essence",
                 "Lesser Astral Essence",
                 "Lesser Mystic Essence",
-                "Lesser n=Nether Essence",
+                "Lesser Nether Essence",
                 "Lesser Eternal Essence",
 
                 -- Greater essence
@@ -357,6 +357,31 @@ MDH.ItemGroupOptions = {
 
             return true;
         end
+    },
+    ["ZgCurrency"] = {
+        label = "ZG Currency",
+        checkItemBelongsToGroup = function(itemLink)
+            local itemName, _, itemQuality, _, _, itemType, itemSubType, _, _, _, _, classID = C_Item.GetItemInfo(
+                itemLink);
+
+            if (MDH.UTILS:StringEndsWith(itemName, "Hakkari Bijou")) then
+                return true;
+            end
+
+            local itemsList = {
+                "Bloodscalp Coin",
+                "Gurubashi Coin",
+                "Hakkari Coin",
+                "Razzashi Coin",
+                "Sandfury Coin",
+                "Skullsplitter Coin",
+                "Vilebranch Coin",
+                "Witherbark Coin",
+                "Zulian Coin"
+            };
+
+            return MDH.UTILS:ValueInTable(itemsList, itemName);
+        end
     }
 };
 local temp = {
@@ -502,8 +527,8 @@ function MDH:CreateItemGroupOption(key, label, previousRef, parent)
 end
 
 function MDH:CreateNewPresetTab(name, index, label, frameHeight, y, previousTabButton)
-    local tab = CreateFrame("Button", MDH.UTILS:ApplyPrefix("NewPresetTab" .. name), MDH.NewPresetFrame.ScrollFrameParent,
-        "CharacterFrameTabButtonTemplate");
+    local tab = CreateFrame("Button", MDH.UTILS:ApplyPrefix("NewPresetTab" .. name),
+        MDH.NewPresetFrame.ScrollFrameParent, "CharacterFrameTabButtonTemplate");
     tab:SetID(index);
     tab:SetText(label);
     tab:SetScript("OnClick", function(self)

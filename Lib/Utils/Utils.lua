@@ -1,4 +1,4 @@
-local MAJOR, MINOR = "Utils", 0;
+local MAJOR, MINOR = "Utils-1.0", 2;
 local UTILS = LibStub:NewLibrary(MAJOR, MINOR);
 
 -- If utils is nil, libstub already have that version saved
@@ -453,4 +453,8 @@ function UTILS:OpenExportDialog(data)
     jsonbox:SetFullWidth(true);
     jsonbox:SetFullHeight(true);
     jsonbox:DisableButton(true);
+end
+
+function UTILS:StringEndsWith(str, ending)
+    return ending == "" or str:sub(-#ending) == ending
 end

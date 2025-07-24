@@ -1,12 +1,13 @@
 local ADDON_NAME, ADDON = ...
 MDH = LibStub("AceAddon-3.0"):NewAddon(ADDON_NAME, "AceComm-3.0");
-
+local version = GetBuildInfo();
 local LDB = LibStub:GetLibrary("LibDataBroker-1.1");
 MDH.LDBIcon = LibStub("LibDBIcon-1.0");
 MDH.realmName = GetRealmName();
 MDH.playerName = UnitName("player");
-MDH.UTILS = LibStub("Utils");
+MDH.UTILS = LibStub("Utils-1.0");
 MDH.UTILS.prefix = "MDH";
+MDH.IsTBC = version == "2.5.2";
 
 function MDH:InitVariables()
     self.db = LibStub("AceDB-3.0"):New("MDHdatabase", {
@@ -178,10 +179,11 @@ WHISPERS = {};
 local eventsFrame = CreateFrame("Frame");
 eventsFrame:RegisterEvent("ADDON_LOADED");
 eventsFrame:RegisterEvent("MAIL_SHOW");
-eventsFrame:RegisterEvent("PLAYER_INTERACTION_MANAGER_FRAME_HIDE");
 eventsFrame:RegisterEvent("TRADE_SHOW");
 eventsFrame:RegisterEvent("TRADE_CLOSED");
 eventsFrame:RegisterEvent("CHAT_MSG_WHISPER");
+eventsFrame:RegisterEvent("MERCHANT_SHOW");
+eventsFrame:RegisterEvent("PLAYER_INTERACTION_MANAGER_FRAME_HIDE");
 eventsFrame:SetScript('OnEvent', function(self, event, ...)
     local arg1, arg2 = ...;
 
@@ -199,7 +201,7 @@ eventsFrame:SetScript('OnEvent', function(self, event, ...)
         return;
     end
 
-    if (event == "PLAYER_INTERACTION_MANAGER_FRAME_HIDE") then
+    if (event == "PLAYER_INTERACTION_MANAGER_FRAME_HIDE" or event == "MAIL_CLOSED") then
         if (arg1 == 17) then
             MDH:CloseNewPresetFrame();
         end
@@ -207,7 +209,9 @@ eventsFrame:SetScript('OnEvent', function(self, event, ...)
     end
 
     if (event == "TRADE_SHOW") then
-        MDH:CreateTradeDataFrame();
+        C_Timer.After(0.5, function()
+            MDH:CreateTradeDataFrame();
+        end);
         return;
     end
 
@@ -220,8 +224,14 @@ eventsFrame:SetScript('OnEvent', function(self, event, ...)
         MDH:SaveLastWhisper(arg1, arg2);
         return;
     end
+
+    if (event == "MERCHANT_SHOW") then
+        MDH:SearchAndBuyRares();
+        return;
+    end
 end);
 
 function MDH:SaveLastWhisper(message, sender)
     MDH.db.global.whispers[sender] = message;
+    MDH:UpdateLastWhisperInFrame();
 end

@@ -2,7 +2,7 @@
 ## Notes: 
 ## Title: MailDistributionHelper
 ## Author: Cacetinho-Nightslayer 
-## Version: 0.1
+## Version: 0.3
 ## SavedVariables: MDHdatabase
 
 # XMLs
@@ -15,3 +15,4 @@ Modules/NewPreset.lua
 Modules/LoadPreset.lua
 Modules/ManagePreset.lua
 Modules/TradeData.lua
+Modules/AutoBuyRares.lua

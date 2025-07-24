@@ -29,9 +29,11 @@ function MDH:ExecutePreset(preset)
         for slot = 1, C_Container.GetContainerNumSlots(bag) do
             local itemLink = C_Container.GetContainerItemLink(bag, slot);
 
-            if (itemLink and ItemShouldBeAdded(itemLink, itemGroupFunctions, preset.custom, preset.exclusion)) then
-                if (not AddItemToNextEmptyMailSlot(bag, slot)) then
-                    return;
+            if (itemLink) then
+                local isSoulbound = C_Item.IsBound(ItemLocation:CreateFromBagAndSlot(bag, slot));
+
+                if (not isSoulbound and ItemShouldBeAdded(itemLink, itemGroupFunctions, preset.custom, preset.exclusion)) then
+                    AddItemToNextEmptyMailSlot(bag, slot);
                 end
             end
         end

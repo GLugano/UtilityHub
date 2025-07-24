@@ -1,12 +1,15 @@
 function MDH:CreateTradeDataFrame()
-    local name, server = UnitFullName("target");
+    if (not TradeFrame or not TradeFrame:IsShown()) then
+        return;
+    end
 
+    local name, server = UnitFullName("npc");
     server = server or GetRealmName();
 
     local frameWidth = 200;
     local frame = MDH.UTILS.AceGUI:Create("Frame");
     MDH.TradeDataFrameRef = frame;
-    frame:SetTitle("Current Trade Info");
+    frame:SetTitle("Trading with...");
     frame:SetLayout("Flow");
     frame:SetWidth(frameWidth);
     frame:SetHeight(330);
@@ -15,6 +18,7 @@ function MDH:CreateTradeDataFrame()
     frame:SetPoint("TOPRIGHT", TradeFrame, "TOPRIGHT", 10 + frameWidth, 0);
     frame:SetCallback("OnClose", function(widget)
         MDH.UTILS.AceGUI:Release(widget);
+        MDH.TradeDataFrameRef = nil;
     end);
 
     CreateLabel(frame, name);
@@ -39,9 +43,15 @@ function MDH:CreateTradeDataFrame()
     scrollFrameParent:AddChild(scroll);
     frame.LastWhisperScrollableRef = scroll;
 
-    local label = CreateLabel(scroll, MDH.db.global.whispers[name .. "-" .. server] or "-", 14);
+    local label = CreateLabel(scroll, "-", 14);
     label:SetWidth(frameWidth - 60);
     label:SetFullHeight(true);
+
+    function frame:UpdateWhisper()
+        label:SetText(MDH.db.global.whispers[name .. "-" .. server] or "-");
+    end
+
+    frame:UpdateWhisper();
 end
 
 function MDH:ShowTradeDataFrame()
@@ -49,7 +59,9 @@ function MDH:ShowTradeDataFrame()
 end
 
 function MDH:CloseTradeDataFrame()
-    MDH.TradeDataFrameRef:Hide();
+    if (MDH.TradeDataFrameRef) then
+        MDH.TradeDataFrameRef:Hide();
+    end
 end
 
 function CreateLabel(frame, text, fontSize)
@@ -60,4 +72,10 @@ function CreateLabel(frame, text, fontSize)
     frame:AddChild(label);
 
     return label;
+end
+
+function MDH:UpdateLastWhisperInFrame()
+    if (MDH.TradeDataFrameRef) then
+        MDH.TradeDataFrameRef:UpdateWhisper();
+    end
 end
