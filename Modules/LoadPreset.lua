@@ -1,7 +1,7 @@
 function MDH:GetLoadPresetGeneratorFunction()
     return function(owner, rootDescription)
         rootDescription:CreateTitle(MDH.UTILS:TableLength(MDH.db.global.presets) == 0 and "No presets available" or
-                                        "Presets available");
+            "Presets available");
 
         for key, value in pairs(MDH.db.global.presets) do
             rootDescription:CreateButton(value.name, function(data)
@@ -31,8 +31,9 @@ function MDH:ExecutePreset(preset)
 
             if (itemLink) then
                 local isSoulbound = C_Item.IsBound(ItemLocation:CreateFromBagAndSlot(bag, slot));
+                local isConjured = IsItemConjured(itemLink);
 
-                if (not isSoulbound and ItemShouldBeAdded(itemLink, itemGroupFunctions, preset.custom, preset.exclusion)) then
+                if (not isSoulbound and not isConjured and ItemShouldBeAdded(itemLink, itemGroupFunctions, preset.custom, preset.exclusion)) then
                     AddItemToNextEmptyMailSlot(bag, slot);
                 end
             end
@@ -54,7 +55,7 @@ end
 
 function ItemShouldBeAdded(itemLink, itemGroupFunctions, customItems, excludedItems)
     return not ItemIsMemberOfList(itemLink, excludedItems) and
-               (ItemLinkIsMemberOfGroup(itemLink, itemGroupFunctions) or ItemIsMemberOfList(itemLink, customItems));
+        (ItemLinkIsMemberOfGroup(itemLink, itemGroupFunctions) or ItemIsMemberOfList(itemLink, customItems));
 end
 
 function ItemIsMemberOfList(itemLink, list)
@@ -76,6 +77,7 @@ function AddItemToNextEmptyMailSlot(bag, slot)
         if (not HasSendMailItem(mailSlot)) then
             C_Container.PickupContainerItem(bag, slot);
             ClickSendMailItemButton(mailSlot);
+
             return true;
         end
     end
@@ -87,4 +89,10 @@ function ClearAllMailSlots()
     for i = 1, ATTACHMENTS_MAX_SEND do
         ClickSendMailItemButton(i, true);
     end
+end
+
+function IsItemConjured(itemLink)
+    local itemID = C_Item.GetItemInfoInstant(itemLink);
+    local list = { 1113, 22895, 8079, 2288, 8077, 5349, 1487, 2136, 1114, 8075, 8078, 3772, 8076, 5350 };
+    return MDH.UTILS:ValueInTable(list, itemID);
 end

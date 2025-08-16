@@ -238,20 +238,29 @@ MDH.ItemGroupOptions = {
             local itemName, _, itemQuality, _, _, itemType, itemSubType, _, _, _, _, classID = C_Item.GetItemInfo(
                 itemLink);
 
-            if (classID ~= 0) then
-                return false;
+            -- Consumable
+            if (classID == 0) then
+                if (string.find(itemName, "Potion") ~= nil and
+                        (string.find(itemName, "Mana") ~= nil or string.find(itemName, "Healing") ~= nil)) then
+                    return false;
+                end
+
+
+                if (itemName == "Supercharged Chronoboon Displacer") then
+                    return false;
+                end
+
+                return true;
+                -- Trade Goods
+            elseif (classID == 7) then
+                if (string.find(itemName, "Wizard Oil") == nil and string.find(itemName, "Mana Oil") == nil) then
+                    return false;
+                end
+
+                return true;
             end
 
-            if (string.find(itemName, "Potion") ~= nil and
-                (string.find(itemName, "Mana") ~= nil or string.find(itemName, "Healing") ~= nil)) then
-                return false;
-            end
-
-            if (itemName == "Supercharged Chronoboon Displacer") then
-                return false;
-            end
-
-            return true;
+            return false;
         end
     },
     ["Ore"] = {
