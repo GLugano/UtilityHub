@@ -2,14 +2,14 @@
 ## Notes: 
 ## Title: MailDistributionHelper
 ## Author: Cacetinho-Nightslayer 
-## Version: 0.5
-## SavedVariables: MDHdatabase
+## Version: 0.6
+## SavedVariables: UHdatabase, MDHdatabase
 
 # XMLs
 embeds.xml
 
 # LUAs
-MailDistributionHelper.lua
+UtilityHub.lua
 Helper.lua
 Modules/Mail/Preset.lua
 Modules/Mail/Characters.lua

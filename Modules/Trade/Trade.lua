@@ -1,10 +1,10 @@
 local ADDON_NAME = ...;
----@type MailDistributionHelper
-local MDH = LibStub('AceAddon-3.0'):GetAddon(ADDON_NAME);
+---@type UtilityHub
+local UH = LibStub('AceAddon-3.0'):GetAddon(ADDON_NAME);
 local moduleName = 'Trade';
 ---@class Trade
 ---@diagnostic disable-next-line: undefined-field
-local Module = MDH:NewModule(moduleName);
+local Module = UH:NewModule(moduleName);
 Module.whispers = {};
 Module.TradeDataFrameRef = nil;
 Module.Buttons = { Water = nil, Food = nil };
@@ -15,11 +15,11 @@ EventRegistry:RegisterFrameEventAndCallback("CHAT_MSG_WHISPER", function(_, text
 end);
 
 EventRegistry:RegisterFrameEventAndCallback("TRADE_SHOW", function()
-    if (MDH:GetModule("Trade"):IsEnabled()) then
+    if (UH:GetModule("Trade"):IsEnabled()) then
         Module:ShowFrames();
     else
         ---@diagnostic disable-next-line: undefined-field
-        MDH:EnableModule("Trade");
+        UH:EnableModule("Trade");
     end
 end);
 
@@ -31,8 +31,8 @@ end
 
 function Module:OnEnable()
     if (UnitClass("player") == "Mage") then
-        Module.Buttons.Water = Module:CreateItemButton("MDHTradeWaterButton");
-        Module.Buttons.Food = Module:CreateItemButton("MDHTradeFoodButton", Module.Buttons.Water);
+        Module.Buttons.Water = Module:CreateItemButton("UHTradeWaterButton");
+        Module.Buttons.Food = Module:CreateItemButton("UHTradeFoodButton", Module.Buttons.Water);
         Module:UpdateItemFromButtons();
     end
 
@@ -41,7 +41,7 @@ function Module:OnEnable()
 end
 
 function Module:SaveLastWhisper(message, sender)
-    MDH.db.global.whispers[sender] = message;
+    UH.db.global.whispers[sender] = message;
     Module:UpdateLastWhisperInFrame();
 end
 
@@ -54,7 +54,7 @@ function Module:CreateTradeDataFrame()
     server = server or GetRealmName();
 
     local frameWidth = 200;
-    local frame = MDH.UTILS.AceGUI:Create("Frame");
+    local frame = UH.UTILS.AceGUI:Create("Frame");
     Module.TradeDataFrameRef = frame;
     frame:Hide();
     frame:SetTitle("Trading with...");
@@ -65,7 +65,7 @@ function Module:CreateTradeDataFrame()
     frame:ClearAllPoints();
     frame:SetPoint("TOPRIGHT", TradeFrame, "TOPRIGHT", 10 + frameWidth, 0);
     frame:SetCallback("OnClose", function(widget)
-        MDH.UTILS.AceGUI:Release(widget);
+        UH.UTILS.AceGUI:Release(widget);
         Module.TradeDataFrameRef = nil;
     end);
 
@@ -75,19 +75,19 @@ function Module:CreateTradeDataFrame()
     CreateLabel(frame, "|cffffd100Server:|r " .. server);
     CreateLabel(frame, "|cffffd100Guild:|r " .. (GetGuildInfo("npc") or "-"));
     CreateLabel(frame, "|cffffd100Level:|r " .. UnitLevel("npc"));
-    CreateLabel(frame, UnitRace("npc") .. " " .. MDH.UTILS:GetClassColoredText(UnitClass("npc"), englishClass));
+    CreateLabel(frame, UnitRace("npc") .. " " .. UH.UTILS:GetClassColoredText(UnitClass("npc"), englishClass));
 
     local spacer = CreateLabel(frame);
     spacer:SetText(" ");
     spacer:SetHeight(10);
 
-    local scrollFrameParent = MDH.UTILS.AceGUI:Create("InlineGroup");
+    local scrollFrameParent = UH.UTILS.AceGUI:Create("InlineGroup");
     scrollFrameParent:SetTitle("Last whisper:");
     scrollFrameParent:SetFullWidth(true);
     scrollFrameParent:SetFullHeight(true);
     frame:AddChild(scrollFrameParent);
 
-    local scroll = MDH.UTILS.AceGUI:Create("ScrollFrame");
+    local scroll = UH.UTILS.AceGUI:Create("ScrollFrame");
     scroll:SetFullWidth(true);
     scroll:SetLayout("Flow");
     scrollFrameParent:AddChild(scroll);
@@ -98,7 +98,7 @@ function Module:CreateTradeDataFrame()
     label:SetFullHeight(true);
 
     function frame:UpdateWhisper()
-        label:SetText(MDH.db.global.whispers[name .. "-" .. server] or "-");
+        label:SetText(UH.db.global.whispers[name .. "-" .. server] or "-");
     end
 
     frame:UpdateWhisper();
@@ -133,7 +133,7 @@ function Module:ShowFrames()
 end
 
 function CreateLabel(frame, text, fontSize)
-    local label = MDH.UTILS.AceGUI:Create("Label");
+    local label = UH.UTILS.AceGUI:Create("Label");
     local fontPath, _, fontFlags = label.label:GetFont();
     label.label:SetFont(fontPath, fontSize or 16, fontFlags);
     label:SetText(text);
@@ -187,7 +187,7 @@ function Module:GetItemIDBy(spells, items)
 end
 
 function Module:CreateItemButton(name, parent)
-    local button = CreateFrame("Button", name, parent, "MDHTradeItemButtonTemplate");
+    local button = CreateFrame("Button", name, parent, "UHTradeItemButtonTemplate");
     button.ModuleRef = Module;
     button:RegisterForClicks("AnyUp");
     button:SetSize(36, 36);
@@ -218,8 +218,8 @@ function Module:CreateItemButton(name, parent)
 end
 
 -- Mixins
-MDHTradeItemButtonMixin = {}
-function MDHTradeItemButtonMixin:OnLoad()
+UHTradeItemButtonMixin = {}
+function UHTradeItemButtonMixin:OnLoad()
     self:RegisterEvent("ACTIONBAR_UPDATE_USABLE");
     self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN"); -- not updating cooldown from lua anymore, see SetActionUIButton
     self:RegisterEvent("SPELL_UPDATE_CHARGES");
@@ -242,11 +242,11 @@ function MDHTradeItemButtonMixin:OnLoad()
     self:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE");
 end
 
-function MDHTradeItemButtonMixin:OnEvent(event, ...)
+function UHTradeItemButtonMixin:OnEvent(event, ...)
     self:UpdateState();
 end
 
-function MDHTradeItemButtonMixin:UpdateState()
+function UHTradeItemButtonMixin:UpdateState()
     local Item = self:GetAttribute('itemID');
 
     local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType, itemSubType, itemStackCount, itemEquipLoc,
@@ -270,7 +270,7 @@ function MDHTradeItemButtonMixin:UpdateState()
     self:UpdateCooldown();
 end
 
-function MDHTradeItemButtonMixin:UpdateCooldown()
+function UHTradeItemButtonMixin:UpdateCooldown()
     local start, duration, enable;
     local modRate = 1.0;
 
@@ -288,7 +288,7 @@ function MDHTradeItemButtonMixin:UpdateCooldown()
     CooldownFrame_Set(self.cooldown, start, duration, enable, false, modRate);
 end
 
-function MDHTradeItemButtonMixin:OnEnter()
+function UHTradeItemButtonMixin:OnEnter()
     if (IsShiftKeyDown()) then
         local spell = self:GetAttribute('spellID');
 
@@ -314,11 +314,11 @@ function MDHTradeItemButtonMixin:OnEnter()
     GameTooltip:Show();
 end
 
-function MDHTradeItemButtonMixin:OnLeave()
+function UHTradeItemButtonMixin:OnLeave()
     GameTooltip:Hide();
 end
 
-function MDHTradeItemButtonMixin:OnClickNotShift(...)
+function UHTradeItemButtonMixin:OnClickNotShift(...)
     if (not IsShiftKeyDown()) then
         local itemID = self:GetAttribute('itemID');
 
@@ -371,7 +371,7 @@ function MDHTradeItemButtonMixin:OnClickNotShift(...)
     end
 end
 
-function MDHTradeItemButtonMixin:OnUpdate()
+function UHTradeItemButtonMixin:OnUpdate()
     if (GameTooltip:IsOwned(self)) then
         local showSpell = IsShiftKeyDown() and self:GetAttribute("spellID");
 

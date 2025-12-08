@@ -1,10 +1,10 @@
 local ADDON_NAME = ...;
----@type MailDistributionHelper
-local MDH = LibStub('AceAddon-3.0'):GetAddon(ADDON_NAME);
+---@type UtilityHub
+local UH = LibStub('AceAddon-3.0'):GetAddon(ADDON_NAME);
 ---@diagnostic disable-next-line: inject-field
-MDH.Compatibility = {};
+UH.Compatibility = {};
 
-function MDH.Compatibility:FuncOrWaitFrame(addon, func)
+function UH.Compatibility:FuncOrWaitFrame(addon, func)
     local addons = {};
 
     if (type(addon) == "string") then

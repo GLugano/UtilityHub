@@ -1,10 +1,10 @@
 local ADDON_NAME = ...;
----@type MailDistributionHelper
-local MDH = LibStub('AceAddon-3.0'):GetAddon(ADDON_NAME);
+---@type UtilityHub
+local UH = LibStub('AceAddon-3.0'):GetAddon(ADDON_NAME);
 local moduleName = 'Mail';
 ---@class Mail
 ---@diagnostic disable-next-line: undefined-field
-local Module = MDH:NewModule(moduleName);
+local Module = UH:NewModule(moduleName);
 Module.MailIconButton = nil;
 ---@diagnostic disable-next-line: undefined-field
 ---@type Preset
@@ -18,7 +18,7 @@ function Module:CreateMailIconButtons()
     end
 
     -- New
-    MailFrame.NewPresetButton = MDH.UTILS:CreateIconButton(MailFrame, MDH.Helpers:ApplyPrefix("NewPresetButton"));
+    MailFrame.NewPresetButton = UH.UTILS:CreateIconButton(MailFrame, UH.Helpers:ApplyPrefix("NewPresetButton"));
     MailFrame.NewPresetButton:SetPoint("TOPLEFT", MailFrame, "TOPRIGHT", 2, -60);
     MailFrame.NewPresetButton.baseTextureRef:SetTexture("Interface/GuildBankFrame/UI-GuildBankFrame-NewTab");
 
@@ -39,7 +39,7 @@ function Module:CreateMailIconButtons()
     end);
 
     -- Load
-    MailFrame.LoadPresetButton = MDH.UTILS:CreateIconButton(MailFrame, MDH.Helpers:ApplyPrefix("LoadPresetButton"));
+    MailFrame.LoadPresetButton = UH.UTILS:CreateIconButton(MailFrame, UH.Helpers:ApplyPrefix("LoadPresetButton"));
     MailFrame.LoadPresetButton:SetPoint("BOTTOM", MailFrame.NewPresetButton, "BOTTOM", 0, -40);
     local iconTexture = MailFrame.LoadPresetButton:CreateTexture(nil, "ARTWORK");
     iconTexture:SetTexture("Interface\\Calendar\\MoreArrow.blp");
@@ -72,7 +72,7 @@ function Module:CreateMailIconButtons()
     MailFrame.LoadPresetButton:SetupMenu(PresetModule:GetLoadPresetGeneratorFunction());
 
     -- Manage
-    MailFrame.ManagePresetButton = MDH.UTILS:CreateIconButton(MailFrame, MDH.Helpers:ApplyPrefix("ManagePresetButton"));
+    MailFrame.ManagePresetButton = UH.UTILS:CreateIconButton(MailFrame, UH.Helpers:ApplyPrefix("ManagePresetButton"));
     MailFrame.ManagePresetButton:SetPoint("BOTTOM", MailFrame.LoadPresetButton, "BOTTOM", 0, -40);
     local iconTexture = MailFrame.ManagePresetButton:CreateTexture(nil, "ARTWORK");
     iconTexture:SetTexture("Interface\\Buttons\\UI-OptionsButton.blp");
@@ -105,7 +105,7 @@ function Module:CreateMailIconButtons()
     MailFrame.ManagePresetButton:SetupMenu(PresetModule:GetManagePresetGeneratorFunction());
 
     -- Characters
-    MailFrame.CharactersButton = MDH.UTILS:CreateIconButton(MailFrame, MDH.Helpers:ApplyPrefix("CharactersButton"));
+    MailFrame.CharactersButton = UH.UTILS:CreateIconButton(MailFrame, UH.Helpers:ApplyPrefix("CharactersButton"));
     MailFrame.CharactersButton:SetPoint("BOTTOM", MailFrame.ManagePresetButton, "BOTTOM", 0, -40);
     local iconTexture = MailFrame.CharactersButton:CreateTexture(nil, "ARTWORK");
     iconTexture:SetTexture("Interface\\CHATFRAME\\UI-ChatConversationIcon.blp");
@@ -140,15 +140,15 @@ end
 
 function Module:OnInitialize()
     EventRegistry:RegisterFrameEventAndCallback("MAIL_SHOW", function()
-        if (not MDH:GetModule("Mail"):IsEnabled()) then
+        if (not UH:GetModule("Mail"):IsEnabled()) then
             ---@diagnostic disable-next-line: undefined-field
-            MDH:EnableModule("Mail");
+            UH:EnableModule("Mail");
         end
     end);
 end
 
 function Module:OnEnable()
-    PresetModule = MDH:GetModule("Preset");
-    CharactersModule = MDH:GetModule("Characters");
+    PresetModule = UH:GetModule("Preset");
+    CharactersModule = UH:GetModule("Characters");
     Module:CreateMailIconButtons();
 end

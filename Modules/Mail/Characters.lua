@@ -1,22 +1,22 @@
 local ADDON_NAME = ...;
----@type MailDistributionHelper
-local MDH = LibStub('AceAddon-3.0'):GetAddon(ADDON_NAME);
+---@type UtilityHub
+local UH = LibStub('AceAddon-3.0'):GetAddon(ADDON_NAME);
 local moduleName = 'Characters';
 ---@class Characters
 ---@diagnostic disable-next-line: undefined-field
-local Module = MDH:NewModule(moduleName);
+local Module = UH:NewModule(moduleName);
 
 function Module:OnEnable()
   -- TODO
 end
 
 function Module:GetAccountCharactersGeneratorFunction()
-  local refMDH = MDH;
+  local refUH = UH;
 
   return function(owner, rootDescription)
     rootDescription:CreateTitle("Account characters");
 
-    for i, value in pairs(refMDH.db.global.characters) do
+    for i, value in pairs(refUH.db.global.characters) do
       rootDescription:CreateButton(value, function()
         Module:StartMail(value);
       end);
@@ -26,20 +26,20 @@ function Module:GetAccountCharactersGeneratorFunction()
     rootDescription:CreateTitle("Options");
     local button = rootDescription:CreateButton("Manage");
 
-    for i, value in pairs(refMDH.db.global.characters) do
+    for i, value in pairs(refUH.db.global.characters) do
       local buttonAction = button:CreateButton(value);
 
       if (value ~= UnitName("player")) then
         buttonAction:CreateButton("Remove", function()
           local newCharacters = {};
 
-          for j, value in pairs(refMDH.db.global.characters) do
+          for j, value in pairs(refUH.db.global.characters) do
             if (i ~= j) then
               tinsert(newCharacters, value);
             end
           end
 
-          refMDH.db.global.characters = newCharacters;
+          refUH.db.global.characters = newCharacters;
         end);
       end
     end

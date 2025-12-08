@@ -1,8 +1,8 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.blizzard.com/wow/ui/ http://wowprogramming.com/FrameXML/UI.xsd">
   <Script file="Modules/Trade/Trade.lua" />
-  <Button name="MDHTradeItemButtonTemplate"
-    inherits="ActionButtonTemplate, SecureActionButtonTemplate" mixin="MDHTradeItemButtonMixin"
+  <Button name="UHTradeItemButtonTemplate"
+    inherits="ActionButtonTemplate, SecureActionButtonTemplate" mixin="UHTradeItemButtonMixin"
     virtual="true">
     <Scripts>
       <OnLoad method="OnLoad" />
