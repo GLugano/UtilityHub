@@ -1,6 +1,7 @@
 ## Interface: 11508
-## Notes: 
-## Title: MailDistributionHelper
+## Notes: Add some functionalities to the game, like mail buttons and trade info window.
+## Title: UtilityHub
+## IconTexture: Interface\Icons\Achievement_Dungeon_UlduarRaid_Archway_01
 ## Author: Cacetinho-Nightslayer 
 ## Version: 0.6
 ## SavedVariables: UHdatabase, MDHdatabase
