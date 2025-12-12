@@ -7,963 +7,962 @@ local moduleName = 'Preset';
 local Module = UH:NewModule(moduleName);
 Module.MailIconButton = nil;
 Module.ItemGroupOptions = {
-    ["GreenEquipment"] = {
-        label = "Green Equipment",
-        checkItemBelongsToGroup = function(itemLink)
-            local _, _, itemQuality, _, _, itemType, itemSubType, _, _, _, _ = C_Item.GetItemInfo(itemLink);
+  ["GreenEquipment"] = {
+    label = "Green Equipment",
+    checkItemBelongsToGroup = function(itemLink)
+      local _, _, itemQuality, _, _, itemType, itemSubType, _, _, _, _ = C_Item.GetItemInfo(itemLink);
 
-            -- Check if the item is Green (Quality 2) and is an Equipment type
-            if (itemQuality == 2 and (itemType == "Armor" or itemType == "Weapon")) then
-                return true;
-            end
+      -- Check if the item is Green (Quality 2) and is an Equipment type
+      if (itemQuality == 2 and (itemType == "Armor" or itemType == "Weapon")) then
+        return true;
+      end
 
-            return false;
+      return false;
+    end
+  },
+  ["BlueEquipment"] = {
+    label = "Blue Equipment",
+    checkItemBelongsToGroup = function(itemLink)
+      local _, _, itemQuality, _, _, itemType, itemSubType, _, _, _, _ = C_Item.GetItemInfo(itemLink);
+
+      -- Check if the item is Green (Quality 2) and is an Equipment type
+      if (itemQuality == 3 and (itemType == "Armor" or itemType == "Weapon")) then
+        return true;
+      end
+
+      return false;
+    end
+  },
+  ["EssenceElemental"] = {
+    label = "Essence/Elemental",
+    checkItemBelongsToGroup = function(itemLink)
+      local itemName, _, itemQuality, _, _, itemType, itemSubType, _, _, _, _ = C_Item.GetItemInfo(itemLink);
+      local essenceList = {
+        -- Water
+        "Elemental Water",
+        "Globe of Water",
+        "Essence of Water",
+        -- Fire
+        "Elemental Fire",
+        "Heart of Fire",
+        "Essence of Fire",
+        -- Wind
+        "Elemental Air",
+        "Breath of Wind",
+        "Essence of Air",
+        -- Earth
+        "Elemental Earth",
+        "Core of Earth",
+        "Essence of Earth",
+        -- Undeath
+        "Ichor of Undeath",
+        "Essence of Undeath",
+        -- Living
+        "Heart of the Wild",
+        "Living Essence"
+      };
+
+      return UH.UTILS:ValueInTable(essenceList, itemName);
+    end
+  },
+  ["Stone"] = {
+    label = "Stone",
+    checkItemBelongsToGroup = function(itemLink)
+      local itemName, _, itemQuality, _, _, itemType, itemSubType, _, _, _, _ = C_Item.GetItemInfo(itemLink);
+      local itemsList = {
+        "Rough Stone",
+        "Coarse Stone",
+        "Heavy Stone",
+        "Solid Stone",
+        "Dense Stone"
+      };
+
+      return UH.UTILS:ValueInTable(itemsList, itemName);
+    end
+  },
+  ["Gem"] = {
+    label = "Gem",
+    checkItemBelongsToGroup = function(itemLink)
+      local itemName, _, itemQuality, _, _, itemType, itemSubType, _, _, _, _, classID = C_Item.GetItemInfo(
+        itemLink);
+
+      if (classID ~= 7) then
+        return false;
+      end
+
+      local itemsList = {
+        "Malachite",
+        "Tigerseye",
+        "Small Lustrous Pearl",
+        "Shadowgem",
+        "Moss Agate",
+        "Iridescent Pearl",
+        "Lesser Moonstone",
+        "Jade",
+        "Black Pearl",
+        "Golden Pearl",
+        "Citrine",
+        "Aquamarine",
+        "Star Ruby",
+        "Blood of the Mountain",
+        "Souldarite",
+        "Large Opal",
+        "Blue Sapphire",
+        "Azerothian Diamond",
+        "Arcane Crystal",
+        "Huge Emerald"
+      };
+
+      return UH.UTILS:ValueInTable(itemsList, itemName);
+    end
+  },
+  ["Enchant"] = {
+    label = "Enchant",
+    checkItemBelongsToGroup = function(itemLink)
+      local itemName, _, itemQuality, _, _, itemType, itemSubType, _, _, _, _, classID = C_Item.GetItemInfo(
+        itemLink);
+
+      if (classID ~= 7) then
+        return false;
+      end
+
+      local itemsList = {
+        -- Dust
+        "Strange Dust",
+        "Soul Dust",
+        "Vision Dust",
+        "Dream Dust",
+        "Illusion Dust",
+
+        -- Lesser essence
+        "Lesser Magic Essence",
+        "Lesser Astral Essence",
+        "Lesser Mystic Essence",
+        "Lesser Nether Essence",
+        "Lesser Eternal Essence",
+
+        -- Greater essence
+        "Greater Magic Essence",
+        "Greater Astral Essence",
+        "Greater Mystic Essence",
+        "Greater Nether Essence",
+        "Greater Eternal Essence",
+
+        -- Shard Small
+        "Small Glimmering Shard",
+        "Small Glowing Shard",
+        "Small Radiant Shard",
+        "Small Brilliant Shard",
+
+        -- Shard large
+        "Large Glimmering Shard",
+        "Large Glowing Shard",
+        "Large Radiant Shard",
+        "Large Brilliant Shard"
+      };
+
+      return UH.UTILS:ValueInTable(itemsList, itemName);
+    end
+  },
+  ["Cloth"] = {
+    label = "Cloth",
+    checkItemBelongsToGroup = function(itemLink)
+      local itemName, _, itemQuality, _, _, itemType, itemSubType, _, _, _, _, classID = C_Item.GetItemInfo(
+        itemLink);
+
+      if (classID ~= 7) then
+        return false;
+      end
+
+      local itemsList = {
+        -- Cloth
+        "Linen Cloth",
+        "Wool Cloth",
+        "Silk Cloth",
+        "Mageweave Cloth",
+        "Runecloth",
+        "Felcloth",
+        "Mooncloth",
+
+        -- Bolt
+        "Bolt of Linen Cloth",
+        "Bolt of Wool Cloth",
+        "Bolt of Silk Cloth",
+        "Bolt of Mageweave",
+        "Bolt of Runecloth"
+      };
+
+      return UH.UTILS:ValueInTable(itemsList, itemName);
+    end
+  },
+  ["Herb"] = {
+    label = "Herb",
+    checkItemBelongsToGroup = function(itemLink)
+      local itemName, _, itemQuality, _, _, itemType, itemSubType, _, _, _, _, classID = C_Item.GetItemInfo(
+        itemLink);
+
+      if (classID ~= 7) then
+        return false;
+      end
+
+      local itemsList = {
+        "Peacebloom",
+        "Silverleaf",
+        "Earthroot",
+        "Mageroyal",
+        "Briarthorn",
+        "Stranglekelp",
+        "Bruiseweed",
+        "Wild Steelbloom",
+        "Grave Moss",
+        "Kingsblood",
+        "Liferoot",
+        "Fadeleaf",
+        "Goldthorn",
+        "Khadgar's Whisker",
+        "Wintersbite",
+        "Wildvine",
+        "Firebloom",
+        "Purple Lotus",
+        "Arthas' Tears",
+        "Sungrass",
+        "Ghost Mushroom",
+        "Blindweed",
+        "Gromsblood",
+        "Dreamfoil",
+        "Mountain Silversage",
+        "Plaguebloom",
+        "Icecap",
+        "Black Lotus",
+        "Bloodvine"
+      };
+
+      return UH.UTILS:ValueInTable(itemsList, itemName);
+    end
+  },
+  ["Consumables"] = {
+    label = "Consumables (except mana/health potions)",
+    checkItemBelongsToGroup = function(itemLink)
+      local itemName, _, itemQuality, _, _, itemType, itemSubType, _, _, _, _, classID = C_Item.GetItemInfo(
+        itemLink);
+
+      -- Consumable
+      if (classID == 0) then
+        if (string.find(itemName, "Potion") ~= nil and
+              (string.find(itemName, "Mana") ~= nil or string.find(itemName, "Healing") ~= nil)) then
+          return false;
         end
-    },
-    ["BlueEquipment"] = {
-        label = "Blue Equipment",
-        checkItemBelongsToGroup = function(itemLink)
-            local _, _, itemQuality, _, _, itemType, itemSubType, _, _, _, _ = C_Item.GetItemInfo(itemLink);
 
-            -- Check if the item is Green (Quality 2) and is an Equipment type
-            if (itemQuality == 3 and (itemType == "Armor" or itemType == "Weapon")) then
-                return true;
-            end
 
-            return false;
+        if (itemName == "Supercharged Chronoboon Displacer") then
+          return false;
         end
-    },
-    ["EssenceElemental"] = {
-        label = "Essence/Elemental",
-        checkItemBelongsToGroup = function(itemLink)
-            local itemName, _, itemQuality, _, _, itemType, itemSubType, _, _, _, _ = C_Item.GetItemInfo(itemLink);
-            local essenceList = {
-                -- Water
-                "Elemental Water",
-                "Globe of Water",
-                "Essence of Water",
-                -- Fire
-                "Elemental Fire",
-                "Heart of Fire",
-                "Essence of Fire",
-                -- Wind
-                "Elemental Air",
-                "Breath of Wind",
-                "Essence of Air",
-                -- Earth
-                "Elemental Earth",
-                "Core of Earth",
-                "Essence of Earth",
-                -- Undeath
-                "Ichor of Undeath",
-                "Essence of Undeath",
-                -- Living
-                "Heart of the Wild",
-                "Living Essence"
-            };
 
-            return UH.UTILS:ValueInTable(essenceList, itemName);
+        return true;
+        -- Trade Goods
+      elseif (classID == 7) then
+        if (string.find(itemName, "Wizard Oil") == nil and string.find(itemName, "Mana Oil") == nil) then
+          return false;
         end
-    },
-    ["Stone"] = {
-        label = "Stone",
-        checkItemBelongsToGroup = function(itemLink)
-            local itemName, _, itemQuality, _, _, itemType, itemSubType, _, _, _, _ = C_Item.GetItemInfo(itemLink);
-            local itemsList = {
-                "Rough Stone",
-                "Coarse Stone",
-                "Heavy Stone",
-                "Solid Stone",
-                "Dense Stone"
-            };
 
-            return UH.UTILS:ValueInTable(itemsList, itemName);
-        end
-    },
-    ["Gem"] = {
-        label = "Gem",
-        checkItemBelongsToGroup = function(itemLink)
-            local itemName, _, itemQuality, _, _, itemType, itemSubType, _, _, _, _, classID = C_Item.GetItemInfo(
-                itemLink);
+        return true;
+      end
 
-            if (classID ~= 7) then
-                return false;
-            end
+      return false;
+    end
+  },
+  ["Ore"] = {
+    label = "Ore",
+    checkItemBelongsToGroup = function(itemLink)
+      local itemName, _, itemQuality, _, _, itemType, itemSubType, _, _, _, _, classID = C_Item.GetItemInfo(
+        itemLink);
 
-            local itemsList = {
-                "Malachite",
-                "Tigerseye",
-                "Small Lustrous Pearl",
-                "Shadowgem",
-                "Moss Agate",
-                "Iridescent Pearl",
-                "Lesser Moonstone",
-                "Jade",
-                "Black Pearl",
-                "Golden Pearl",
-                "Citrine",
-                "Aquamarine",
-                "Star Ruby",
-                "Blood of the Mountain",
-                "Souldarite",
-                "Large Opal",
-                "Blue Sapphire",
-                "Azerothian Diamond",
-                "Arcane Crystal",
-                "Huge Emerald"
-            };
+      if (classID ~= 7) then
+        return false;
+      end
 
-            return UH.UTILS:ValueInTable(itemsList, itemName);
-        end
-    },
-    ["Enchant"] = {
-        label = "Enchant",
-        checkItemBelongsToGroup = function(itemLink)
-            local itemName, _, itemQuality, _, _, itemType, itemSubType, _, _, _, _, classID = C_Item.GetItemInfo(
-                itemLink);
+      local itemsList = {
+        -- Normal
+        "Copper Ore",
+        "Tin Ore",
+        "Silver Ore",
+        "Iron Ore",
+        "Gold Ore",
+        "Mithril Ore",
+        "Truesilver Ore",
+        "Thorium Ore",
+        "Dark Iron Ore",
+        "Elementium Ore",
+        -- Misc
+        "Incendite Ore",
+        "Lesser Bloodstone Ore"
+      };
 
-            if (classID ~= 7) then
-                return false;
-            end
+      return UH.UTILS:ValueInTable(itemsList, itemName);
+    end
+  },
+  ["Bar"] = {
+    label = "Bar",
+    checkItemBelongsToGroup = function(itemLink)
+      local itemName, _, itemQuality, _, _, itemType, itemSubType, _, _, _, _, classID = C_Item.GetItemInfo(
+        itemLink);
 
-            local itemsList = {
-                -- Dust
-                "Strange Dust",
-                "Soul Dust",
-                "Vision Dust",
-                "Dream Dust",
-                "Illusion Dust",
+      if (classID ~= 7) then
+        return false;
+      end
 
-                -- Lesser essence
-                "Lesser Magic Essence",
-                "Lesser Astral Essence",
-                "Lesser Mystic Essence",
-                "Lesser Nether Essence",
-                "Lesser Eternal Essence",
+      local itemsList = {
+        "Copper Bar",
+        "Tin Bar",
+        "Bronze Bar",
+        "Silver Bar",
+        "Iron Bar",
+        "Steel Bar",
+        "Gold Bar",
+        "Mithril Bar",
+        "Truesilver Bar",
+        "Thorium Bar",
+        "Dark Iron Bar",
+        "Enchanted Thorium Bar",
+        "Arcanite Bar",
+        "Elementium Bar"
+      };
 
-                -- Greater essence
-                "Greater Magic Essence",
-                "Greater Astral Essence",
-                "Greater Mystic Essence",
-                "Greater Nether Essence",
-                "Greater Eternal Essence",
+      return UH.UTILS:ValueInTable(itemsList, itemName);
+    end
+  },
+  ["Lockbox"] = {
+    label = "Lockbox",
+    checkItemBelongsToGroup = function(itemLink)
+      local itemName, _, itemQuality, _, _, itemType, itemSubType, _, _, _, _, classID = C_Item.GetItemInfo(
+        itemLink);
 
-                -- Shard Small
-                "Small Glimmering Shard",
-                "Small Glowing Shard",
-                "Small Radiant Shard",
-                "Small Brilliant Shard",
+      if (classID ~= 15) then
+        return false;
+      end
 
-                -- Shard large
-                "Large Glimmering Shard",
-                "Large Glowing Shard",
-                "Large Radiant Shard",
-                "Large Brilliant Shard"
-            };
+      local itemsList = {
+        -- Junkbox
+        "Battered Junkbox",
+        "Worn Junkbox",
+        "Sturdy Junkbox",
+        "Heavy Junkbox",
+        -- Lockbox
+        "Ornate Bronze Lockbox",
+        "Heavy Bronze Lockbox",
+        "Iron Lockbox",
+        "Strong Iron Lockbox",
+        "Steel Lockbox",
+        "Reinforced Steel Lockbox",
+        "Mithril Lockbox",
+        "Thorium Lockbox",
+        "Elementium Lockbox"
+      };
 
-            return UH.UTILS:ValueInTable(itemsList, itemName);
-        end
-    },
-    ["Cloth"] = {
-        label = "Cloth",
-        checkItemBelongsToGroup = function(itemLink)
-            local itemName, _, itemQuality, _, _, itemType, itemSubType, _, _, _, _, classID = C_Item.GetItemInfo(
-                itemLink);
+      return UH.UTILS:ValueInTable(itemsList, itemName);
+    end
+  },
+  ["Recipe"] = {
+    label = "Recipe",
+    checkItemBelongsToGroup = function(itemLink)
+      local itemName, _, itemQuality, _, _, itemType, itemSubType, _, _, _, _, classID = C_Item.GetItemInfo(
+        itemLink);
 
-            if (classID ~= 7) then
-                return false;
-            end
+      if (classID ~= 9) then
+        return false;
+      end
 
-            local itemsList = {
-                -- Cloth
-                "Linen Cloth",
-                "Wool Cloth",
-                "Silk Cloth",
-                "Mageweave Cloth",
-                "Runecloth",
-                "Felcloth",
-                "Mooncloth",
+      return true;
+    end
+  },
+  ["ZgCurrency"] = {
+    label = "ZG Currency",
+    checkItemBelongsToGroup = function(itemLink)
+      local itemName, _, itemQuality, _, _, itemType, itemSubType, _, _, _, _, classID = C_Item.GetItemInfo(
+        itemLink);
 
-                -- Bolt
-                "Bolt of Linen Cloth",
-                "Bolt of Wool Cloth",
-                "Bolt of Silk Cloth",
-                "Bolt of Mageweave",
-                "Bolt of Runecloth"
-            };
+      if (UH.UTILS:StringEndsWith(itemName, "Hakkari Bijou")) then
+        return true;
+      end
 
-            return UH.UTILS:ValueInTable(itemsList, itemName);
-        end
-    },
-    ["Herb"] = {
-        label = "Herb",
-        checkItemBelongsToGroup = function(itemLink)
-            local itemName, _, itemQuality, _, _, itemType, itemSubType, _, _, _, _, classID = C_Item.GetItemInfo(
-                itemLink);
+      local itemsList = {
+        "Bloodscalp Coin",
+        "Gurubashi Coin",
+        "Hakkari Coin",
+        "Razzashi Coin",
+        "Sandfury Coin",
+        "Skullsplitter Coin",
+        "Vilebranch Coin",
+        "Witherbark Coin",
+        "Zulian Coin"
+      };
 
-            if (classID ~= 7) then
-                return false;
-            end
-
-            local itemsList = {
-                "Peacebloom",
-                "Silverleaf",
-                "Earthroot",
-                "Mageroyal",
-                "Briarthorn",
-                "Stranglekelp",
-                "Bruiseweed",
-                "Wild Steelbloom",
-                "Grave Moss",
-                "Kingsblood",
-                "Liferoot",
-                "Fadeleaf",
-                "Goldthorn",
-                "Khadgar's Whisker",
-                "Wintersbite",
-                "Wildvine",
-                "Firebloom",
-                "Purple Lotus",
-                "Arthas' Tears",
-                "Sungrass",
-                "Ghost Mushroom",
-                "Blindweed",
-                "Gromsblood",
-                "Dreamfoil",
-                "Mountain Silversage",
-                "Plaguebloom",
-                "Icecap",
-                "Black Lotus",
-                "Bloodvine"
-            };
-
-            return UH.UTILS:ValueInTable(itemsList, itemName);
-        end
-    },
-    ["Consumables"] = {
-        label = "Consumables (except mana/health potions)",
-        checkItemBelongsToGroup = function(itemLink)
-            local itemName, _, itemQuality, _, _, itemType, itemSubType, _, _, _, _, classID = C_Item.GetItemInfo(
-                itemLink);
-
-            -- Consumable
-            if (classID == 0) then
-                if (string.find(itemName, "Potion") ~= nil and
-                        (string.find(itemName, "Mana") ~= nil or string.find(itemName, "Healing") ~= nil)) then
-                    return false;
-                end
-
-
-                if (itemName == "Supercharged Chronoboon Displacer") then
-                    return false;
-                end
-
-                return true;
-                -- Trade Goods
-            elseif (classID == 7) then
-                if (string.find(itemName, "Wizard Oil") == nil and string.find(itemName, "Mana Oil") == nil) then
-                    return false;
-                end
-
-                return true;
-            end
-
-            return false;
-        end
-    },
-    ["Ore"] = {
-        label = "Ore",
-        checkItemBelongsToGroup = function(itemLink)
-            local itemName, _, itemQuality, _, _, itemType, itemSubType, _, _, _, _, classID = C_Item.GetItemInfo(
-                itemLink);
-
-            if (classID ~= 7) then
-                return false;
-            end
-
-            local itemsList = {
-                -- Normal
-                "Copper Ore",
-                "Tin Ore",
-                "Silver Ore",
-                "Iron Ore",
-                "Gold Ore",
-                "Mithril Ore",
-                "Truesilver Ore",
-                "Thorium Ore",
-                "Dark Iron Ore",
-                "Elementium Ore",
-                -- Misc
-                "Incendite Ore",
-                "Lesser Bloodstone Ore"
-            };
-
-            return UH.UTILS:ValueInTable(itemsList, itemName);
-        end
-    },
-    ["Bar"] = {
-        label = "Bar",
-        checkItemBelongsToGroup = function(itemLink)
-            local itemName, _, itemQuality, _, _, itemType, itemSubType, _, _, _, _, classID = C_Item.GetItemInfo(
-                itemLink);
-
-            if (classID ~= 7) then
-                return false;
-            end
-
-            local itemsList = {
-                "Copper Bar",
-                "Tin Bar",
-                "Bronze Bar",
-                "Silver Bar",
-                "Iron Bar",
-                "Steel Bar",
-                "Gold Bar",
-                "Mithril Bar",
-                "Truesilver Bar",
-                "Thorium Bar",
-                "Dark Iron Bar",
-                "Enchanted Thorium Bar",
-                "Arcanite Bar",
-                "Elementium Bar"
-            };
-
-            return UH.UTILS:ValueInTable(itemsList, itemName);
-        end
-    },
-    ["Lockbox"] = {
-        label = "Lockbox",
-        checkItemBelongsToGroup = function(itemLink)
-            local itemName, _, itemQuality, _, _, itemType, itemSubType, _, _, _, _, classID = C_Item.GetItemInfo(
-                itemLink);
-
-            if (classID ~= 15) then
-                return false;
-            end
-
-            local itemsList = {
-                -- Junkbox
-                "Battered Junkbox",
-                "Worn Junkbox",
-                "Sturdy Junkbox",
-                "Heavy Junkbox",
-                -- Lockbox
-                "Ornate Bronze Lockbox",
-                "Heavy Bronze Lockbox",
-                "Iron Lockbox",
-                "Strong Iron Lockbox",
-                "Steel Lockbox",
-                "Reinforced Steel Lockbox",
-                "Mithril Lockbox",
-                "Thorium Lockbox",
-                "Elementium Lockbox"
-            };
-
-            return UH.UTILS:ValueInTable(itemsList, itemName);
-        end
-    },
-    ["Recipe"] = {
-        label = "Recipe",
-        checkItemBelongsToGroup = function(itemLink)
-            local itemName, _, itemQuality, _, _, itemType, itemSubType, _, _, _, _, classID = C_Item.GetItemInfo(
-                itemLink);
-
-            if (classID ~= 9) then
-                return false;
-            end
-
-            return true;
-        end
-    },
-    ["ZgCurrency"] = {
-        label = "ZG Currency",
-        checkItemBelongsToGroup = function(itemLink)
-            local itemName, _, itemQuality, _, _, itemType, itemSubType, _, _, _, _, classID = C_Item.GetItemInfo(
-                itemLink);
-
-            if (UH.UTILS:StringEndsWith(itemName, "Hakkari Bijou")) then
-                return true;
-            end
-
-            local itemsList = {
-                "Bloodscalp Coin",
-                "Gurubashi Coin",
-                "Hakkari Coin",
-                "Razzashi Coin",
-                "Sandfury Coin",
-                "Skullsplitter Coin",
-                "Vilebranch Coin",
-                "Witherbark Coin",
-                "Zulian Coin"
-            };
-
-            return UH.UTILS:ValueInTable(itemsList, itemName);
-        end
-    }
+      return UH.UTILS:ValueInTable(itemsList, itemName);
+    end
+  }
 };
 local temp = {
-    items = {},
-    itemsExclusion = {}
+  items = {},
+  itemsExclusion = {}
 };
 local id = nil;
 
 function Module:CreateNewPresetFrame()
-    local frameHeight = 350;
-    Module.NewPresetFrame = CreateFrame("Frame", UH.Helpers:ApplyPrefix("NewPresetFrame"), UIParent, "DialogBoxFrame");
-    Module.NewPresetFrame:SetPoint("CENTER", UIParent, "CENTER");
-    Module.NewPresetFrame:SetClampedToScreen(true);
-    Module.NewPresetFrame:SetSize(350, frameHeight);
-    Module.NewPresetFrame:Hide();
-    Module.NewPresetFrame:SetPropagateKeyboardInput(false);
-    Module.NewPresetFrame:EnableKeyboard(true);
-    Module.NewPresetFrame:SetScript("OnKeyDown", function(self, key)
-        if (key == "ESCAPE") then
-            Module:CloseNewPresetFrame();
-        elseif (self and type(self.PropagateKeyDown) == "function") then
-            self:PropagateKeyDown(key);
-        end
-    end);
-
-    UH.UTILS:AddMovableToFrame(Module.NewPresetFrame);
-
-    -- Hide original button
-    select(1, Module.NewPresetFrame:GetChildren()):Hide();
-
-    -- Text
-    Module.NewPresetFrame.TitleRef = Module.NewPresetFrame:CreateFontString(nil, "OVERLAY");
-    Module.NewPresetFrame.TitleRef:SetFontObject("GameFontHighlight");
-    Module.NewPresetFrame.TitleRef:SetSize(350, 20);
-    Module.NewPresetFrame.TitleRef:SetPoint("CENTER", Module.NewPresetFrame, "TOP", 0, -30);
-
-    local font, _, flags = Module.NewPresetFrame.TitleRef:GetFont();
-
-    if (font) then
-        Module.NewPresetFrame.TitleRef:SetFont(font, 16, flags);
+  local frameHeight = 350;
+  Module.NewPresetFrame = CreateFrame("Frame", UH.Helpers:ApplyPrefix("NewPresetFrame"), UIParent, "DialogBoxFrame");
+  Module.NewPresetFrame:SetPoint("CENTER", UIParent, "CENTER");
+  Module.NewPresetFrame:SetClampedToScreen(true);
+  Module.NewPresetFrame:SetSize(350, frameHeight);
+  Module.NewPresetFrame:Hide();
+  Module.NewPresetFrame:SetPropagateKeyboardInput(false);
+  Module.NewPresetFrame:EnableKeyboard(true);
+  Module.NewPresetFrame:SetScript("OnKeyDown", function(self, key)
+    if (key == "ESCAPE") then
+      Module:CloseNewPresetFrame();
+    elseif (self and type(self.PropagateKeyDown) == "function") then
+      self:PropagateKeyDown(key);
     end
+  end);
 
-    local y = -50;
+  UH.UTILS:AddMovableToFrame(Module.NewPresetFrame);
 
-    -- Name
-    local input, label = Module:CreateFormField("NewPresetInputName", "Name", Module.NewPresetFrame, y);
-    Module.NewPresetFrame.NameInput = input;
-    Module.NewPresetFrame.NameLabel = label;
+  -- Hide original button
+  select(1, Module.NewPresetFrame:GetChildren()):Hide();
 
-    -- To
-    y = y - 30;
-    input, label = Module:CreateFormField("NewPresetInputTo", "To", Module.NewPresetFrame, y);
-    Module.NewPresetFrame.ToInput = input;
-    Module.NewPresetFrame.ToLabel = label;
+  -- Text
+  Module.NewPresetFrame.TitleRef = Module.NewPresetFrame:CreateFontString(nil, "OVERLAY");
+  Module.NewPresetFrame.TitleRef:SetFontObject("GameFontHighlight");
+  Module.NewPresetFrame.TitleRef:SetSize(350, 20);
+  Module.NewPresetFrame.TitleRef:SetPoint("CENTER", Module.NewPresetFrame, "TOP", 0, -30);
 
-    -- Scroll Frame parent
-    y = y - 30;
-    Module.NewPresetFrame.ScrollFrameParent = CreateFrame("Frame", nil, Module.NewPresetFrame, "BackdropTemplate");
-    Module.NewPresetFrame.ScrollFrameParent:SetPoint("TOPLEFT", Module.NewPresetFrame, "TOPLEFT", 12, y);
-    Module.NewPresetFrame.ScrollFrameParent:SetPoint("BOTTOMRIGHT", Module.NewPresetFrame, "BOTTOMRIGHT", -12, 12 + 50);
-    Module.NewPresetFrame.ScrollFrameParent:SetBackdrop({
-        bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
-        edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-        tile = true,
-        tileSize = 32,
-        edgeSize = 16,
-        insets = {
-            left = 5,
-            right = 5,
-            top = 5,
-            bottom = 5
-        }
-    });
+  local font, _, flags = Module.NewPresetFrame.TitleRef:GetFont();
 
-    -- Creating tabs
-    local tabCustom, tabCustomButton = Module:CreateNewPresetTab("Custom", 1, "Custom", frameHeight, y);
-    local tabItemGroups, tabItemGroupsButton = Module:CreateNewPresetTab("ItemGroups", 2, "Item Groups", frameHeight, y,
-        tabCustomButton);
-    local tabExclusions, tabExclusionsButton = Module:CreateNewPresetTab("Exclusions", 3, "Exclusions", frameHeight, y,
-        tabItemGroupsButton);
+  if (font) then
+    Module.NewPresetFrame.TitleRef:SetFont(font, 16, flags);
+  end
 
-    -- Customizing tabCustom
-    Module:AddListToTab(tabCustom, "items");
+  local y = -50;
 
-    -- Customizing tabItemGroups
-    Module.NewPresetFrame.checkboxList = {};
+  -- Name
+  local input, label = Module:CreateFormField("NewPresetInputName", "Name", Module.NewPresetFrame, y);
+  Module.NewPresetFrame.NameInput = input;
+  Module.NewPresetFrame.NameLabel = label;
 
-    local height = 0;
-    local previousRef = nil;
+  -- To
+  y = y - 30;
+  input, label = Module:CreateFormField("NewPresetInputTo", "To", Module.NewPresetFrame, y);
+  Module.NewPresetFrame.ToInput = input;
+  Module.NewPresetFrame.ToLabel = label;
 
-    for key, value in UH.UTILS:OrderedPairs(Module.ItemGroupOptions) do
-        Module.NewPresetFrame.checkboxList[key] = Module:CreateItemGroupOption(key, value.label, previousRef,
-            tabItemGroups.ScrollChildFrame);
-        previousRef = Module.NewPresetFrame.checkboxList[key];
-        height = height + Module.NewPresetFrame.checkboxList[key].TextRef:GetStringHeight() + 15;
-    end
+  -- Scroll Frame parent
+  y = y - 30;
+  Module.NewPresetFrame.ScrollFrameParent = CreateFrame("Frame", nil, Module.NewPresetFrame, "BackdropTemplate");
+  Module.NewPresetFrame.ScrollFrameParent:SetPoint("TOPLEFT", Module.NewPresetFrame, "TOPLEFT", 12, y);
+  Module.NewPresetFrame.ScrollFrameParent:SetPoint("BOTTOMRIGHT", Module.NewPresetFrame, "BOTTOMRIGHT", -12, 12 + 50);
+  Module.NewPresetFrame.ScrollFrameParent:SetBackdrop({
+    bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+    edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+    tile = true,
+    tileSize = 32,
+    edgeSize = 16,
+    insets = {
+      left = 5,
+      right = 5,
+      top = 5,
+      bottom = 5
+    }
+  });
 
-    tabItemGroups.ScrollChildFrame:SetHeight(height);
+  -- Creating tabs
+  local tabCustom, tabCustomButton = Module:CreateNewPresetTab("Custom", 1, "Custom", frameHeight, y);
+  local tabItemGroups, tabItemGroupsButton = Module:CreateNewPresetTab("ItemGroups", 2, "Item Groups", frameHeight, y,
+    tabCustomButton);
+  local tabExclusions, tabExclusionsButton = Module:CreateNewPresetTab("Exclusions", 3, "Exclusions", frameHeight, y,
+    tabItemGroupsButton);
 
-    -- Customizing tabExclusions
-    Module:AddListToTab(tabExclusions, "itemsExclusion");
+  -- Customizing tabCustom
+  Module:AddListToTab(tabCustom, "items");
 
-    -- Configure the tabs with the parent frame
-    Module.NewPresetFrame.tabList = {
-        tabCustom,
-        tabItemGroups,
-        tabExclusions
-    };
-    Module.NewPresetFrame.ScrollFrameParent.Tabs = {};
-    tinsert(Module.NewPresetFrame.ScrollFrameParent.Tabs, tabCustomButton:GetID(), tabCustomButton);
-    tinsert(Module.NewPresetFrame.ScrollFrameParent.Tabs, tabItemGroupsButton:GetID(), tabItemGroupsButton);
-    tinsert(Module.NewPresetFrame.ScrollFrameParent.Tabs, tabExclusionsButton:GetID(), tabExclusionsButton);
-    Module.NewPresetFrame.ScrollFrameParent.numTabs = UH.UTILS:TableLength(Module.NewPresetFrame.ScrollFrameParent.Tabs);
+  -- Customizing tabItemGroups
+  Module.NewPresetFrame.checkboxList = {};
 
-    -- After creating all tabs
-    Module:OnClickTab(tabCustomButton);
+  local height = 0;
+  local previousRef = nil;
 
-    -- Footer
-    Module.NewPresetFrame.CloseButton = CreateFrame("Button", UH.Helpers:ApplyPrefix("NewPresetFrameCloseButton"),
-        Module.NewPresetFrame, "UIPanelButtonTemplate");
-    Module.NewPresetFrame.CloseButton:SetPoint("BOTTOMRIGHT", Module.NewPresetFrame, "BOTTOMRIGHT", -10, 10);
-    Module.NewPresetFrame.CloseButton:SetWidth(80);
-    Module.NewPresetFrame.CloseButton:SetText("Close");
-    Module.NewPresetFrame.CloseButton:HookScript("OnClick", function()
-        Module:CloseNewPresetFrame();
-    end);
+  for key, value in UH.UTILS:OrderedPairs(Module.ItemGroupOptions) do
+    Module.NewPresetFrame.checkboxList[key] = Module:CreateItemGroupOption(key, value.label, previousRef,
+      tabItemGroups.ScrollChildFrame);
+    previousRef = Module.NewPresetFrame.checkboxList[key];
+    height = height + Module.NewPresetFrame.checkboxList[key].TextRef:GetStringHeight() + 15;
+  end
 
-    Module.NewPresetFrame.SaveButton = CreateFrame("Button", UH.Helpers:ApplyPrefix("NewPresetFrameSaveButton"),
-        Module.NewPresetFrame, "UIPanelButtonTemplate");
-    Module.NewPresetFrame.SaveButton:SetPoint("RIGHT", Module.NewPresetFrame.CloseButton, "LEFT", -5, 0);
-    Module.NewPresetFrame.SaveButton:SetWidth(80);
-    Module.NewPresetFrame.SaveButton:SetText("Save");
-    Module.NewPresetFrame.SaveButton:HookScript("OnClick", function()
-        Module:SavePreset();
-    end);
+  tabItemGroups.ScrollChildFrame:SetHeight(height);
 
-    Module:UpdateNewPresetItemRows(Module.NewPresetFrame.tabList[1], "items");
-    Module:UpdateNewPresetItemRows(Module.NewPresetFrame.tabList[3], "itemsExclusion");
+  -- Customizing tabExclusions
+  Module:AddListToTab(tabExclusions, "itemsExclusion");
+
+  -- Configure the tabs with the parent frame
+  Module.NewPresetFrame.tabList = {
+    tabCustom,
+    tabItemGroups,
+    tabExclusions
+  };
+  Module.NewPresetFrame.ScrollFrameParent.Tabs = {};
+  tinsert(Module.NewPresetFrame.ScrollFrameParent.Tabs, tabCustomButton:GetID(), tabCustomButton);
+  tinsert(Module.NewPresetFrame.ScrollFrameParent.Tabs, tabItemGroupsButton:GetID(), tabItemGroupsButton);
+  tinsert(Module.NewPresetFrame.ScrollFrameParent.Tabs, tabExclusionsButton:GetID(), tabExclusionsButton);
+  Module.NewPresetFrame.ScrollFrameParent.numTabs = UH.UTILS:TableLength(Module.NewPresetFrame.ScrollFrameParent.Tabs);
+
+  -- After creating all tabs
+  Module:OnClickTab(tabCustomButton);
+
+  -- Footer
+  Module.NewPresetFrame.CloseButton = CreateFrame("Button", UH.Helpers:ApplyPrefix("NewPresetFrameCloseButton"),
+    Module.NewPresetFrame, "UIPanelButtonTemplate");
+  Module.NewPresetFrame.CloseButton:SetPoint("BOTTOMRIGHT", Module.NewPresetFrame, "BOTTOMRIGHT", -10, 10);
+  Module.NewPresetFrame.CloseButton:SetWidth(80);
+  Module.NewPresetFrame.CloseButton:SetText("Close");
+  Module.NewPresetFrame.CloseButton:HookScript("OnClick", function()
+    Module:CloseNewPresetFrame();
+  end);
+
+  Module.NewPresetFrame.SaveButton = CreateFrame("Button", UH.Helpers:ApplyPrefix("NewPresetFrameSaveButton"),
+    Module.NewPresetFrame, "UIPanelButtonTemplate");
+  Module.NewPresetFrame.SaveButton:SetPoint("RIGHT", Module.NewPresetFrame.CloseButton, "LEFT", -5, 0);
+  Module.NewPresetFrame.SaveButton:SetWidth(80);
+  Module.NewPresetFrame.SaveButton:SetText("Save");
+  Module.NewPresetFrame.SaveButton:HookScript("OnClick", function()
+    Module:SavePreset();
+  end);
+
+  Module:UpdateNewPresetItemRows(Module.NewPresetFrame.tabList[1], "items");
+  Module:UpdateNewPresetItemRows(Module.NewPresetFrame.tabList[3], "itemsExclusion");
 end
 
 function Module:CreateItemGroupOption(key, label, previousRef, parent)
-    local checkbox = UH.UTILS:CreateCheckbox(UH.Helpers:ApplyPrefix("Checkbox" .. key), parent, label, false,
-        function()
-        end);
+  local checkbox = UH.UTILS:CreateCheckbox(UH.Helpers:ApplyPrefix("Checkbox" .. key), parent, label, false,
+    function()
+    end);
 
-    if (previousRef) then
-        checkbox:SetPoint("TOPLEFT", previousRef, "TOPLEFT", 0, -26);
-    else
-        checkbox:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, -2);
-    end
+  if (previousRef) then
+    checkbox:SetPoint("TOPLEFT", previousRef, "TOPLEFT", 0, -26);
+  else
+    checkbox:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, -2);
+  end
 
-    return checkbox;
+  return checkbox;
 end
 
 function Module:CreateNewPresetTab(name, index, label, frameHeight, y, previousTabButton)
-    local tab = CreateFrame("Button", UH.Helpers:ApplyPrefix("NewPresetTab" .. name),
-        Module.NewPresetFrame.ScrollFrameParent, "CharacterFrameTabButtonTemplate");
-    tab:SetID(index);
-    tab:SetText(label);
-    tab:SetScript("OnClick", function(self)
-        Module:OnClickTab(self);
-    end);
+  local tab = CreateFrame("Button", UH.Helpers:ApplyPrefix("NewPresetTab" .. name),
+    Module.NewPresetFrame.ScrollFrameParent, "CharacterFrameTabButtonTemplate");
+  tab:SetID(index);
+  tab:SetText(label);
+  tab:SetScript("OnClick", function(self)
+    Module:OnClickTab(self);
+  end);
 
-    if (index == 1) then
-        tab:SetPoint("TOPLEFT", Module.NewPresetFrame.ScrollFrameParent, "BOTTOMLEFT", 5, 3);
-    else
-        tab:SetPoint("TOPLEFT", previousTabButton, "TOPRIGHT", -14, 0);
+  if (index == 1) then
+    tab:SetPoint("TOPLEFT", Module.NewPresetFrame.ScrollFrameParent, "BOTTOMLEFT", 5, 3);
+  else
+    tab:SetPoint("TOPLEFT", previousTabButton, "TOPRIGHT", -14, 0);
+  end
+
+  -- Scroll Frame
+  local scrollFrame = CreateFrame("ScrollFrame", nil, Module.NewPresetFrame.ScrollFrameParent,
+    "UIPanelScrollFrameTemplate");
+  scrollFrame:SetPoint("TOPLEFT", Module.NewPresetFrame.ScrollFrameParent, "TOPLEFT", 6, -4);
+  scrollFrame:SetPoint("BOTTOMRIGHT", Module.NewPresetFrame.ScrollFrameParent, "BOTTOMRIGHT", -6, 6);
+  scrollFrame:Hide();
+
+  -- Events
+  scrollFrame:SetScript("OnMouseWheel", function(self, delta)
+    local newValue = self:GetVerticalScroll() - (delta * 20);
+
+    if (newValue < 0) then
+      newValue = 0;
+    elseif (newValue > self:GetVerticalScrollRange()) then
+      newValue = self:GetVerticalScrollRange();
     end
 
-    -- Scroll Frame
-    local scrollFrame = CreateFrame("ScrollFrame", nil, Module.NewPresetFrame.ScrollFrameParent,
-        "UIPanelScrollFrameTemplate");
-    scrollFrame:SetPoint("TOPLEFT", Module.NewPresetFrame.ScrollFrameParent, "TOPLEFT", 6, -4);
-    scrollFrame:SetPoint("BOTTOMRIGHT", Module.NewPresetFrame.ScrollFrameParent, "BOTTOMRIGHT", -6, 6);
-    scrollFrame:Hide();
+    self:SetVerticalScroll(newValue);
+  end);
 
-    -- Events
-    scrollFrame:SetScript("OnMouseWheel", function(self, delta)
-        local newValue = self:GetVerticalScroll() - (delta * 20);
+  -- Scroll Child Frame
+  scrollFrame.ScrollChildFrame = CreateFrame("Frame", nil, scrollFrame);
+  scrollFrame.ScrollChildFrame:SetSize(300, frameHeight - y);
+  scrollFrame:SetScrollChild(scrollFrame.ScrollChildFrame);
+  scrollFrame.ScrollChildFrame.ItemRows = {};
 
-        if (newValue < 0) then
-            newValue = 0;
-        elseif (newValue > self:GetVerticalScrollRange()) then
-            newValue = self:GetVerticalScrollRange();
-        end
+  -- Scrollbar
+  scrollFrame.ScrollBar:ClearAllPoints();
+  scrollFrame.ScrollBar:SetPoint("TOPLEFT", scrollFrame, "TOPRIGHT", -6, -20);
+  scrollFrame.ScrollBar:SetPoint("BOTTOMRIGHT", scrollFrame, "BOTTOMRIGHT", -7, 16);
 
-        self:SetVerticalScroll(newValue);
-    end);
+  tab.scrollFrame = scrollFrame;
 
-    -- Scroll Child Frame
-    scrollFrame.ScrollChildFrame = CreateFrame("Frame", nil, scrollFrame);
-    scrollFrame.ScrollChildFrame:SetSize(300, frameHeight - y);
-    scrollFrame:SetScrollChild(scrollFrame.ScrollChildFrame);
-    scrollFrame.ScrollChildFrame.ItemRows = {};
-
-    -- Scrollbar
-    scrollFrame.ScrollBar:ClearAllPoints();
-    scrollFrame.ScrollBar:SetPoint("TOPLEFT", scrollFrame, "TOPRIGHT", -6, -20);
-    scrollFrame.ScrollBar:SetPoint("BOTTOMRIGHT", scrollFrame, "BOTTOMRIGHT", -7, 16);
-
-    tab.scrollFrame = scrollFrame;
-
-    return scrollFrame, tab;
+  return scrollFrame, tab;
 end
 
 function Module:UpdateNewPresetItemRows(tab, tempKey)
-    local height = 5;
-    local rowHeight = 30;
-    local rows = temp[tempKey];
-    local scrollChildFrame = tab.ScrollChildFrame;
+  local height = 5;
+  local rowHeight = 30;
+  local rows = temp[tempKey];
+  local scrollChildFrame = tab.ScrollChildFrame;
 
-    -- Hide all rows until reprocessed
-    for key, value in pairs(scrollChildFrame.ItemRows) do
-        if (value) then
-            value:Hide();
-        end
+  -- Hide all rows until reprocessed
+  for key, value in pairs(scrollChildFrame.ItemRows) do
+    if (value) then
+      value:Hide();
     end
+  end
 
-    for i, itemLink in ipairs(rows) do
-        local itemId = UH.UTILS:GetItemIDFromLink(itemLink);
+  for i, itemLink in ipairs(rows) do
+    local itemId = UH.UTILS:GetItemIDFromLink(itemLink);
 
-        if (itemId) then
-            local rowRef = scrollChildFrame.ItemRows[itemId];
-            local textRef;
+    if (itemId) then
+      local rowRef = scrollChildFrame.ItemRows[itemId];
+      local textRef;
 
-            if (rowRef) then
-                textRef = rowRef.TextRef;
-            else
-                rowRef = CreateFrame("Frame", nil, scrollChildFrame, "BackdropTemplate")
-                rowRef:SetSize(308, rowHeight);
+      if (rowRef) then
+        textRef = rowRef.TextRef;
+      else
+        rowRef = CreateFrame("Frame", nil, scrollChildFrame, "BackdropTemplate")
+        rowRef:SetSize(308, rowHeight);
 
-                -- Button on the left
-                rowRef.RemoveButtonRef = CreateFrame("Button", nil, rowRef, "UIPanelButtonTemplate")
-                rowRef.RemoveButtonRef:SetSize(30, rowHeight - 5);
-                rowRef.RemoveButtonRef:SetPoint("LEFT", rowRef, "LEFT", 5, 0);
-                rowRef.RemoveButtonRef:SetText("X");
-                rowRef.RemoveButtonRef:SetScript("OnClick", function()
-                    local newTempItems = {};
+        -- Button on the left
+        rowRef.RemoveButtonRef = CreateFrame("Button", nil, rowRef, "UIPanelButtonTemplate")
+        rowRef.RemoveButtonRef:SetSize(30, rowHeight - 5);
+        rowRef.RemoveButtonRef:SetPoint("LEFT", rowRef, "LEFT", 5, 0);
+        rowRef.RemoveButtonRef:SetText("X");
+        rowRef.RemoveButtonRef:SetScript("OnClick", function()
+          local newTempItems = {};
 
-                    for key, value in pairs(temp[tempKey]) do
-                        if (value ~= itemLink) then
-                            tinsert(newTempItems, value);
-                        end
-                    end
-
-                    temp[tempKey] = newTempItems;
-
-                    Module:UpdateNewPresetItemRows(tab, tempKey);
-                end);
-
-                -- Text on the right
-                textRef = rowRef:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-                textRef:SetPoint("LEFT", rowRef.RemoveButtonRef, "RIGHT", 6, 0);
-                rowRef.TextRef = textRef;
-
-                scrollChildFrame.ItemRows[itemId] = rowRef;
+          for key, value in pairs(temp[tempKey]) do
+            if (value ~= itemLink) then
+              tinsert(newTempItems, value);
             end
+          end
 
-            textRef:SetText(itemLink);
-            rowRef:Show();
-            rowRef:SetPoint("TOP", 0, -((i - 1) * rowHeight));
-            height = height + rowHeight;
-        end
+          temp[tempKey] = newTempItems;
+
+          Module:UpdateNewPresetItemRows(tab, tempKey);
+        end);
+
+        -- Text on the right
+        textRef = rowRef:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        textRef:SetPoint("LEFT", rowRef.RemoveButtonRef, "RIGHT", 6, 0);
+        rowRef.TextRef = textRef;
+
+        scrollChildFrame.ItemRows[itemId] = rowRef;
+      end
+
+      textRef:SetText(itemLink);
+      rowRef:Show();
+      rowRef:SetPoint("TOP", 0, -((i - 1) * rowHeight));
+      height = height + rowHeight;
     end
+  end
 
-    if (UH.UTILS:TableLength(temp[tempKey]) == 0) then
-        tab.EmptyText:Show();
-    else
-        tab.EmptyText:Hide();
-    end
+  if (UH.UTILS:TableLength(temp[tempKey]) == 0) then
+    tab.EmptyText:Show();
+  else
+    tab.EmptyText:Hide();
+  end
 
-    tab.ScrollChildFrame:SetHeight(height);
+  tab.ScrollChildFrame:SetHeight(height);
 end
 
 function Module:AddListToTab(tab, tempKey)
-    tab.EmptyText = tab:CreateFontString(nil, "OVERLAY");
-    tab.EmptyText:SetFontObject("GameFontHighlight");
-    tab.EmptyText:SetSize(200, 40);
-    tab.EmptyText:SetPoint("CENTER", tab, "CENTER", 0, 0);
-    tab.EmptyText:SetText("Drop items in this area do add to the list");
-    tab.EmptyText:Hide();
+  tab.EmptyText = tab:CreateFontString(nil, "OVERLAY");
+  tab.EmptyText:SetFontObject("GameFontHighlight");
+  tab.EmptyText:SetSize(200, 40);
+  tab.EmptyText:SetPoint("CENTER", tab, "CENTER", 0, 0);
+  tab.EmptyText:SetText("Drop items in this area do add to the list");
+  tab.EmptyText:Hide();
 
-    tab:SetScript("OnMouseUp", function()
-        local _, _, itemLink = GetCursorInfo();
+  tab:SetScript("OnMouseUp", function()
+    local _, _, itemLink = GetCursorInfo();
 
-        if (itemLink and not UH.UTILS:ValueInTable(temp[tempKey], itemLink)) then
-            tinsert(temp[tempKey], itemLink);
-            Module:UpdateNewPresetItemRows(tab, tempKey);
-            C_Timer.After(0.01, function()
-                tab:SetVerticalScroll(tab:GetVerticalScrollRange());
-            end);
-        end
-
-        ClearCursor();
-    end);
-end
-
-function Module:OnClickTab(tabButton)
-    PanelTemplates_SetTab(tabButton:GetParent(), tabButton:GetID());
-
-    for key, value in pairs(Module.NewPresetFrame.tabList) do
-        value:Hide();
-    end
-
-    tabButton.scrollFrame:Show();
-end
-
-function Module:UpdateWithRegister(register, registerID)
-    Module.NewPresetFrame.TitleRef:SetText(register and "Edit preset" or "New preset");
-
-    if (not register) then
-        register = {};
-        id = nil;
-    else
-        id = registerID;
-    end
-
-    Module.NewPresetFrame.NameInput:SetText(register.name or "");
-    Module.NewPresetFrame.ToInput:SetText(register.to or "");
-    temp.items = UH.UTILS:ShallowCopyTable(register.custom or {});
-    temp.itemsExclusion = UH.UTILS:ShallowCopyTable(register.exclusion or {});
-
-    -- Clear all previous checked
-    for key, value in pairs(Module.ItemGroupOptions) do
-        Module.NewPresetFrame.checkboxList[key]:SetChecked(false);
-    end
-
-    -- Check if there is itemGroups in the register
-    if (register.itemGroups) then
-        for key, value in pairs(register.itemGroups) do
-            Module.NewPresetFrame.checkboxList[key]:SetChecked(value or false);
-        end
-    end
-
-    -- Reset to the first tab
-    Module:OnClickTab(Module.NewPresetFrame.ScrollFrameParent.Tabs[1]);
-    Module:UpdateNewPresetItemRows(Module.NewPresetFrame.tabList[1], "items");
-    Module:UpdateNewPresetItemRows(Module.NewPresetFrame.tabList[3], "itemsExclusion");
-end
-
-function Module:OpenNewPresetFrame(register, registerID)
-    if (not Module.NewPresetFrame) then
-        Module:CreateNewPresetFrame();
-    end
-
-    Module:UpdateWithRegister(register, registerID);
-    Module.NewPresetFrame:Show();
-end
-
-function Module:CloseNewPresetFrame()
-    if (not Module.NewPresetFrame) then
-        return;
-    end
-
-    Module:UpdateWithRegister({});
-    Module.NewPresetFrame:Hide();
-end
-
-function Module:ToggleNewPresetFrame()
-    if (not Module.NewPresetFrame) then
-        Module:CreateNewPresetFrame();
-    end
-
-    if (Module.NewPresetFrame:IsShown()) then
-        Module:CloseNewPresetFrame();
-    else
-        Module:OpenNewPresetFrame();
-    end
-end
-
-function Module:CreateFormField(name, labelText, parent, y)
-    local label = parent:CreateFontString(nil, "OVERLAY");
-    label:SetFontObject("GameFontHighlight");
-    label:SetSize(80, 20);
-    label:SetPoint("TOPLEFT", parent, "TOPLEFT", 20, y - 6);
-    label:SetText(labelText);
-    label:SetJustifyH("LEFT");
-
-    local input = CreateFrame("EditBox", UH.Helpers:ApplyPrefix(name), parent, "InputBoxTemplate");
-    input:SetSize(180, 30);
-    input:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -20, y);
-    input:SetAutoFocus(false);
-    input:SetText("");
-    input:SetCursorPosition(0);
-
-    return input, label;
-end
-
-function Module:SavePreset()
-    local preset = {
-        name = Module.NewPresetFrame.NameInput:GetText(),
-        to = Module.NewPresetFrame.ToInput:GetText(),
-        custom = temp.items,
-        itemGroups = {},
-        exclusion = temp.itemsExclusion
-    };
-
-    if (not preset.name or #preset.name < 1) then
-        Module.NewPresetFrame.NameInput:SetFocus();
-        UH.Helpers:ShowNotification("Field Name is required");
-        return;
-    end
-
-    if (not preset.to or #preset.to < 1) then
-        Module.NewPresetFrame.ToInput:SetFocus();
-        UH.Helpers:ShowNotification("Field To is required");
-        return;
-    end
-
-    local atLeastOneCheck = false;
-
-    for key, value in pairs(Module.ItemGroupOptions) do
-        preset.itemGroups[key] = Module.NewPresetFrame.checkboxList[key]:GetChecked();
-
-        if (preset.itemGroups[key]) then
-            atLeastOneCheck = true;
-        end
-    end
-
-    if (UH.UTILS:TableLength(preset.custom) == 0 and (not atLeastOneCheck)) then
-        UH.Helpers:ShowNotification("At least one rule is required");
-        -- Warn that at least one config needs to be selected for a preset to be valid
-        return;
-    end
-
-    -- Save
-    if (id) then
-        UH.db.global.presets[id] = preset;
-    else
-        tinsert(UH.db.global.presets, preset);
-    end
-
-    Module:CloseNewPresetFrame();
-end
-
-function Module:GetLoadPresetGeneratorFunction()
-    local refUH = UH;
-
-    return function(owner, rootDescription)
-        -- DevTools_Dump(refUH.db);
-        rootDescription:CreateTitle(refUH.UTILS:TableLength(refUH.db.global.presets) == 0 and "No presets available" or
-            "Presets available");
-
-        for key, value in pairs(refUH.db.global.presets) do
-            rootDescription:CreateButton(value.name, function(data)
-                Module:ExecutePreset(value);
-            end);
-        end
-    end
-end
-
-function Module:GetManagePresetGeneratorFunction()
-    local refUH = UH;
-
-    return function(owner, rootDescription)
-        rootDescription:CreateTitle(refUH.UTILS:TableLength(refUH.db.global.presets) == 0 and "No presets available" or
-            "Presets available");
-
-        for i, value in pairs(refUH.db.global.presets) do
-            local button = rootDescription:CreateButton(value.name);
-
-            button:CreateButton("Edit", function()
-                Module:OpenNewPresetFrame(value, i);
-            end);
-
-            button:CreateButton("Remove", function()
-                local newPresets = {};
-
-                for j, value in pairs(refUH.db.global.presets) do
-                    if (i ~= j) then
-                        tinsert(newPresets, value);
-                    end
-                end
-
-                refUH.db.global.presets = newPresets;
-            end);
-        end
-    end
-end
-
-function Module:ExecutePreset(preset)
-    MailFrameTab_OnClick(_G["MailFrameTab2"]);
-    Module:ClearAllMailSlots();
-
-    SendMailNameEditBox:SetText(preset.to);
-    SendMailSubjectEditBox:SetText("UH - Generated by preset [" .. preset.name .. "]");
-    local itemGroupFunctions = {};
-
-    for key, value in pairs((preset.itemGroups or {})) do
-        if (value) then
-            tinsert(itemGroupFunctions, Module.ItemGroupOptions[key].checkItemBelongsToGroup);
-        end
-    end
-
-    for bag = 0, 4 do -- Loops through bags 0 (backpack) to 4 (bags)
-        for slot = 1, C_Container.GetContainerNumSlots(bag) do
-            local itemLink = C_Container.GetContainerItemLink(bag, slot);
-
-            if (itemLink) then
-                local isSoulbound = C_Item.IsBound(ItemLocation:CreateFromBagAndSlot(bag, slot));
-                local isConjured = UH.UTILS:IsItemConjured(itemLink);
-
-                if (not isSoulbound and not isConjured and Module:ItemShouldBeAdded(itemLink, itemGroupFunctions, preset.custom, preset.exclusion)) then
-                    Module:AddItemToNextEmptyMailSlot(bag, slot);
-                end
-            end
-        end
+    if (itemLink and not UH.UTILS:ValueInTable(temp[tempKey], itemLink)) then
+      tinsert(temp[tempKey], itemLink);
+      Module:UpdateNewPresetItemRows(tab, tempKey);
+      C_Timer.After(0.01, function()
+        tab:SetVerticalScroll(tab:GetVerticalScrollRange());
+      end);
     end
 
     ClearCursor();
+  end);
+end
+
+function Module:OnClickTab(tabButton)
+  PanelTemplates_SetTab(tabButton:GetParent(), tabButton:GetID());
+
+  for key, value in pairs(Module.NewPresetFrame.tabList) do
+    value:Hide();
+  end
+
+  tabButton.scrollFrame:Show();
+end
+
+function Module:UpdateWithRegister(register, registerID)
+  Module.NewPresetFrame.TitleRef:SetText(register and "Edit preset" or "New preset");
+
+  if (not register) then
+    register = {};
+    id = nil;
+  else
+    id = registerID;
+  end
+
+  Module.NewPresetFrame.NameInput:SetText(register.name or "");
+  Module.NewPresetFrame.ToInput:SetText(register.to or "");
+  temp.items = UH.UTILS:ShallowCopyTable(register.custom or {});
+  temp.itemsExclusion = UH.UTILS:ShallowCopyTable(register.exclusion or {});
+
+  -- Clear all previous checked
+  for key, value in pairs(Module.ItemGroupOptions) do
+    Module.NewPresetFrame.checkboxList[key]:SetChecked(false);
+  end
+
+  -- Check if there is itemGroups in the register
+  if (register.itemGroups) then
+    for key, value in pairs(register.itemGroups) do
+      Module.NewPresetFrame.checkboxList[key]:SetChecked(value or false);
+    end
+  end
+
+  -- Reset to the first tab
+  Module:OnClickTab(Module.NewPresetFrame.ScrollFrameParent.Tabs[1]);
+  Module:UpdateNewPresetItemRows(Module.NewPresetFrame.tabList[1], "items");
+  Module:UpdateNewPresetItemRows(Module.NewPresetFrame.tabList[3], "itemsExclusion");
+end
+
+function Module:OpenNewPresetFrame(register, registerID)
+  if (not Module.NewPresetFrame) then
+    Module:CreateNewPresetFrame();
+  end
+
+  Module:UpdateWithRegister(register, registerID);
+  Module.NewPresetFrame:Show();
+end
+
+function Module:CloseNewPresetFrame()
+  if (not Module.NewPresetFrame) then
+    return;
+  end
+
+  Module:UpdateWithRegister({});
+  Module.NewPresetFrame:Hide();
+end
+
+function Module:ToggleNewPresetFrame()
+  if (not Module.NewPresetFrame) then
+    Module:CreateNewPresetFrame();
+  end
+
+  if (Module.NewPresetFrame:IsShown()) then
+    Module:CloseNewPresetFrame();
+  else
+    Module:OpenNewPresetFrame();
+  end
+end
+
+function Module:CreateFormField(name, labelText, parent, y)
+  local label = parent:CreateFontString(nil, "OVERLAY");
+  label:SetFontObject("GameFontHighlight");
+  label:SetSize(80, 20);
+  label:SetPoint("TOPLEFT", parent, "TOPLEFT", 20, y - 6);
+  label:SetText(labelText);
+  label:SetJustifyH("LEFT");
+
+  local input = CreateFrame("EditBox", UH.Helpers:ApplyPrefix(name), parent, "InputBoxTemplate");
+  input:SetSize(180, 30);
+  input:SetPoint("TOPRIGHT", parent, "TOPRIGHT", -20, y);
+  input:SetAutoFocus(false);
+  input:SetText("");
+  input:SetCursorPosition(0);
+
+  return input, label;
+end
+
+function Module:SavePreset()
+  local preset = {
+    name = Module.NewPresetFrame.NameInput:GetText(),
+    to = Module.NewPresetFrame.ToInput:GetText(),
+    custom = temp.items,
+    itemGroups = {},
+    exclusion = temp.itemsExclusion
+  };
+
+  if (not preset.name or #preset.name < 1) then
+    Module.NewPresetFrame.NameInput:SetFocus();
+    UH.Helpers:ShowNotification("Field Name is required");
+    return;
+  end
+
+  if (not preset.to or #preset.to < 1) then
+    Module.NewPresetFrame.ToInput:SetFocus();
+    UH.Helpers:ShowNotification("Field To is required");
+    return;
+  end
+
+  local atLeastOneCheck = false;
+
+  for key, value in pairs(Module.ItemGroupOptions) do
+    preset.itemGroups[key] = Module.NewPresetFrame.checkboxList[key]:GetChecked();
+
+    if (preset.itemGroups[key]) then
+      atLeastOneCheck = true;
+    end
+  end
+
+  if (UH.UTILS:TableLength(preset.custom) == 0 and (not atLeastOneCheck)) then
+    UH.Helpers:ShowNotification("At least one rule is required");
+    -- Warn that at least one config needs to be selected for a preset to be valid
+    return;
+  end
+
+  -- Save
+  if (id) then
+    UH.db.global.presets[id] = preset;
+  else
+    tinsert(UH.db.global.presets, preset);
+  end
+
+  Module:CloseNewPresetFrame();
+end
+
+function Module:GetLoadPresetGeneratorFunction()
+  local refUH = UH;
+
+  return function(owner, rootDescription)
+    rootDescription:CreateTitle(refUH.UTILS:TableLength(refUH.db.global.presets) == 0 and "No presets available" or
+      "Presets available");
+
+    for key, value in pairs(refUH.db.global.presets) do
+      rootDescription:CreateButton(value.name, function(data)
+        Module:ExecutePreset(value);
+      end);
+    end
+  end
+end
+
+function Module:GetManagePresetGeneratorFunction()
+  local refUH = UH;
+
+  return function(owner, rootDescription)
+    rootDescription:CreateTitle(refUH.UTILS:TableLength(refUH.db.global.presets) == 0 and "No presets available" or
+      "Presets available");
+
+    for i, value in pairs(refUH.db.global.presets) do
+      local button = rootDescription:CreateButton(value.name);
+
+      button:CreateButton("Edit", function()
+        Module:OpenNewPresetFrame(value, i);
+      end);
+
+      button:CreateButton("Remove", function()
+        local newPresets = {};
+
+        for j, value in pairs(refUH.db.global.presets) do
+          if (i ~= j) then
+            tinsert(newPresets, value);
+          end
+        end
+
+        refUH.db.global.presets = newPresets;
+      end);
+    end
+  end
+end
+
+function Module:ExecutePreset(preset)
+  MailFrameTab_OnClick(_G["MailFrameTab2"]);
+  Module:ClearAllMailSlots();
+
+  SendMailNameEditBox:SetText(preset.to);
+  SendMailSubjectEditBox:SetText("UH - Generated by preset [" .. preset.name .. "]");
+  local itemGroupFunctions = {};
+
+  for key, value in pairs((preset.itemGroups or {})) do
+    if (value) then
+      tinsert(itemGroupFunctions, Module.ItemGroupOptions[key].checkItemBelongsToGroup);
+    end
+  end
+
+  for bag = 0, 4 do   -- Loops through bags 0 (backpack) to 4 (bags)
+    for slot = 1, C_Container.GetContainerNumSlots(bag) do
+      local itemLink = C_Container.GetContainerItemLink(bag, slot);
+
+      if (itemLink) then
+        local isSoulbound = C_Item.IsBound(ItemLocation:CreateFromBagAndSlot(bag, slot));
+        local isConjured = UH.UTILS:IsItemConjured(itemLink);
+
+        if (not isSoulbound and not isConjured and Module:ItemShouldBeAdded(itemLink, itemGroupFunctions, preset.custom, preset.exclusion)) then
+          Module:AddItemToNextEmptyMailSlot(bag, slot);
+        end
+      end
+    end
+  end
+
+  ClearCursor();
 end
 
 function Module:ItemLinkIsMemberOfGroup(itemLink, itemGroupFunctions)
-    for key, fn in pairs(itemGroupFunctions) do
-        if (fn(itemLink)) then
-            return true;
-        end
+  for key, fn in pairs(itemGroupFunctions) do
+    if (fn(itemLink)) then
+      return true;
     end
+  end
 
-    return false;
+  return false;
 end
 
 function Module:ItemShouldBeAdded(itemLink, itemGroupFunctions, customItems, excludedItems)
-    return not Module:ItemIsMemberOfList(itemLink, excludedItems) and
-        (Module:ItemLinkIsMemberOfGroup(itemLink, itemGroupFunctions) or Module:ItemIsMemberOfList(itemLink, customItems));
+  return not Module:ItemIsMemberOfList(itemLink, excludedItems) and
+      (Module:ItemLinkIsMemberOfGroup(itemLink, itemGroupFunctions) or Module:ItemIsMemberOfList(itemLink, customItems));
 end
 
 function Module:ItemIsMemberOfList(itemLink, list)
-    if (not list or #list == 0) then
-        return false;
-    end
-
-    for key, customItemLink in pairs(list) do
-        if (itemLink == customItemLink) then
-            return true;
-        end
-    end
-
+  if (not list or #list == 0) then
     return false;
+  end
+
+  for key, customItemLink in pairs(list) do
+    if (itemLink == customItemLink) then
+      return true;
+    end
+  end
+
+  return false;
 end
 
 function Module:AddItemToNextEmptyMailSlot(bag, slot)
-    for mailSlot = 1, ATTACHMENTS_MAX_SEND do
-        if (not HasSendMailItem(mailSlot)) then
-            C_Container.PickupContainerItem(bag, slot);
-            ClickSendMailItemButton(mailSlot);
+  for mailSlot = 1, ATTACHMENTS_MAX_SEND do
+    if (not HasSendMailItem(mailSlot)) then
+      C_Container.PickupContainerItem(bag, slot);
+      ClickSendMailItemButton(mailSlot);
 
-            return true;
-        end
+      return true;
     end
+  end
 
-    return false;
+  return false;
 end
 
 function Module:ClearAllMailSlots()
-    for i = 1, ATTACHMENTS_MAX_SEND do
-        ClickSendMailItemButton(i, true);
-    end
+  for i = 1, ATTACHMENTS_MAX_SEND do
+    ClickSendMailItemButton(i, true);
+  end
 end
 
 function Module:OnEnable()
-    EventRegistry:RegisterFrameEventAndCallback("PLAYER_INTERACTION_MANAGER_FRAME_HIDE", function(_, _, type)
-        -- 17 = MailInfo
-        if (type == 17) then
-            Module:CloseNewPresetFrame();
-        end
-    end);
+  EventRegistry:RegisterFrameEventAndCallback("PLAYER_INTERACTION_MANAGER_FRAME_HIDE", function(_, _, type)
+    -- 17 = MailInfo
+    if (type == 17) then
+      Module:CloseNewPresetFrame();
+    end
+  end);
 end

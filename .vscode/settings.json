@@ -64,7 +64,18 @@
     "OpenBag",
     "OpenAllBags",
     "IsBagOpen",
-    "ToggleAllBags"
+    "ToggleAllBags",
+    "ItemRefTooltip",
+    "DevTool",
+    "class",
+    "StackSplitFrame",
+    "ScrollUtil",
+    "CreateDataProvider",
+    "CreateScrollBoxListLinearView",
+    "ChatEdit_InsertLink",
+    "ChatFrameUtil",
+    "Add",
+    "PLAYER"
   ],
   "Lua.runtime.version": "Lua 5.1",
   "Lua.runtime.builtin": {
