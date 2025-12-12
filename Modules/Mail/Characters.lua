@@ -40,14 +40,15 @@ function Module:GetAccountCharactersGeneratorFunction()
         rootDescription:CreateTitle("• " .. UH.Enums.CHARACTER_GROUP_TEXT[groupID]);
 
         for _, character in pairs(group) do
-          local characterButton = rootDescription:CreateButton(character.name, function()
-            Module:StartMail(character.name);
-          end, character.name ~= UnitName("player"));
+          local characterButton = rootDescription:CreateButton(
+            character.name,
+            function() Module:StartMail(character.name) end
+          );
           characterButton:AddInitializer(function(button, description, menu)
             local color = UH.Helpers:GetRGBFromClassName(character.className);
             button.fontString:SetTextColor(color.r, color.g, color.b);
-          end)
-          DevTool:AddData({ characterButton, characterButton.fontString });
+          end);
+          characterButton:SetEnabled(character.name ~= UnitName("player"));
         end
 
         rootDescription:CreateDivider();
