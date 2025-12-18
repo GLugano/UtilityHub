@@ -650,10 +650,22 @@ function addonTable.GenerateOptions()
           desc =
           "Enable tracking and listing of all character cooldowns (with the addon active)",
           order = GetNextOrder("cooldowns"),
+          width = "full",
           get = function() return UH.db.global.options.cooldowns end,
           set = function(_, val)
             UH.db.global.options.cooldowns = val;
             UH.Events:TriggerEvent("OPTIONS_CHANGED", "cooldowns", val);
+          end,
+        },
+        cooldownsPlaySound = {
+          type = "toggle",
+          name = "Play sound when cooldown is ready",
+          order = GetNextOrder("cooldowns"),
+          width = "full",
+          get = function() return UH.db.global.options.cooldownPlaySound end,
+          set = function(_, val)
+            UH.db.global.options.cooldownPlaySound = val;
+            UH.Events:TriggerEvent("OPTIONS_CHANGED", "cooldownPlaySound", val);
           end,
         },
       },

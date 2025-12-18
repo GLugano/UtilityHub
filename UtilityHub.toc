@@ -1,7 +1,7 @@
 ## Interface: 11508
 ## Notes: Add some functionalities to the game, like mail buttons and trade info window.
 ## Title: UtilityHub
-## IconTexture: Interface\Icons\Achievement_Dungeon_UlduarRaid_Archway_01
+## IconTexture: BlizzardInterfaceArt\Interface\ICONS\INV_Enchant_FormulaSuperior_01
 ## Author: Cacetinho-Nightslayer 
 ## Version: 0.10
 ## SavedVariables: UHdatabase, MDHdatabase

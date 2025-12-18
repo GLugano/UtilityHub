@@ -396,7 +396,11 @@ function Module:HideFrame()
 end
 
 function Module:ToggleFrame()
-  if (Module.Frame and Module.Frame:IsShown()) then
+  if (not Module.Frame) then
+    return;
+  end
+
+  if (Module.Frame:IsShown()) then
     Module:HideFrame();
   else
     Module:ShowFrame();

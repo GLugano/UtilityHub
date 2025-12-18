@@ -185,11 +185,12 @@ function Module:CreateMailIconButtons()
     end);
     MailFrame.OpenConfigEmailButton:SetScript("OnClick", function(self)
       PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON);
-    end);
 
-    MailFrame.OpenConfigEmailButton:SetScript("OnClick", function(self)
-      PlaySound(SOUNDKIT.U_CHAT_SCROLL_BUTTON);
-      UH.AceConfigDialog:Open(ADDON_NAME .. "_Mail");
+      if (UH.AceConfigDialog.OpenFrames[ADDON_NAME .. "_Mail"]) then
+        UH.AceConfigDialog:Close(ADDON_NAME .. "_Mail");
+      else
+        UH.AceConfigDialog:Open(ADDON_NAME .. "_Mail");
+      end
     end);
 
     return MailFrame.OpenConfigEmailButton;

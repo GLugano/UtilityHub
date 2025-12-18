@@ -36,11 +36,15 @@ UH.lastCountReadyCooldowns = nil;
 
 -- Defaults
 UH.defaultOptions = {
+  -- Tooltip
   simpleStatsTooltip = true,
+  -- AutoBuy
   autoBuy = false,
   autoBuyList = {},
+  -- Cooldowns
   cooldowns = false,
   cooldowsList = {},
+  cooldownPlaySound = false,
 };
 
 -- Enums
@@ -231,7 +235,11 @@ function UH:CreateMinimapIcon()
         if (IsShiftKeyDown()) then
           -- UH.Events:TriggerEvent("TOGGLE_DATA_FRAME");
         else
-          Settings.OpenToCategory(ADDON_NAME);
+          if (SettingsPanel:IsShown()) then
+            SettingsPanel:Hide();
+          else
+            Settings.OpenToCategory(ADDON_NAME);
+          end
         end
       elseif (button == "RightButton") then
         if (IsShiftKeyDown()) then
@@ -242,7 +250,8 @@ function UH:CreateMinimapIcon()
       end
     end,
     OnTooltipShow = function(self)
-      self:AddDoubleLine(ADDON_NAME, C_AddOns.GetAddOnMetadata(ADDON_NAME, "Version"));
+      self:AddDoubleLine(ADDON_NAME,
+        UH.Helpers:AddColorToString("Version " .. C_AddOns.GetAddOnMetadata(ADDON_NAME, "Version"), "FFB1B1B1"));
 
       if (UH.db.global.options.cooldowns) then
         local textCount;
@@ -260,9 +269,9 @@ function UH:CreateMinimapIcon()
       end
 
       self:AddLine(" ");
-      self:AddLine(UH.Helpers:AddColorToString("LeftClick", "FF9CD6DE") ..
+      self:AddLine(UH.Helpers:AddColorToString("[Left Click]", "FF9CD6DE") ..
         " " .. UH.Helpers:AddColorToString("to open the options", "FFDDFF00"));
-      self:AddLine(UH.Helpers:AddColorToString("RightClick", "FF9CD6DE") ..
+      self:AddLine(UH.Helpers:AddColorToString("[Right Click]", "FF9CD6DE") ..
         " " .. UH.Helpers:AddColorToString("to open/close cooldowns", "FFDDFF00"));
     end
   });
@@ -378,6 +387,10 @@ end);
 
 UH.Events:RegisterCallback("COUNT_READY_COOLDOWNS_CHANGED", function(_, count, first)
   UH:UpdateBrokerIcon(count > 0);
+
+  if (not first and count > 0 and UH.db.global.options.cooldownPlaySound) then
+    PlaySoundFile("Interface\\AddOns\\" .. ADDON_NAME .. "\\Assets\\Sounds\\Cooldown_Ready.ogg", "Master");
+  end
 end);
 
 ---@class Character
