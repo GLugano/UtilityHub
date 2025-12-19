@@ -416,7 +416,7 @@ end
 
 -- Events
 local function skillUpdated(...)
-  if (GetNumSkillLines() > 0) then
+  if (UH.addonReady and GetNumSkillLines() > 0) then
     UH.Events:TriggerEvent("CHARACTER_UPDATE_NEEDED");
   end
 end

@@ -236,7 +236,7 @@ function UH:CreateMinimapIcon()
           -- UH.Events:TriggerEvent("TOGGLE_DATA_FRAME");
         else
           if (SettingsPanel:IsShown()) then
-            SettingsPanel:Close();
+            HideUIPanel(SettingsPanel);
           else
             Settings.OpenToCategory(ADDON_NAME);
           end
@@ -308,8 +308,6 @@ function UH:OnInitialize()
   if (UH.db.global.options.cooldowns) then
     UH:EnableModule("Cooldowns");
   end
-
-  UH.addonReady = true;
 end
 
 function UH:UpdateCharacter()
@@ -391,6 +389,18 @@ UH.Events:RegisterCallback("COUNT_READY_COOLDOWNS_CHANGED", function(_, count, f
   if (not first and count > 0 and UH.db.global.options.cooldownPlaySound) then
     PlaySoundFile("Interface\\AddOns\\" .. ADDON_NAME .. "\\Assets\\Sounds\\Cooldown_Ready.ogg", "Master");
   end
+end);
+
+EventRegistry:RegisterFrameEventAndCallback("PLAYER_ENTERING_WORLD", function(_, isLogon, isReload)
+  if (isReload) then
+    UH.addonReady = true;
+    UH.Events:TriggerEvent("CHARACTER_UPDATE_NEEDED");
+  end
+end);
+
+EventRegistry:RegisterFrameEventAndCallback("ZONE_CHANGED_NEW_AREA", function()
+  UH.addonReady = true;
+  UH.Events:TriggerEvent("CHARACTER_UPDATE_NEEDED");
 end);
 
 ---@class Character
