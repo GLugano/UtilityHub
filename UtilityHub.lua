@@ -236,7 +236,7 @@ function UH:CreateMinimapIcon()
           -- UH.Events:TriggerEvent("TOGGLE_DATA_FRAME");
         else
           if (SettingsPanel:IsShown()) then
-            SettingsPanel:Hide();
+            SettingsPanel:Close();
           else
             Settings.OpenToCategory(ADDON_NAME);
           end

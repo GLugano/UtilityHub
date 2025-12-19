@@ -36,7 +36,6 @@ function addonTable.GenerateOptions()
       type = "group",
       order = GetNextOrder("default"),
       args = {
-        addonSeparator = GenerateSeparator("default"),
         addonDescription1 = {
           type = "description",
           name =
@@ -659,7 +658,7 @@ function addonTable.GenerateOptions()
         },
         cooldownsPlaySound = {
           type = "toggle",
-          name = "Play sound when cooldown is ready",
+          name = "Play sound when a cooldown is ready",
           order = GetNextOrder("cooldowns"),
           width = "full",
           get = function() return UH.db.global.options.cooldownPlaySound end,
