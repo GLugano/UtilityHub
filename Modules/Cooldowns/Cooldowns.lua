@@ -22,9 +22,9 @@ Module.frame = nil;
 
 UH.cooldowns = {
   ---@type Cooldown[]
-  Tailoring = {},
+  Tailoring      = {},
   ---@type Cooldown[]
-  Alchemy = {
+  Alchemy        = {
     { name = "Transmutes", spellList = {} },
   },
   ---@type Cooldown[]
@@ -121,14 +121,20 @@ Module.CollapsedGroups = {};
 
 ---@return table<string, CurrentCooldown[]>
 function Module:UpdateCurrentCharacterCooldowns()
-  local function GetCurrentCooldownFromSpellID(spellID, name)
-    local spi = C_Spell.GetSpellCooldown(spellID);
+  function GetSpellIDFromCooldown(cooldown)
+    if (cooldown.spellList and #cooldown.spellList > 0) then
+      for _, spell in pairs(cooldown.spellList) do
+        if (C_SpellBook.IsSpellKnown(spell.spellID)) then
+          return spell.spellID;
+        end
+      end
+    else
+      if (C_SpellBook.IsSpellKnown(cooldown.spellID)) then
+        return cooldown.spellID;
+      end
+    end
 
-    return {
-      name = name,
-      maxCooldown = spi.duration,
-      start = spi.startTime,
-    };
+    return nil;
   end
 
   ---@type table<string, CurrentCooldown[]>
@@ -141,31 +147,29 @@ function Module:UpdateCurrentCharacterCooldowns()
 
     if (cdGroup) then
       for _, cooldown in pairs(cdGroup) do
-        if (cooldown.spellID) then
-          if (C_SpellBook.IsSpellKnown(cooldown.spellID) or (cooldown.spellList and #cooldown.spellList > 0)) then
-            local ic;
+        if (cooldown.spellID or (cooldown.spellList and #cooldown.spellList > 0)) then
+          local spellID = GetSpellIDFromCooldown(cooldown);
 
-            if (cooldown.spellList and #cooldown.spellList > 0) then
-              ic = cooldown.spellList[0];
-            else
-              ic = cooldown;
-            end
+          if (spellID) then
+            local spi = C_Spell.GetSpellCooldown(spellID);
 
-            if (ic) then
-              InsertInCooldownTable(cooldowns, skillName, GetCurrentCooldownFromSpellID(ic.spellID, ic.name));
-            end
-          elseif (cooldown.itemID) then
-            if (C_Item.GetItemCount(cooldown.itemID, true) > 0) then
-              local startTime, duration, enabled = C_Container.GetItemCooldown(cooldown.itemID);
-
-              ---@type CurrentCooldown
-              local currentCooldown = {
+            if (spi) then
+              InsertInCooldownTable(cooldowns, skillName, {
                 name = cooldown.name,
-                maxCooldown = duration,
-                start = startTime,
-              };
-              InsertInCooldownTable(cooldowns, skillName, currentCooldown);
+                maxCooldown = spi.duration,
+                start = spi.startTime,
+              });
             end
+          end
+        elseif (cooldown.itemID) then
+          if (C_Item.GetItemCount(cooldown.itemID, true) > 0) then
+            local startTime, duration, enabled = C_Container.GetItemCooldown(cooldown.itemID);
+
+            InsertInCooldownTable(cooldowns, skillName, {
+              name = cooldown.name,
+              maxCooldown = duration,
+              start = startTime,
+            });
           end
         end
       end
@@ -334,7 +338,7 @@ function Module:UpdateCooldownsFrameList()
       end,
       InsertGroup = function(self, group)
         for index, loopGroup in ipairs(self) do
-          if (loopGroup.name == group.name) then
+          if (loopGroup.group == group.group) then
             return loopGroup;
           end
         end
@@ -364,7 +368,7 @@ function Module:UpdateCooldownsFrameList()
       for _, cooldown in pairs(cooldownGroup) do
         local group = groups:InsertGroup({ group = cooldown.name, cooldowns = {} });
         tinsert(group.cooldowns, {
-          groupName = character.cooldownGroup,
+          groupName = cooldown.name,
           cooldown = cooldown.name,
           character = character.name,
           start = cooldown.start,

@@ -14,23 +14,20 @@ UH.prefix = "UH";
 UH.IsClassic = (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC) and (interfaceVersion < 20000);
 UH.IsTBC = (interfaceVersion >= 20505) and (interfaceVersion < 30000);
 
-local optionsMetatable = {};
-function optionsMetatable:GetCategoryID(key)
-  for _, value in ipairs(self) do
-    if (value.key == key) then
-      return value.categoryID;
-    end
-  end
-
-  return nil;
-end;
-
-local mt = {
-  __index = optionsMetatable
-};
-
 UH.addonReady = false;
-UH.Options = setmetatable({}, mt);
+UH.Options = setmetatable({}, {
+  __index = {
+    GetCategoryID = function(self, key)
+      for _, value in ipairs(self) do
+        if (value.key == key) then
+          return value.categoryID;
+        end
+      end
+
+      return nil;
+    end,
+  }
+});
 UH.tempPreset = {};
 UH.lastCountReadyCooldowns = nil;
 
@@ -62,8 +59,8 @@ UH.Enums.CHARACTER_GROUP_TEXT = {
   [UH.Enums.CHARACTER_GROUP.CD] = "CD",
 };
 UH.Enums.MINIMAP_ICON = {
-  NORMAL = "BlizzardInterfaceArt\\Interface\\ICONS\\INV_Enchant_FormulaSuperior_01.blp",
-  NOTIFICATION = "BlizzardInterfaceArt\\Interface\\ICONS\\INV_Enchant_FormulaEpic_01.blp",
+  NORMAL = "Interface\\ICONS\\INV_Enchant_FormulaSuperior_01.blp",
+  NOTIFICATION = "Interface\\ICONS\\INV_Enchant_FormulaEpic_01.blp",
 };
 
 function UH:InitVariables()
@@ -341,7 +338,7 @@ function UH:UpdateCharacter()
   UH.Events:TriggerEvent("CHARACTER_UPDATED");
 end
 
-function UH:UpdateBrokerIcon(hasNotification)
+function UH:UpdateMinimapIcon(hasNotification)
   local data = LDB:GetDataObjectByName(ADDON_NAME);
   data.icon = hasNotification and UH.Enums.MINIMAP_ICON.NOTIFICATION or UH.Enums.MINIMAP_ICON.NORMAL;
   UH.LDBIcon:Refresh(ADDON_NAME);
@@ -384,7 +381,7 @@ UH.Events:RegisterCallback("OPTIONS_CHANGED", function(_, name)
 end);
 
 UH.Events:RegisterCallback("COUNT_READY_COOLDOWNS_CHANGED", function(_, count, first)
-  UH:UpdateBrokerIcon(count > 0);
+  UH:UpdateMinimapIcon(count > 0);
 
   if (not first and count > 0 and UH.db.global.options.cooldownPlaySound) then
     PlaySoundFile("Interface\\AddOns\\" .. ADDON_NAME .. "\\Assets\\Sounds\\Cooldown_Ready.ogg", "Master");

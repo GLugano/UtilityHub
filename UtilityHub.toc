@@ -1,9 +1,9 @@
 ## Interface: 11508
 ## Notes: Add some functionalities to the game, like mail buttons and trade info window.
 ## Title: UtilityHub
-## IconTexture: BlizzardInterfaceArt\Interface\ICONS\INV_Enchant_FormulaSuperior_01
+## IconTexture: Interface\ICONS\INV_Enchant_FormulaSuperior_01
 ## Author: Cacetinho-Nightslayer 
-## Version: 0.10
+## Version: 0.11
 ## SavedVariables: UHdatabase, MDHdatabase
 
 # XMLs
