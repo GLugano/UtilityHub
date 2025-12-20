@@ -398,7 +398,32 @@ Module.ItemGroupOptions = {
 
       return UH.UTILS:ValueInTable(itemsList, itemName);
     end
-  }
+  },
+  ["PotionsMana"] = {
+    label = "Potions: Mana",
+    checkItemBelongsToGroup = function(itemLink)
+      local itemName, _, _, _, _, _, _, _, _, _, _, classID = C_Item.GetItemInfo(
+        itemLink);
+
+      return classID == 0 and string.find(itemName, "Mana Potion");
+    end
+  },
+  ["PotionsHealth"] = {
+    label = "Potions: Health",
+    checkItemBelongsToGroup = function(itemLink)
+      local itemName, _, _, _, _, _, _, _, _, _, _, classID = C_Item.GetItemInfo(
+        itemLink);
+
+      return classID == 0 and string.find(itemName, "Healing Potion");
+    end
+  },
+  ["Scrolls"] = {
+    label = "Scrolls",
+    checkItemBelongsToGroup = function(itemLink)
+      local itemName, _, _, _, _, _, _, _, _, _, _, classID = C_Item.GetItemInfo(itemLink);
+      return classID == 0 and string.find(itemName, "Scroll of ");
+    end
+  },
 };
 local temp = {
   items = {},

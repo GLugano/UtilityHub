@@ -59,7 +59,7 @@ UH.Enums.CHARACTER_GROUP_TEXT = {
   [UH.Enums.CHARACTER_GROUP.CD] = "CD",
 };
 UH.Enums.MINIMAP_ICON = {
-  NORMAL = "Interface\\ICONS\\INV_Enchant_FormulaSuperior_01.blp",
+  NORMAL = "Interface\\Addons\\UtilityHub\\Assets\\Icons\\addon.blp",
   NOTIFICATION = "Interface\\ICONS\\INV_Enchant_FormulaEpic_01.blp",
 };
 

@@ -137,6 +137,33 @@ function Module:UpdateCurrentCharacterCooldowns()
     return nil;
   end
 
+  function GetNormalizedCooldownValues(start, duration)
+    -- Source: https://wago.io/ku2ECkSTv/3
+    -- The good function doesnt exist in classic
+    local normalizedData = {};
+    local now = GetTime();
+    start = start or 0;
+    duration = duration or 0;
+
+    if (duration > 604800) then
+      start = 0;
+      duration = 0;
+    end
+    if (start > now + 2147483.648) then
+      start = start - 4294967.296;
+    end
+
+    local dt = now - start;
+    local serverStart = GetServerTime() - dt;
+    local serverExpiration = serverStart + duration;
+
+    normalizedData.start = start;
+    normalizedData.duration = duration;
+    normalizedData.expiration = serverExpiration;
+
+    return normalizedData;
+  end
+
   ---@type table<string, CurrentCooldown[]>
   local cooldowns = {};
 
@@ -152,23 +179,24 @@ function Module:UpdateCurrentCharacterCooldowns()
 
           if (spellID) then
             local spi = C_Spell.GetSpellCooldown(spellID);
+            local normalized = GetNormalizedCooldownValues(spi.startTime, spi.duration);
 
             if (spi) then
               InsertInCooldownTable(cooldowns, skillName, {
                 name = cooldown.name,
-                maxCooldown = spi.duration,
-                start = spi.startTime,
+                maxCooldown = normalized.duration,
+                start = normalized.start,
               });
             end
           end
         elseif (cooldown.itemID) then
           if (C_Item.GetItemCount(cooldown.itemID, true) > 0) then
             local startTime, duration, enabled = C_Container.GetItemCooldown(cooldown.itemID);
-
+            local normalized = GetNormalizedCooldownValues(startTime, duration);
             InsertInCooldownTable(cooldowns, skillName, {
               name = cooldown.name,
-              maxCooldown = duration,
-              start = startTime,
+              maxCooldown = normalized.duration,
+              start = normalized.start,
             });
           end
         end
