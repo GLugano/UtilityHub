@@ -93,7 +93,9 @@
     "TextureKitConstants",
     "AddonCompartmentFrame",
     "READY",
-    "SettingsPanel"
+    "SettingsPanel",
+    "MERCHANT_HIGH_PRICE_COST",
+    "StaticPopup1Button1"
   ],
   "Lua.runtime.version": "Lua 5.1",
   "Lua.runtime.builtin": {

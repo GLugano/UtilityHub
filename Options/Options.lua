@@ -46,7 +46,7 @@ function addonTable.GenerateOptions()
         spacer1 = GenerateSpacer("default"),
         addonDescription2 = {
           type = "description",
-          name = "For the addon options, check the options on the left.",
+          name = "For the addon options, check the options in the left.",
           order = GetNextOrder("default"),
           fontSize = "large",
         },
@@ -140,7 +140,11 @@ function addonTable.GenerateOptions()
             CreateNewRow = function(self, text, OnSuccess, OnError)
               UH.Helpers:AsyncGetItemInfo(text, function(itemLink)
                 if (itemLink) then
-                  OnSuccess(itemLink);
+                  OnSuccess(itemLink, function(error)
+                    if (error == "ROW_ALREADY_EXISTS") then
+                      UH.Helpers:ShowNotification("Item already added to the list");
+                    end
+                  end);
                 else
                   OnError();
                 end
@@ -301,6 +305,19 @@ function addonTable.GenerateOptions()
 
                   GameTooltip:Hide();
                 end,
+                CreateNewRow = function(self, text, OnSuccess, OnError)
+                  UH.Helpers:AsyncGetItemInfo(text, function(itemLink)
+                    if (itemLink) then
+                      OnSuccess(itemLink, function(error)
+                        if (error == "ROW_ALREADY_EXISTS") then
+                          UH.Helpers:ShowNotification("Item already added to the list");
+                        end
+                      end);
+                    else
+                      OnError();
+                    end
+                  end);
+                end,
                 CustomizeRowElement = function(self, frame, rowData, helpers)
                   frame:SetText(rowData);
                   frame:GetFontString():SetTextColor(1, 1, 1);
@@ -323,7 +340,7 @@ function addonTable.GenerateOptions()
           order = GetNextOrder("mail"),
           inline = true,
           args = {
-            presetManualInclusionsList = {
+            presetManualExclusionsList = {
               type = "input",
               dialogControl = "ItemList",
               name = "PresetManualExclusionsList",
@@ -356,7 +373,11 @@ function addonTable.GenerateOptions()
                 CreateNewRow = function(self, text, OnSuccess, OnError)
                   UH.Helpers:AsyncGetItemInfo(text, function(itemLink)
                     if (itemLink) then
-                      OnSuccess(itemLink);
+                      OnSuccess(itemLink, function(error)
+                        if (error == "ROW_ALREADY_EXISTS") then
+                          UH.Helpers:ShowNotification("Item already added to the list");
+                        end
+                      end);
                     else
                       OnError();
                     end

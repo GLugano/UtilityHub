@@ -11,7 +11,7 @@ local AceGUI = LibStub("AceGUI-3.0");
 ---@field GetRowIndex? fun(self, list: table[], rowData): number | nil
 ---@field OnEnterRow? fun(self, frame, rowData)
 ---@field OnLeaveRow? fun(self, frame)
----@field CreateNewRow? fun(self, text: string, OnSuccess: fun(rowData), OnError: fun())
+---@field CreateNewRow? fun(self, text: string, OnSuccess: fun(rowData, errorCb), OnError: fun())
 ---@field CustomizeRowElement? fun(self, frame, rowData, helpers): CustomizeRowElementReturnFlags | nil
 
 ---@class CustomizeRowElementReturnFlags
@@ -282,9 +282,15 @@ local function Constructor()
     frame.EditBoxAdd:Disable();
     frame.ButtonAdd:Disable();
 
-    function OnSuccess(row)
-      tinsert(widget.items, row);
-      widget:FireValueChanged();
+    function OnSuccess(row, errorCb)
+      DevTools_Dump(errorCb);
+      if (not widget:GetRowIndex(widget.items, row)) then
+        tinsert(widget.items, row);
+        widget:FireValueChanged();
+      elseif (errorCb) then
+        errorCb("ROW_ALREADY_EXISTS");
+      end
+
       frame.EditBoxAdd:SetText("");
       frame.EditBoxAdd:Enable();
       frame.ButtonAdd:Enable();
