@@ -90,6 +90,11 @@ UH.Enums.REPUTATION_STANDING = {
   REVERED = 7,
   EXALTED = 8,
 };
+UH.Enums.PERIODICITY = {
+  DAILY = 1,
+  WEEKLY = 2,
+  MONTHLY = 3,
+};
 
 function UH:InitVariables()
   local version = C_AddOns.GetAddOnMetadata(ADDON_NAME, "Version");
@@ -112,6 +117,7 @@ function UH:InitVariables()
       ---@type Character[]
       characters = {},
     },
+    char = {},
   }, "Default");
   self.db.global.oldVersion = version;
 
@@ -302,6 +308,8 @@ function UH:CreateMinimapIcon()
         " " .. UH.Helpers:AddColorToString("to open the options", "FFDDFF00"));
       self:AddLine(UH.Helpers:AddColorToString("[Right Click]", "FF9CD6DE") ..
         " " .. UH.Helpers:AddColorToString("to open/close cooldowns", "FFDDFF00"));
+      self:AddLine(UH.Helpers:AddColorToString("[Shift + Right Click]", "FF9CD6DE") ..
+        " " .. UH.Helpers:AddColorToString("to open/close daily quests", "FFDDFF00"));
     end
   });
   UH.LDBIcon:Register(ADDON_NAME, LDB:GetDataObjectByName(ADDON_NAME), UH.db.global.minimapIcon);
@@ -413,6 +421,14 @@ UH.Events:RegisterCallback("OPTIONS_CHANGED", function(_, name)
       UH:EnableModule("Cooldowns");
     else
       UH:DisableModule("Cooldowns");
+    end
+  end
+
+  if (name == "dailyQuests") then
+    if (UH.db.global.options.cooldowns) then
+      UH:EnableModule("DailyQuests");
+    else
+      UH:DisableModule("DailyQuests");
     end
   end
 end);

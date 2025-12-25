@@ -10,6 +10,7 @@ local Module = UH:NewModule(moduleName);
 ---@field questID number
 ---@field questName string
 ---@field type number
+---@field periodicity number
 ---@field expansion number
 ---@field GetRequirements? fun(): QuestRequirements | nil
 
@@ -22,6 +23,7 @@ local Module = UH:NewModule(moduleName);
 ---@field factionID number
 ---@field standingID number
 
+Module.CollapsedGroups = {};
 Module.QuestDB = setmetatable(
   {
     ---@type Quest[]
@@ -33,48 +35,56 @@ Module.QuestDB = setmetatable(
         questName = "Wanted: Arcatraz Sentinels",
         type = UH.Enums.QUEST_TYPE.DUNGEON_NORMAL,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
       {
         questID = 11371,
         questName = "Wanted: Coilfang Myrmidons",
         type = UH.Enums.QUEST_TYPE.DUNGEON_NORMAL,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
       {
         questID = 11376,
         questName = "Wanted: Malicious Instructors",
         type = UH.Enums.QUEST_TYPE.DUNGEON_NORMAL,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
       {
         questID = 11383,
         questName = "Wanted: Rift Lords",
         type = UH.Enums.QUEST_TYPE.DUNGEON_NORMAL,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
       {
         questID = 11364,
         questName = "Wanted: Shattered Hand Centurions",
         type = UH.Enums.QUEST_TYPE.DUNGEON_NORMAL,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
       {
         questID = 11500,
         questName = "Wanted: Sisters of Torment",
         type = UH.Enums.QUEST_TYPE.DUNGEON_NORMAL,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
       {
         questID = 11385,
         questName = "Wanted: Sunseeker Channelers",
         type = UH.Enums.QUEST_TYPE.DUNGEON_NORMAL,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
       {
         questID = 11387,
         questName = "Wanted: Tempest-Forge Destroyers",
         type = UH.Enums.QUEST_TYPE.DUNGEON_NORMAL,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
 
       -- Daily - Heroic
@@ -83,96 +93,112 @@ Module.QuestDB = setmetatable(
         questName = "Wanted: A Black Stalker Egg",
         type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
       {
         questID = 11384,
         questName = "Wanted: A Warp Splinter Clipping",
         type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
       {
         questID = 11382,
         questName = "Wanted: Aeonus's Hourglass",
         type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
       {
         questID = 11363,
         questName = "Wanted: Bladefist's Seal",
         type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
       {
         questID = 11362,
         questName = "Wanted: Keli'dan's Feathered Stave",
         type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
       {
         questID = 11375,
         questName = "Wanted: Murmur's Whisper",
         type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
       {
         questID = 11354,
         questName = "Wanted: Nazan's Riding Crop",
         type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
       {
         questID = 11386,
         questName = "Wanted: Pathaleon's Projector",
         type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
       {
         questID = 11373,
         questName = "Wanted: Shaffar's Wondrous Pendant",
         type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
       {
         questID = 11378,
         questName = "Wanted: The Epoch Hunter's Head",
         type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
       {
         questID = 11374,
         questName = "Wanted: The Exarch's Soul Gem",
         type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
       {
         questID = 11372,
         questName = "Wanted: The Headfeathers of Ikiss",
         type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
       {
         questID = 11368,
         questName = "Wanted: The Heart of Quagmirran",
         type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
       {
         questID = 11388,
         questName = "Wanted: The Scroll of Skyriss",
         type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
       {
         questID = 11499,
         questName = "Wanted: The Signet Ring of Prince Kael'thas",
         type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
       {
         questID = 11370,
         questName = "Wanted: The Warlord's Treatise",
         type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
 
       -- Professions - Cooking
@@ -181,24 +207,28 @@ Module.QuestDB = setmetatable(
         questName = "Manalicious",
         type = UH.Enums.QUEST_TYPE.PROFESSION_COOKING,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
       {
         questID = 11377,
         questName = "Revenge is Tasty",
         type = UH.Enums.QUEST_TYPE.PROFESSION_COOKING,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
       {
         questID = 11381,
         questName = "Soup for the Soul",
         type = UH.Enums.QUEST_TYPE.PROFESSION_COOKING,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
       {
         questID = 11379,
         questName = "Super Hot Stew",
         type = UH.Enums.QUEST_TYPE.PROFESSION_COOKING,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
 
       -- Professions - Fishing
@@ -207,50 +237,65 @@ Module.QuestDB = setmetatable(
         questName = "Bait Bandits",
         type = UH.Enums.QUEST_TYPE.PROFESSION_COOKING,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
       {
         questID = 11665,
         questName = "Crocolisks in the City",
         type = UH.Enums.QUEST_TYPE.PROFESSION_COOKING,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
       {
         questID = 11669,
         questName = "Felblood Fillet",
         type = UH.Enums.QUEST_TYPE.PROFESSION_COOKING,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
       {
         questID = 11668,
         questName = "Shrimpin' Ain't Easy",
         type = UH.Enums.QUEST_TYPE.PROFESSION_COOKING,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
       {
         questID = 11667,
         questName = "The One That Got Away",
         type = UH.Enums.QUEST_TYPE.PROFESSION_COOKING,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
 
       -- Consortium
       {
-        questID = 9886,
+        questID = 9884,
         questName = "Membership Benefits",
         type = UH.Enums.QUEST_TYPE.CONSORTIUM,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.MONTHLY,
+      },
+      {
+        questID = 9885,
+        questName = "Membership Benefits",
+        type = UH.Enums.QUEST_TYPE.CONSORTIUM,
+        expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.MONTHLY,
       },
       {
         questID = 9886,
         questName = "Membership Benefits",
         type = UH.Enums.QUEST_TYPE.CONSORTIUM,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.MONTHLY,
       },
       {
-        questID = 9886,
+        questID = 9887,
         questName = "Membership Benefits",
         type = UH.Enums.QUEST_TYPE.CONSORTIUM,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.MONTHLY,
       },
 
       -- Sha'tari Skyguard
@@ -259,12 +304,14 @@ Module.QuestDB = setmetatable(
         questName = "Fires Over Skettis",
         type = UH.Enums.QUEST_TYPE.SHATARI_SKYGUARD,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
       {
         questID = 11085,
         questName = "Escape from Skettis",
         type = UH.Enums.QUEST_TYPE.SHATARI_SKYGUARD,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
       },
 
       -- Ogri'la
@@ -273,6 +320,7 @@ Module.QuestDB = setmetatable(
         questName = "The Relic's Emanation",
         type = UH.Enums.QUEST_TYPE.OGRILA,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
         GetRequirements = function()
           return { questID = 11058 };
         end
@@ -282,6 +330,7 @@ Module.QuestDB = setmetatable(
         questName = "Banish More Demons",
         type = UH.Enums.QUEST_TYPE.OGRILA,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
         GetRequirements = function()
           return { questID = 11026 };
         end
@@ -293,6 +342,7 @@ Module.QuestDB = setmetatable(
         questName = "Bomb Them Again!",
         type = UH.Enums.QUEST_TYPE.OGRILA,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
         GetRequirements = function()
           return { questID = 11010 };
         end
@@ -302,6 +352,7 @@ Module.QuestDB = setmetatable(
         questName = "Wrangle More Aether Rays!",
         type = UH.Enums.QUEST_TYPE.OGRILA,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
         GetRequirements = function()
           return { questID = 11065 };
         end
@@ -313,6 +364,7 @@ Module.QuestDB = setmetatable(
         questName = "A Slow Death",
         type = UH.Enums.QUEST_TYPE.NETHERWING,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
         GetRequirements = function()
           return {
             factions = {
@@ -326,6 +378,7 @@ Module.QuestDB = setmetatable(
         questName = "Netherwing Crystals",
         type = UH.Enums.QUEST_TYPE.NETHERWING,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
         GetRequirements = function()
           return {
             factions = {
@@ -339,6 +392,7 @@ Module.QuestDB = setmetatable(
         questName = "The Not-So-Friendly Skies...",
         type = UH.Enums.QUEST_TYPE.NETHERWING,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
         GetRequirements = function()
           return {
             factions = {
@@ -352,6 +406,7 @@ Module.QuestDB = setmetatable(
         questName = "Nethercite Ore",
         type = UH.Enums.QUEST_TYPE.NETHERWING,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
         GetRequirements = function()
           return {
             profession = "Mining:350",
@@ -366,6 +421,7 @@ Module.QuestDB = setmetatable(
         questName = "Netherdust Pollen",
         type = UH.Enums.QUEST_TYPE.NETHERWING,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
         GetRequirements = function()
           return {
             profession = "Herbalism:350",
@@ -380,6 +436,7 @@ Module.QuestDB = setmetatable(
         questName = "Nethermine Flayer Hide",
         type = UH.Enums.QUEST_TYPE.NETHERWING,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
         GetRequirements = function()
           return {
             profession = "Skinning:350",
@@ -396,6 +453,7 @@ Module.QuestDB = setmetatable(
         questName = "Picking Up The Pieces...",
         type = UH.Enums.QUEST_TYPE.NETHERWING,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
         GetRequirements = function()
           return {
             factions = {
@@ -409,6 +467,7 @@ Module.QuestDB = setmetatable(
         questName = "Dragons are the Least of Our Problems",
         type = UH.Enums.QUEST_TYPE.NETHERWING,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
         GetRequirements = function()
           return {
             factions = {
@@ -422,6 +481,7 @@ Module.QuestDB = setmetatable(
         questName = "The Booterang: A Cure For The Common Worthless Peon",
         type = UH.Enums.QUEST_TYPE.NETHERWING,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
         GetRequirements = function()
           return {
             factions = {
@@ -437,6 +497,7 @@ Module.QuestDB = setmetatable(
         questName = "Disrupting the Twilight Portal",
         type = UH.Enums.QUEST_TYPE.NETHERWING,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
         GetRequirements = function()
           return {
             factions = {
@@ -452,6 +513,7 @@ Module.QuestDB = setmetatable(
         questName = "The Deadliest Trap Ever Laid", -- Aldor
         type = UH.Enums.QUEST_TYPE.NETHERWING,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
         GetRequirements = function()
           return {
             factions = {
@@ -467,6 +529,7 @@ Module.QuestDB = setmetatable(
         questName = "The Deadliest Trap Ever Laid", -- Scryer
         type = UH.Enums.QUEST_TYPE.NETHERWING,
         expansion = UH.Enums.EXPANSIONS.TBC,
+        periodicity = UH.Enums.PERIODICITY.DAILY,
         GetRequirements = function()
           return {
             factions = {
@@ -532,30 +595,33 @@ Module.QuestDB = setmetatable(
   }
 );
 
-local DAY_IN_MS = 24 * 60 * 60;
+local DAY_IN_SECONDS = 24 * 60 * 60;
 ---@return string "Converted time"
 ---@return boolean "If its ready"
 ---@return table "RGB"
-local function CooldownToRemainingTime(cooldown)
+local function GetRemainingTime(quest)
   function ToRGB(rgb)
     return { r = rgb.r / 255, g = rgb.g / 255, b = rgb.b / 255 };
   end
 
-  local endTime = cooldown.start + cooldown.maxCooldown;
-  local remaining = endTime - GetTime();
+  local seconds = C_DateAndTime.GetSecondsUntilDailyReset();
 
-  if (cooldown.start == 0 or remaining < 0) then
+  if (quest.type == UH.Enums.QUEST_TYPE.CONSORTIUM) then
+    -- TODO: monthly (1st of the month)
+  end
+
+  if (seconds <= 0) then
     return "Ready", true, ToRGB({ r = 16, g = 179, b = 16 });
   end
 
-  if (remaining >= DAY_IN_MS) then
-    local days = math.floor(remaining / DAY_IN_MS);
+  if (seconds >= DAY_IN_SECONDS) then
+    local days = math.floor(seconds / DAY_IN_SECONDS);
     return days .. (days == 1 and " day" or " days"), false, ToRGB({ r = 255, g = 255, b = 255 });
   end
 
-  local hours = math.floor(remaining / 3600);
-  local minutes = math.floor((remaining % 3600) / 60);
-  local seconds = remaining % 60;
+  local hours = math.floor(seconds / 3600);
+  local minutes = math.floor((seconds % 3600) / 60);
+  local seconds = seconds % 60;
   local rgb = { r = 252, g = 186, b = 3 };
 
   if (hours < 12) then
@@ -564,6 +630,24 @@ local function CooldownToRemainingTime(cooldown)
 
   return string.format("%02d:%02d:%02d", hours, minutes, seconds), false, ToRGB(rgb);
 end
+
+Module.Ticker = C_Timer.NewTicker(1, function()
+  if (not Module.Frame or not Module.Frame:IsShown()) then
+    return;
+  end
+
+  local dataProvider = Module.Frame.ScrollBox:GetDataProvider();
+
+  if (not dataProvider) then
+    return;
+  end
+
+  for _, frame in ipairs(Module.Frame.ScrollBox:GetFrames()) do
+    if (frame.Timer) then
+      frame.Timer:Update();
+    end
+  end
+end);
 
 function Module:UpdateFlags()
   ---@param requirements QuestRequirements | nil
@@ -628,6 +712,7 @@ function Module:UpdateFlags()
     return true;
   end
 
+  UH.db.char.lastDailyQuestCheck = GetServerTime();
   Module.QuestDB.flags = {};
 
   for _, value in ipairs(Module.QuestDB.data) do
@@ -681,15 +766,34 @@ function Module:UpdateFlagsByFaction(factionID)
   end
 end
 
+function Module:CheckIfRefreshIsNeeded()
+  local lastCheck = UH.db.char.lastDailyQuestCheck;
+
+  if (not lastCheck) then
+    Module:UpdateFlags();
+    return true;
+  end
+
+  local lastReset = GetServerTime() + C_DateAndTime.GetSecondsUntilDailyReset() - DAY_IN_SECONDS;
+
+  if (lastReset > lastCheck) then
+    Module:UpdateFlags();
+    return true;
+  end
+
+  -- TODO: verify monthly reset
+  return false;
+end
+
 -- Frames
-function Module:CreateCooldownsFrame()
+function Module:CreateDailyQuestsFrame()
   local frame = CreateFrame("Frame", nil, UIParent, "SettingsFrameTemplate");
   Module.Frame = frame;
   frame:SetSize(350, 350);
   frame:Hide();
-  local savedPosition = UH.db.global.dailyQuestsFramePosition;
+  local savedPosition = UH.db.global.cooldownFramePosition;
 
-  if (UH.db.global.dailyQuestsFramePosition) then
+  if (UH.db.global.cooldownFramePosition) then
     frame:SetPoint(
       savedPosition.point,
       frame:GetParent(),
@@ -701,7 +805,7 @@ function Module:CreateCooldownsFrame()
     frame:SetPoint("CENTER");
   end
 
-  frame.NineSlice.Text:SetText("Repetable quests");
+  frame.NineSlice.Text:SetText("Repetable Quests");
   UH.UTILS:AddMovableToFrame(frame, function(pos)
     UH.db.global.dailyQuestsFramePosition = pos;
   end);
@@ -756,19 +860,20 @@ function Module:CreateCooldownsFrame()
         button:SetNormalFontObject(GameFontHighlight);
         button:SetText(elementData.questName);
         button.elementData = elementData;
+        button:GetFontString():SetWordWrap(false);
         button:GetFontString():SetPoint("LEFT", 12, 0);
-        button:GetFontString():SetPoint("RIGHT", -(width / 2), 0);
+        button:GetFontString():SetPoint("RIGHT", -75, 0);
         button:GetFontString():SetJustifyH("LEFT");
 
         if (not button.Timer) then
           button.Timer = button:CreateFontString(nil, "OVERLAY", "GameFontNormal");
-          button.Timer:SetPoint("LEFT", (width / 2), 0);
+          button.Timer:SetPoint("LEFT", 50, 0);
           button.Timer:SetPoint("RIGHT", -6, 0);
           button.Timer:SetJustifyH("RIGHT");
 
           function button.Timer:Update()
             local parent = self:GetParent();
-            local text, ready, rgb = CooldownToRemainingTime(parent.elementData);
+            local text, ready, rgb = GetRemainingTime(parent.elementData);
             self:SetText(text);
             self:SetTextColor(rgb.r, rgb.g, rgb.b);
           end
@@ -789,7 +894,7 @@ function Module:CreateCooldownsFrame()
     local baseElementHeight = 20;
     local categoryPadding = 5;
 
-    if (elementData.character) then
+    if (elementData.questName) then
       return baseElementHeight;
     end
 
@@ -803,7 +908,7 @@ function Module:CreateCooldownsFrame()
   ScrollUtil.InitScrollBoxListWithScrollBar(frame.ScrollBox, frame.ScrollBar, view);
 end
 
-function Module:UpdateCooldownsFrameList()
+function Module:UpdateDailyQuestsFrameList()
   local groups = setmetatable({}, {
     __index = {
       InsertGroup = function(self, group)
@@ -821,14 +926,32 @@ function Module:UpdateCooldownsFrameList()
         local dataProvider = CreateTreeDataProvider();
 
         for _, groupOrNode in pairs(self) do
-          if (groupOrNode.group) then
-            local groupDataNode = dataProvider:Insert({ group = groupOrNode.group });
+          if (groupOrNode.group and not groupOrNode.isQuestVariationGroup) then
+            local quests = {};
 
             for _, quest in pairs(groupOrNode.quests) do
-              groupDataNode:Insert(quest);
+              if (Module.QuestDB.requirementsOK[quest.questID]) then
+                tinsert(quests, quest);
+              end
+            end
+
+            -- Only creates the parent node if there at least 1 valid child
+            if (#quests > 0) then
+              local groupDataNode = dataProvider:Insert({ group = groupOrNode.group });
+
+              for _, quest in ipairs(quests) do
+                groupDataNode:Insert(quest);
+              end
             end
           else
-            dataProvider:Insert(groupOrNode);
+            -- As it is a QuestVariationGroup, just by checking the first requirement should be enough
+            if (Module.QuestDB.requirementsOK[groupOrNode.quests[1].questID]) then
+              dataProvider:Insert({
+                groupName = nil,
+                questName = groupOrNode.group,
+                type = groupOrNode.type,
+              });
+            end
           end
         end
 
@@ -838,19 +961,25 @@ function Module:UpdateCooldownsFrameList()
   });
 
   for _, quest in pairs(Module.QuestDB.data) do
-    local groupName = "";
+    local groupName = nil;
     local questName = "";
+    local isQuestVariationGroup = false;
 
     if (quest.type == UH.Enums.QUEST_TYPE.DUNGEON_HEROIC) then
       questName = "Heroic Dungeon";
+      isQuestVariationGroup = true;
     elseif (quest.type == UH.Enums.QUEST_TYPE.DUNGEON_NORMAL) then
       questName = "Normal Dungeon";
+      isQuestVariationGroup = true;
     elseif (quest.type == UH.Enums.QUEST_TYPE.PROFESSION_COOKING) then
       questName = "Cooking";
+      isQuestVariationGroup = true;
     elseif (quest.type == UH.Enums.QUEST_TYPE.PROFESSION_FISHING) then
       questName = "Fishing";
+      isQuestVariationGroup = true;
     elseif (quest.type == UH.Enums.QUEST_TYPE.CONSORTIUM) then
-      questName = quest.questName + " (monthly)";
+      questName = quest.questName .. " (monthly)";
+      isQuestVariationGroup = true;
     elseif (quest.type == UH.Enums.QUEST_TYPE.SHATARI_SKYGUARD) then
       groupName = "Sha'tari Skyguard";
       questName = quest.questName;
@@ -861,16 +990,24 @@ function Module:UpdateCooldownsFrameList()
       groupName = "Sha'tari Skyguard and Ogri'la";
       questName = quest.questName;
     elseif (quest.type == UH.Enums.QUEST_TYPE.NETHERWING) then
-      groupName = "Ogri'la";
+      groupName = "Netherwing";
       questName = quest.questName;
     end
 
-    local group = groups:InsertGroup({ group = groupName, quests = {} });
+    if (groupName or isQuestVariationGroup) then
+      local group = groups:InsertGroup({
+        group = groupName or questName,
+        isQuestVariationGroup = isQuestVariationGroup,
+        type = quest.type,
+        quests = {},
+      });
 
-    tinsert(group.quests, {
-      groupName = groupName,
-      questName = questName,
-    });
+      tinsert(group.quests, {
+        groupName = groupName,
+        questName = questName,
+        type = quest.type,
+      });
+    end
   end
 
   Module.Frame.ScrollBox:SetDataProvider(groups:ToTreeDataProvider());
@@ -878,13 +1015,17 @@ end
 
 function Module:ShowFrame()
   if (not Module:IsEnabled()) then
-    UH.Helpers:ShowNotification("Cooldowns module is not enabled");
+    UH.Helpers:ShowNotification(moduleName .. " module is not enabled");
     return;
+  end
+
+  if (Module:CheckIfRefreshIsNeeded()) then
+    Module:UpdateFlags();
   end
 
   if (Module.Frame) then
     Module.Frame:Show();
-    Module:UpdateCooldownsFrameList();
+    Module:UpdateDailyQuestsFrameList();
   end
 end
 
@@ -903,6 +1044,13 @@ function Module:ToggleFrame()
     Module:HideFrame();
   else
     Module:ShowFrame();
+  end
+end
+
+-- Life cycle
+function Module:OnInitialize()
+  if (not Module.Frame) then
+    Module:CreateDailyQuestsFrame();
   end
 end
 
@@ -936,6 +1084,6 @@ EventRegistry:RegisterFrameEventAndCallback("PLAYER_LEVEL_UP", function()
   Module:UpdateFlags();
 end);
 
-UH.Events:RegisterCallback("TOGGLE_COOLDOWNS_FRAME", function(_, name)
+UH.Events:RegisterCallback("TOGGLE_DAILY_FRAME", function(_, name)
   Module:ToggleFrame();
 end);

@@ -25,3 +25,4 @@ Modules/Compatibility/Compatibility.lua
 Modules/Compatibility/Baganator.lua
 Modules/Tooltip/Tooltip.lua
 Modules/Cooldowns/Cooldowns.lua
+Modules/DailyQuests/DailyQuests.lua

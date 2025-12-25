@@ -402,7 +402,7 @@ end
 
 function Module:ShowFrame()
   if (not Module:IsEnabled()) then
-    UH.Helpers:ShowNotification("Cooldowns module is not enabled");
+    UH.Helpers:ShowNotification(moduleName .. " module is not enabled");
     return;
   end
 
