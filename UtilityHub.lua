@@ -246,6 +246,11 @@ function UH:SetupSlashCommands()
       UH:MigrateDB();
     elseif (command == "update-quest-flags") then
       UH.Events:TriggerEvent("FORCE_DAILY_QUESTS_FLAG_UPDATE", fragments[2]);
+    elseif (command == "execute") then
+      local functionName = fragments[3];
+      local arg = fragments[4];
+      local module = UH:GetModule(fragments[2]);
+      module[functionName](module, arg);
     else
       UH.Helpers:ShowNotification("Command not found");
     end

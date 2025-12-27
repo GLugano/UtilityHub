@@ -684,7 +684,7 @@ Module.QuestDB = setmetatable(
 );
 
 local DAY_IN_SECONDS = 24 * 60 * 60;
-local WEEK_IN_SECONDS = 24 * 60 * 60;
+local WEEK_IN_SECONDS = 24 * 60 * 60 * 7;
 ---@return string "Converted time"
 ---@return boolean "If its ready"
 ---@return table "RGB"
@@ -945,13 +945,18 @@ function Module:UpdateFlagsByID(questID)
 end;
 
 function Module:UpdateFlagsByNonDaily(questID)
+  local updatedQuestsCount = 0;
+
   for _, quest in ipairs(Module.QuestDB.data) do
     local requirements = Module.QuestDB:GetQuestRequirements(quest.questID);
 
     if (requirements and requirements.questID == questID) then
       Module:UpdateFlagsByID(quest.questID);
+      updatedQuestsCount = updatedQuestsCount + 1;
     end
   end
+
+  return updatedQuestsCount;
 end
 
 function Module:UpdateFlagsByFaction(factionID)
@@ -1018,7 +1023,6 @@ function Module:CheckIfRefreshIsNeeded()
     return true;
   end
 
-  -- TODO: verify monthly reset
   return false;
 end
 
@@ -1300,14 +1304,31 @@ function Module:OnInitialize()
 end
 
 -- Events
-EventRegistry:RegisterFrameEventAndCallback("QUEST_TURNED_IN", function(_, questID)
-  if (questID) then
-    local questFound = Module:UpdateFlagsByID(questID);
-
-    if (not questFound) then
-      Module:UpdateFlagsByNonDaily(questID);
-    end
+function Module:OnQuestTurnedIn(questID)
+  if (type(questID) == "string") then
+    questID = tonumber(questID);
   end
+
+  if (not questID) then
+    return;
+  end
+
+  local updatedQuestCount = 0;
+  local questFound = Module:UpdateFlagsByID(questID);
+
+  if (questFound) then
+    updatedQuestCount = 1;
+  else
+    updatedQuestCount = Module:UpdateFlagsByNonDaily(questID);
+  end
+
+  if (updatedQuestCount > 0) then
+    Module:UpdateDailyQuestsFrameList();
+  end
+end
+
+EventRegistry:RegisterFrameEventAndCallback("QUEST_TURNED_IN", function(_, questID, ...)
+  Module:OnQuestTurnedIn(questID);
 end);
 
 EventRegistry:RegisterFrameEventAndCallback("CHAT_MSG_COMBAT_FACTION_CHANGE", function(_, _, msg)
@@ -1323,10 +1344,13 @@ EventRegistry:RegisterFrameEventAndCallback("CHAT_MSG_COMBAT_FACTION_CHANGE", fu
       end
     end
   end
+
+  Module:UpdateDailyQuestsFrameList();
 end);
 
 EventRegistry:RegisterFrameEventAndCallback("PLAYER_LEVEL_UP", function()
   Module:UpdateFlags();
+  Module:UpdateDailyQuestsFrameList();
 end);
 
 UH.Events:RegisterCallback("TOGGLE_DAILY_FRAME", function(_, name)
@@ -1341,4 +1365,6 @@ UH.Events:RegisterCallback("FORCE_DAILY_QUESTS_FLAG_UPDATE", function(_, questID
   else
     Module:UpdateFlags();
   end
+
+  Module:UpdateDailyQuestsFrameList();
 end);
