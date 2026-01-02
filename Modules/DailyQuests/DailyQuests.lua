@@ -1032,9 +1032,9 @@ function Module:CreateDailyQuestsFrame()
   Module.Frame = frame;
   frame:SetSize(350, 350);
   frame:Hide();
-  local savedPosition = UH.db.global.cooldownFramePosition;
+  local savedPosition = UH.db.global.dailyQuestsFramePosition;
 
-  if (UH.db.global.cooldownFramePosition) then
+  if (UH.db.global.dailyQuestsFramePosition) then
     frame:SetPoint(
       savedPosition.point,
       frame:GetParent(),
