@@ -454,14 +454,7 @@ UH.Events:RegisterCallback("COUNT_READY_COOLDOWNS_CHANGED", function(_, count, f
   end
 end);
 
-EventRegistry:RegisterFrameEventAndCallback("PLAYER_ENTERING_WORLD", function(_, isLogon, isReload)
-  if (isReload) then
-    UH.addonReady = true;
-    UH.Events:TriggerEvent("CHARACTER_UPDATE_NEEDED");
-  end
-end);
-
-EventRegistry:RegisterFrameEventAndCallback("ZONE_CHANGED_NEW_AREA", function()
+EventRegistry:RegisterFrameEventAndCallback("LOADING_SCREEN_DISABLED", function()
   UH.addonReady = true;
   UH.Events:TriggerEvent("CHARACTER_UPDATE_NEEDED");
 end);
