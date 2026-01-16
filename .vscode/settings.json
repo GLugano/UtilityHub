@@ -103,7 +103,9 @@
     "HOSTILE",
     "ID",
     "PLAYER_LEVEL_UP",
-    "PVP"
+    "PVP",
+    "MANA",
+    "RANGED_ATTACK_POWER"
   ],
   "Lua.runtime.version": "Lua 5.1",
   "Lua.runtime.builtin": {
