@@ -7,92 +7,113 @@ local moduleName = 'Cooldowns';
 local Module = UH:NewModule(moduleName);
 Module.frame = nil;
 
----@class SimpleCooldown
+---@class NormalizedCooldown
+---@field duration number
+---@field expiration number
+---@field start number
+
+---@class BasicCooldown
 ---@field name string
 ---@field spellID? number
 ---@field itemID? number
 
----@class Cooldown : SimpleCooldown
----@field spellList? SimpleCooldown[]
+---@class GroupedCooldown : BasicCooldown
+---@field spellList? BasicCooldown[]
 
 ---@class CurrentCooldown
 ---@field name string
 ---@field start number | nil
 ---@field maxCooldown number
 
-UH.cooldowns = {
-  ---@type Cooldown[]
+---@class CooldownList
+local baseCooldowns = {
+  ---@type BasicCooldown[]
   Tailoring      = {},
-  ---@type Cooldown[]
+  ---@type GroupedCooldown[]
   Alchemy        = {
     { name = "Transmutes", spellList = {} },
   },
-  ---@type Cooldown[]
+  ---@type BasicCooldown[]
   Leatherworking = {},
 };
 
--- TODO: Check if its necessary now to be here instead of fixed in the list
 if (UH.IsClassic) then
-  tinsert(UH.cooldowns.Tailoring, { name = "Mooncloth", spellID = 18560 });
+  tinsert(baseCooldowns.Tailoring, { name = "Mooncloth", spellID = 18560 });
 
-  tinsert(UH.cooldowns.Alchemy[1].spellList, { name = "Arcanite Bar", spellID = 17187 });
-  tinsert(UH.cooldowns.Alchemy[1].spellList, { name = "Water to Air", spellID = 17562 });
-  tinsert(UH.cooldowns.Alchemy[1].spellList, { name = "Water to Undeath", spellID = 17564 });
-  tinsert(UH.cooldowns.Alchemy[1].spellList, { name = "Earth to Life", spellID = 17566 });
-  tinsert(UH.cooldowns.Alchemy[1].spellList, { name = "Earth to Water", spellID = 17561 });
-  tinsert(UH.cooldowns.Alchemy[1].spellList, { name = "Air to Fire", spellID = 17559 });
-  tinsert(UH.cooldowns.Alchemy[1].spellList, { name = "Life to Earth", spellID = 17565 });
-  tinsert(UH.cooldowns.Alchemy[1].spellList, { name = "Undeath to Water", spellID = 17563 });
-  tinsert(UH.cooldowns.Alchemy[1].spellList, { name = "Elemental Fire", spellID = 20761 });
-  tinsert(UH.cooldowns.Alchemy[1].spellList, { name = "Mithril to Truesilver", spellID = 11480 });
-  tinsert(UH.cooldowns.Alchemy[1].spellList, { name = "Iron to Gold", spellID = 11479 });
+  local transmutes = baseCooldowns.Alchemy[1];
 
-  tinsert(UH.cooldowns.Leatherworking, { name = "Cured Rugged Hide", itemID = 15846 });
+  if (transmutes) then
+    tinsert(transmutes.spellList, { name = "Arcanite Bar", spellID = 17187 });
+    tinsert(transmutes.spellList, { name = "Water to Air", spellID = 17562 });
+    tinsert(transmutes.spellList, { name = "Water to Undeath", spellID = 17564 });
+    tinsert(transmutes.spellList, { name = "Earth to Life", spellID = 17566 });
+    tinsert(transmutes.spellList, { name = "Earth to Water", spellID = 17561 });
+    tinsert(transmutes.spellList, { name = "Air to Fire", spellID = 17559 });
+    tinsert(transmutes.spellList, { name = "Life to Earth", spellID = 17565 });
+    tinsert(transmutes.spellList, { name = "Undeath to Water", spellID = 17563 });
+    tinsert(transmutes.spellList, { name = "Elemental Fire", spellID = 20761 });
+    tinsert(transmutes.spellList, { name = "Mithril to Truesilver", spellID = 11480 });
+    tinsert(transmutes.spellList, { name = "Iron to Gold", spellID = 11479 });
+  end
+
+  tinsert(baseCooldowns.Leatherworking, { name = "Cured Rugged Hide", itemID = 15846 });
 elseif (UH.IsTBC) then
-  tinsert(UH.cooldowns.Tailoring, { name = "Shadowcloth", spellID = 36686 });
-  tinsert(UH.cooldowns.Tailoring, { name = "Spellcloth", spellID = 31373 });
-  tinsert(UH.cooldowns.Tailoring, { name = "Primal Mooncloth", spellID = 26751 });
+  tinsert(baseCooldowns.Tailoring, { name = "Shadowcloth", spellID = 36686 });
+  tinsert(baseCooldowns.Tailoring, { name = "Spellcloth", spellID = 31373 });
+  tinsert(baseCooldowns.Tailoring, { name = "Primal Mooncloth", spellID = 26751 });
 end
 
+--- @param cooldowns table<string, CurrentCooldown[]>
+--- @param group string
+--- @param value CurrentCooldown
 local function InsertInCooldownTable(cooldowns, group, value)
-  if (not cooldowns[group]) then
-    cooldowns[group] = {};
+  local cooldownGroup = cooldowns[group];
+
+  if (not cooldownGroup) then
+    cooldownGroup = {};
+    cooldowns[group] = cooldownGroup;
   end
 
   tinsert(cooldowns[group], value);
 end
 
 local DAY_IN_MS = 24 * 60 * 60;
+
+---@param cooldown CurrentCooldown
 ---@return string "Converted time"
 ---@return boolean "If its ready"
 ---@return table "RGB"
 local function CooldownToRemainingTime(cooldown)
+  ---@param rgb BasicRGB
+  ---@return table
   function ToRGB(rgb)
     return { r = rgb.r / 255, g = rgb.g / 255, b = rgb.b / 255 };
   end
 
-  local endTime = cooldown.start + cooldown.maxCooldown;
-  local remaining = endTime - GetTime();
+  if (cooldown.start and cooldown.start > 0) then
+    local endTime = cooldown.start + cooldown.maxCooldown;
+    local remaining = endTime - GetTime();
 
-  if (cooldown.start == 0 or remaining < 0) then
-    return "Ready", true, ToRGB({ r = 16, g = 179, b = 16 });
+    if (remaining > 0) then
+      if (remaining >= DAY_IN_MS) then
+        local days = math.floor(remaining / DAY_IN_MS);
+        return days .. (days == 1 and " day" or " days"), false, ToRGB({ r = 255, g = 255, b = 255 });
+      end
+
+      local hours = math.floor(remaining / 3600);
+      local minutes = math.floor((remaining % 3600) / 60);
+      local seconds = remaining % 60;
+      local rgb = { r = 252, g = 186, b = 3 };
+
+      if (hours < 12) then
+        rgb = { r = 255, g = 71, b = 71 };
+      end
+
+      return string.format("%02d:%02d:%02d", hours, minutes, seconds), false, ToRGB(rgb);
+    end
   end
 
-  if (remaining >= DAY_IN_MS) then
-    local days = math.floor(remaining / DAY_IN_MS);
-    return days .. (days == 1 and " day" or " days"), false, ToRGB({ r = 255, g = 255, b = 255 });
-  end
-
-  local hours = math.floor(remaining / 3600);
-  local minutes = math.floor((remaining % 3600) / 60);
-  local seconds = remaining % 60;
-  local rgb = { r = 252, g = 186, b = 3 };
-
-  if (hours < 12) then
-    rgb = { r = 255, g = 71, b = 71 };
-  end
-
-  return string.format("%02d:%02d:%02d", hours, minutes, seconds), false, ToRGB(rgb);
+  return "Ready", true, ToRGB({ r = 16, g = 179, b = 16 });
 end
 
 Module.Ticker = C_Timer.NewTicker(1, function()
@@ -121,6 +142,8 @@ Module.CollapsedGroups = {};
 
 ---@return table<string, CurrentCooldown[]>
 function Module:UpdateCurrentCharacterCooldowns()
+  ---@param cooldown BasicCooldown|GroupedCooldown
+  ---@return number|nil
   function GetSpellIDFromCooldown(cooldown)
     if (cooldown.spellList and #cooldown.spellList > 0) then
       for _, spell in pairs(cooldown.spellList) do
@@ -137,18 +160,28 @@ function Module:UpdateCurrentCharacterCooldowns()
     return nil;
   end
 
+  ---@param start number|nil
+  ---@param duration number|nil
+  ---@return NormalizedCooldown
   function GetNormalizedCooldownValues(start, duration)
     -- Source: https://wago.io/ku2ECkSTv/3
     -- The good function doesnt exist in classic
     local normalizedData = {};
     local now = GetTime();
-    start = start or 0;
-    duration = duration or 0;
+
+    if (not start) then
+      start = 0;
+    end
+
+    if (not duration) then
+      duration = 0;
+    end
 
     if (duration > 604800) then
       start = 0;
       duration = 0;
     end
+
     if (start > now + 2147483.648) then
       start = start - 4294967.296;
     end
@@ -165,16 +198,17 @@ function Module:UpdateCurrentCharacterCooldowns()
   end
 
   ---@type table<string, CurrentCooldown[]>
-  local cooldowns = {};
+  local newCooldowns = {};
 
   for i = 1, GetNumSkillLines() do
     local skillName = GetSkillLineInfo(i);
-    ---@type Cooldown[]
-    local cdGroup = UH.cooldowns[skillName];
+    ---@type GroupedCooldown|BasicCooldown|nil
+    local cdGroup = baseCooldowns[skillName];
 
     if (cdGroup) then
       for _, cooldown in pairs(cdGroup) do
         if (cooldown.spellID or (cooldown.spellList and #cooldown.spellList > 0)) then
+          ---@type number|nil
           local spellID = GetSpellIDFromCooldown(cooldown);
 
           if (spellID) then
@@ -182,29 +216,37 @@ function Module:UpdateCurrentCharacterCooldowns()
             local normalized = GetNormalizedCooldownValues(spi.startTime, spi.duration);
 
             if (spi) then
-              InsertInCooldownTable(cooldowns, skillName, {
-                name = cooldown.name,
-                maxCooldown = normalized.duration,
-                start = normalized.start,
-              });
+              InsertInCooldownTable(
+                newCooldowns,
+                skillName,
+                {
+                  name = cooldown.name,
+                  maxCooldown = normalized.duration,
+                  start = normalized.start,
+                }
+              );
             end
           end
         elseif (cooldown.itemID) then
           if (C_Item.GetItemCount(cooldown.itemID, true) > 0) then
-            local startTime, duration, enabled = C_Container.GetItemCooldown(cooldown.itemID);
-            local normalized = GetNormalizedCooldownValues(startTime, duration);
-            InsertInCooldownTable(cooldowns, skillName, {
-              name = cooldown.name,
-              maxCooldown = normalized.duration,
-              start = normalized.start,
-            });
+            local start, duration = C_Container.GetItemCooldown(cooldown.itemID);
+            local normalized = GetNormalizedCooldownValues(start, duration);
+            InsertInCooldownTable(
+              newCooldowns,
+              skillName,
+              {
+                name = cooldown.name,
+                maxCooldown = normalized.duration,
+                start = normalized.start,
+              }
+            );
           end
         end
       end
     end
   end
 
-  return cooldowns;
+  return newCooldowns;
 end
 
 function Module:UpdateCountReadyCooldowns()
@@ -356,7 +398,7 @@ function Module:UpdateCooldownsFrameList()
   local groups = setmetatable({}, {
     __index = {
       InsertGroup = function(self, group)
-        for index, loopGroup in ipairs(self) do
+        for _, loopGroup in ipairs(self) do
           if (loopGroup.group == group.group) then
             return loopGroup;
           end
@@ -383,7 +425,7 @@ function Module:UpdateCooldownsFrameList()
   });
 
   for _, character in pairs(UH.db.global.characters) do
-    for cooldownGroupName, cooldownGroup in pairs(character.cooldownGroup or {}) do
+    for _, cooldownGroup in pairs(character.cooldownGroup or {}) do
       for _, cooldown in pairs(cooldownGroup) do
         local group = groups:InsertGroup({ group = cooldown.name, cooldowns = {} });
         tinsert(group.cooldowns, {

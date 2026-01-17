@@ -37,7 +37,7 @@ local skills                          = {
 ---@field value? string
 
 ---@class PatternConfig
----@field pattern? string
+---@field pattern? string|string[]
 ---@field IdentifyPattern? fun(self: PatternConfig, text: string): boolean
 ---@field FormatText fun(self: PatternConfig, text: string, prefix?: string): (string, PrefixConfig?)
 
@@ -267,6 +267,7 @@ local MANA_REGEN                      = {
     return string.format("+%s MP5", regen);
   end
 };
+
 local HEALTH_REGEN                    = {
   pattern = "(%d+) health per",
   FormatText = function(self, text)
@@ -500,9 +501,14 @@ Module.statNameConversionMap          = {
   Mana = "MP",
 };
 
+---@type boolean
 Module.itemRefTooltipHooked           = false;
+---@type boolean
 Module.gameTooltipHooked              = false;
 
+---@param patternConfig PatternConfig
+---@param text string|nil
+---@return string|nil
 local function IdentifyPattern(patternConfig, text)
   if (not text or #text == 0) then
     return nil;
@@ -547,6 +553,9 @@ local function ExtractPrefix(text)
   return nil;
 end
 
+---@param text string
+---@param prefix string
+---@param tooltipLineRef any
 local function SearchAndApplyPattern(text, prefix, tooltipLineRef)
   for _, patternConfig in pairs(Module.patternConfigList) do
     if (prefix ~= "Use:" and IdentifyPattern(patternConfig, text)) then

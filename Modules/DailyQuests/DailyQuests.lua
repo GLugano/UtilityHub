@@ -9,9 +9,9 @@ local Module = UH:NewModule(moduleName);
 ---@class Quest
 ---@field questID number
 ---@field questName string
----@field type number
+---@field type EnumQuestType
 ---@field periodicity number
----@field expansion number
+---@field expansion EnumExpansion
 ---@field GetRequirements? fun(): QuestRequirements | nil
 
 ---@class QuestRequirements
@@ -23,616 +23,647 @@ local Module = UH:NewModule(moduleName);
 ---@field factionID number
 ---@field standingID number
 
-Module.CollapsedGroups = {};
-Module.QuestDB = setmetatable(
-  {
-    ---@type Quest[]
-    data = {
-      ------------------------------------- TBC -------------------------------------
-      -- Daily - Normal
-      {
-        questID = 11389,
-        questName = "Wanted: Arcatraz Sentinels",
-        type = UH.Enums.QUEST_TYPE.DUNGEON_NORMAL,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
-      {
-        questID = 11371,
-        questName = "Wanted: Coilfang Myrmidons",
-        type = UH.Enums.QUEST_TYPE.DUNGEON_NORMAL,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
-      {
-        questID = 11376,
-        questName = "Wanted: Malicious Instructors",
-        type = UH.Enums.QUEST_TYPE.DUNGEON_NORMAL,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
-      {
-        questID = 11383,
-        questName = "Wanted: Rift Lords",
-        type = UH.Enums.QUEST_TYPE.DUNGEON_NORMAL,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
-      {
-        questID = 11364,
-        questName = "Wanted: Shattered Hand Centurions",
-        type = UH.Enums.QUEST_TYPE.DUNGEON_NORMAL,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
-      {
-        questID = 11500,
-        questName = "Wanted: Sisters of Torment",
-        type = UH.Enums.QUEST_TYPE.DUNGEON_NORMAL,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
-      {
-        questID = 11385,
-        questName = "Wanted: Sunseeker Channelers",
-        type = UH.Enums.QUEST_TYPE.DUNGEON_NORMAL,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
-      {
-        questID = 11387,
-        questName = "Wanted: Tempest-Forge Destroyers",
-        type = UH.Enums.QUEST_TYPE.DUNGEON_NORMAL,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
+---@class QuestDBTable
+---@field requirementsOK table<number, boolean>
+---@field complete table<number, boolean>
+---@field data Quest[]
 
-      -- Daily - Heroic
-      {
-        questID = 11369,
-        questName = "Wanted: A Black Stalker Egg",
-        type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
-      {
-        questID = 11384,
-        questName = "Wanted: A Warp Splinter Clipping",
-        type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
-      {
-        questID = 11382,
-        questName = "Wanted: Aeonus's Hourglass",
-        type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
-      {
-        questID = 11363,
-        questName = "Wanted: Bladefist's Seal",
-        type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
-      {
-        questID = 11362,
-        questName = "Wanted: Keli'dan's Feathered Stave",
-        type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
-      {
-        questID = 11375,
-        questName = "Wanted: Murmur's Whisper",
-        type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
-      {
-        questID = 11354,
-        questName = "Wanted: Nazan's Riding Crop",
-        type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
-      {
-        questID = 11386,
-        questName = "Wanted: Pathaleon's Projector",
-        type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
-      {
-        questID = 11373,
-        questName = "Wanted: Shaffar's Wondrous Pendant",
-        type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
-      {
-        questID = 11378,
-        questName = "Wanted: The Epoch Hunter's Head",
-        type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
-      {
-        questID = 11374,
-        questName = "Wanted: The Exarch's Soul Gem",
-        type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
-      {
-        questID = 11372,
-        questName = "Wanted: The Headfeathers of Ikiss",
-        type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
-      {
-        questID = 11368,
-        questName = "Wanted: The Heart of Quagmirran",
-        type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
-      {
-        questID = 11388,
-        questName = "Wanted: The Scroll of Skyriss",
-        type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
-      {
-        questID = 11499,
-        questName = "Wanted: The Signet Ring of Prince Kael'thas",
-        type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
-      {
-        questID = 11370,
-        questName = "Wanted: The Warlord's Treatise",
-        type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
+---@class QuestDBMetatable
+---@field GetQuestsByType fun(self: QuestDB, type: EnumQuestType, expansion: EnumExpansion): Quest[]
+---@field GetQuestByID fun(self: QuestDB, questID: number): Quest|nil
+---@field GetQuestRequirements fun(self: QuestDB, questID: number): QuestRequirements|nil, Quest|nil
 
-      -- Professions - Cooking
-      {
-        questID = 11380,
-        questName = "Manalicious",
-        type = UH.Enums.QUEST_TYPE.PROFESSION_COOKING,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
-      {
-        questID = 11377,
-        questName = "Revenge is Tasty",
-        type = UH.Enums.QUEST_TYPE.PROFESSION_COOKING,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
-      {
-        questID = 11381,
-        questName = "Soup for the Soul",
-        type = UH.Enums.QUEST_TYPE.PROFESSION_COOKING,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
-      {
-        questID = 11379,
-        questName = "Super Hot Stew",
-        type = UH.Enums.QUEST_TYPE.PROFESSION_COOKING,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
+---@class QuestDB : QuestDBTable & QuestDBMetatable
 
-      -- Professions - Fishing
-      {
-        questID = 11666,
-        questName = "Bait Bandits",
-        type = UH.Enums.QUEST_TYPE.PROFESSION_FISHING,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
-      {
-        questID = 11665,
-        questName = "Crocolisks in the City",
-        type = UH.Enums.QUEST_TYPE.PROFESSION_FISHING,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
-      {
-        questID = 11669,
-        questName = "Felblood Fillet",
-        type = UH.Enums.QUEST_TYPE.PROFESSION_FISHING,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
-      {
-        questID = 11668,
-        questName = "Shrimpin' Ain't Easy",
-        type = UH.Enums.QUEST_TYPE.PROFESSION_FISHING,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
-      {
-        questID = 11667,
-        questName = "The One That Got Away",
-        type = UH.Enums.QUEST_TYPE.PROFESSION_FISHING,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
+---@class RequirementValidationError
+---@field currentLevel number|nil
+---@field currentSide string|nil
+---@field currentSkillRank number|nil
+---@field factions table|nil
+---@field level number|nil
+---@field notFound boolean|nil
+---@field questID number|nil
+---@field side EnumSide|nil
+---@field skillName string|nil
+---@field skillRank number|nil
 
-      -- Consortium
-      {
-        questID = 9884,
-        questName = "Membership Benefits",
-        type = UH.Enums.QUEST_TYPE.CONSORTIUM,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.MONTHLY,
-      },
-      {
-        questID = 9885,
-        questName = "Membership Benefits",
-        type = UH.Enums.QUEST_TYPE.CONSORTIUM,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.MONTHLY,
-      },
-      {
-        questID = 9886,
-        questName = "Membership Benefits",
-        type = UH.Enums.QUEST_TYPE.CONSORTIUM,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.MONTHLY,
-      },
-      {
-        questID = 9887,
-        questName = "Membership Benefits",
-        type = UH.Enums.QUEST_TYPE.CONSORTIUM,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.MONTHLY,
-      },
+---@class RequirementValidation
+---@field pass boolean
+---@field error RequirementValidationError[]
 
-      -- Sha'tari Skyguard
-      {
-        questID = 11008,
-        questName = "Fires Over Skettis",
-        type = UH.Enums.QUEST_TYPE.SHATARI_SKYGUARD,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
-      {
-        questID = 11085,
-        questName = "Escape from Skettis",
-        type = UH.Enums.QUEST_TYPE.SHATARI_SKYGUARD,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-      },
-
-      -- Ogri'la
-      {
-        questID = 11080,
-        questName = "The Relic's Emanation",
-        type = UH.Enums.QUEST_TYPE.OGRILA,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-        GetRequirements = function()
-          return { questID = 11058 };
-        end
-      },
-      {
-        questID = 11051,
-        questName = "Banish More Demons",
-        type = UH.Enums.QUEST_TYPE.OGRILA,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-        GetRequirements = function()
-          return { questID = 11026 };
-        end
-      },
-
-      -- Sha'tari Skyguard and Ogri'la
-      {
-        questID = 11023,
-        questName = "Bomb Them Again!",
-        type = UH.Enums.QUEST_TYPE.OGRILA,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-        GetRequirements = function()
-          return { questID = 11010 };
-        end
-      },
-      {
-        questID = 11066,
-        questName = "Wrangle More Aether Rays!",
-        type = UH.Enums.QUEST_TYPE.OGRILA,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-        GetRequirements = function()
-          return { questID = 11065 };
-        end
-      },
-      -- NETHERWING
-      -- NEUTRAL
-      {
-        questID = 11020,
-        questName = "A Slow Death",
-        type = UH.Enums.QUEST_TYPE.NETHERWING,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-        GetRequirements = function()
-          return {
-            factions = {
-              { factionID = 1015, standingID = UH.Enums.REPUTATION_STANDING.NEUTRAL },
-            },
-          };
-        end
-      },
-      {
-        questID = 11015,
-        questName = "Netherwing Crystals",
-        type = UH.Enums.QUEST_TYPE.NETHERWING,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-        GetRequirements = function()
-          return {
-            factions = {
-              { factionID = 1015, standingID = UH.Enums.REPUTATION_STANDING.NEUTRAL },
-            },
-          };
-        end
-      },
-      {
-        questID = 11035,
-        questName = "The Not-So-Friendly Skies...",
-        type = UH.Enums.QUEST_TYPE.NETHERWING,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-        GetRequirements = function()
-          return {
-            factions = {
-              { factionID = 1015, standingID = UH.Enums.REPUTATION_STANDING.NEUTRAL },
-            },
-          };
-        end
-      },
-      {
-        questID = 11018,
-        questName = "Nethercite Ore",
-        type = UH.Enums.QUEST_TYPE.NETHERWING,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-        GetRequirements = function()
-          return {
-            profession = "Mining:350",
-            factions = {
-              { factionID = 1015, standingID = UH.Enums.REPUTATION_STANDING.NEUTRAL },
-            },
-          };
-        end
-      },
-      {
-        questID = 11017,
-        questName = "Netherdust Pollen",
-        type = UH.Enums.QUEST_TYPE.NETHERWING,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-        GetRequirements = function()
-          return {
-            profession = "Herbalism:350",
-            factions = {
-              { factionID = 1015, standingID = UH.Enums.REPUTATION_STANDING.NEUTRAL },
-            },
-          };
-        end
-      },
-      {
-        questID = 11016,
-        questName = "Nethermine Flayer Hide",
-        type = UH.Enums.QUEST_TYPE.NETHERWING,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-        GetRequirements = function()
-          return {
-            profession = "Skinning:350",
-            factions = {
-              { factionID = 1015, standingID = UH.Enums.REPUTATION_STANDING.NEUTRAL },
-            },
-          };
-        end
-      },
-
-      -- Friendly
-      {
-        questID = 11076,
-        questName = "Picking Up The Pieces...",
-        type = UH.Enums.QUEST_TYPE.NETHERWING,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-        GetRequirements = function()
-          return {
-            factions = {
-              { factionID = 1015, standingID = UH.Enums.REPUTATION_STANDING.FRIENDLY },
-            },
-          };
-        end
-      },
-      {
-        questID = 11077,
-        questName = "Dragons are the Least of Our Problems",
-        type = UH.Enums.QUEST_TYPE.NETHERWING,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-        GetRequirements = function()
-          return {
-            factions = {
-              { factionID = 1015, standingID = UH.Enums.REPUTATION_STANDING.FRIENDLY },
-            },
-          };
-        end
-      },
-      {
-        questID = 11055,
-        questName = "The Booterang: A Cure For The Common Worthless Peon",
-        type = UH.Enums.QUEST_TYPE.NETHERWING,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-        GetRequirements = function()
-          return {
-            factions = {
-              { factionID = 1015, standingID = UH.Enums.REPUTATION_STANDING.FRIENDLY },
-            },
-          };
-        end
-      },
-
-      -- Honored
-      {
-        questID = 11086,
-        questName = "Disrupting the Twilight Portal",
-        type = UH.Enums.QUEST_TYPE.NETHERWING,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-        GetRequirements = function()
-          return {
-            factions = {
-              { factionID = 1015, standingID = UH.Enums.REPUTATION_STANDING.HONORED },
-            },
-          };
-        end
-      },
-
-      -- Revered
-      {
-        questID = 11101,
-        questName = "The Deadliest Trap Ever Laid", -- Aldor
-        type = UH.Enums.QUEST_TYPE.NETHERWING,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-        GetRequirements = function()
-          return {
-            factions = {
-              { factionID = 1015, standingID = UH.Enums.REPUTATION_STANDING.REVERED },
-              { factionID = 932,  standingID = UH.Enums.REPUTATION_STANDING.FRIENDLY },
-            },
-            questID = 11100, -- Commander Arcus
-          };
-        end
-      },
-      {
-        questID = 11097,
-        questName = "The Deadliest Trap Ever Laid", -- Scryer
-        type = UH.Enums.QUEST_TYPE.NETHERWING,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-        GetRequirements = function()
-          return {
-            factions = {
-              { factionID = 1015, standingID = UH.Enums.REPUTATION_STANDING.REVERED },
-              { factionID = 934,  standingID = UH.Enums.REPUTATION_STANDING.FRIENDLY },
-            },
-            questID = 11095, -- Commander Hobb
-          };
-        end
-      },
-
-      -- PVP
-      {
-        questID = 10110,
-        questName = "Hellfire Fortifications", -- Horde
-        type = UH.Enums.QUEST_TYPE.PVP,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-        GetRequirements = function()
-          return {
-            level = 55,
-            side = UH.Enums.SIDE.HORDE,
-            questID = 10124, -- Forward Base: Reaver's Fall
-          };
-        end
-      },
-      {
-        questID = 10106,
-        questName = "Hellfire Fortifications", -- Alliance
-        type = UH.Enums.QUEST_TYPE.PVP,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-        GetRequirements = function()
-          return {
-            level = 55,
-            side = UH.Enums.SIDE.ALLIANCE,
-            questID = 10483, -- Ill Omens
-          };
-        end
-      },
-      {
-        questID = 11503,
-        questName = "Enemies, Old and New", -- Horde
-        type = UH.Enums.QUEST_TYPE.PVP,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-        GetRequirements = function()
-          return {
-            side = UH.Enums.SIDE.HORDE,
-            level = 64,
-            factions = {
-              { factionID = 941, standingID = UH.Enums.REPUTATION_STANDING.NEUTRAL },
-            },
-          };
-        end,
-      },
-      {
-        questID = 11502,
-        questName = "In Defense of Halaa", -- Alliance
-        type = UH.Enums.QUEST_TYPE.PVP,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-        GetRequirements = function()
-          return {
-            side = UH.Enums.SIDE.ALLIANCE,
-            level = 64,
-            factions = {
-              { factionID = 978, standingID = UH.Enums.REPUTATION_STANDING.NEUTRAL },
-            },
-          };
-        end,
-      },
-      {
-        questID = 11506,
-        questName = "Spirits of Auchindoun", -- Horde
-        type = UH.Enums.QUEST_TYPE.PVP,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-        GetRequirements = function()
-          return {
-            side = UH.Enums.SIDE.HORDE,
-            level = 62,
-          };
-        end,
-      },
-      {
-        questID = 11505,
-        questName = "Spirits of Auchindoun", -- Alliance
-        type = UH.Enums.QUEST_TYPE.PVP,
-        expansion = UH.Enums.EXPANSIONS.TBC,
-        periodicity = UH.Enums.PERIODICITY.DAILY,
-        GetRequirements = function()
-          return {
-            side = UH.Enums.SIDE.ALLIANCE,
-            level = 62,
-          };
-        end,
-      },
+---@type QuestDBTable
+local questDBTable = {
+  requirementsOK = {},
+  complete = {},
+  data = {
+    ------------------------------------- TBC -------------------------------------
+    -- Daily - Normal
+    {
+      questID = 11389,
+      questName = "Wanted: Arcatraz Sentinels",
+      type = UH.Enums.QUEST_TYPE.DUNGEON_NORMAL,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
     },
-    requirementsOK = {},
-    complete = {},
+    {
+      questID = 11371,
+      questName = "Wanted: Coilfang Myrmidons",
+      type = UH.Enums.QUEST_TYPE.DUNGEON_NORMAL,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+    {
+      questID = 11376,
+      questName = "Wanted: Malicious Instructors",
+      type = UH.Enums.QUEST_TYPE.DUNGEON_NORMAL,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+    {
+      questID = 11383,
+      questName = "Wanted: Rift Lords",
+      type = UH.Enums.QUEST_TYPE.DUNGEON_NORMAL,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+    {
+      questID = 11364,
+      questName = "Wanted: Shattered Hand Centurions",
+      type = UH.Enums.QUEST_TYPE.DUNGEON_NORMAL,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+    {
+      questID = 11500,
+      questName = "Wanted: Sisters of Torment",
+      type = UH.Enums.QUEST_TYPE.DUNGEON_NORMAL,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+    {
+      questID = 11385,
+      questName = "Wanted: Sunseeker Channelers",
+      type = UH.Enums.QUEST_TYPE.DUNGEON_NORMAL,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+    {
+      questID = 11387,
+      questName = "Wanted: Tempest-Forge Destroyers",
+      type = UH.Enums.QUEST_TYPE.DUNGEON_NORMAL,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+
+    -- Daily - Heroic
+    {
+      questID = 11369,
+      questName = "Wanted: A Black Stalker Egg",
+      type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+    {
+      questID = 11384,
+      questName = "Wanted: A Warp Splinter Clipping",
+      type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+    {
+      questID = 11382,
+      questName = "Wanted: Aeonus's Hourglass",
+      type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+    {
+      questID = 11363,
+      questName = "Wanted: Bladefist's Seal",
+      type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+    {
+      questID = 11362,
+      questName = "Wanted: Keli'dan's Feathered Stave",
+      type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+    {
+      questID = 11375,
+      questName = "Wanted: Murmur's Whisper",
+      type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+    {
+      questID = 11354,
+      questName = "Wanted: Nazan's Riding Crop",
+      type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+    {
+      questID = 11386,
+      questName = "Wanted: Pathaleon's Projector",
+      type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+    {
+      questID = 11373,
+      questName = "Wanted: Shaffar's Wondrous Pendant",
+      type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+    {
+      questID = 11378,
+      questName = "Wanted: The Epoch Hunter's Head",
+      type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+    {
+      questID = 11374,
+      questName = "Wanted: The Exarch's Soul Gem",
+      type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+    {
+      questID = 11372,
+      questName = "Wanted: The Headfeathers of Ikiss",
+      type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+    {
+      questID = 11368,
+      questName = "Wanted: The Heart of Quagmirran",
+      type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+    {
+      questID = 11388,
+      questName = "Wanted: The Scroll of Skyriss",
+      type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+    {
+      questID = 11499,
+      questName = "Wanted: The Signet Ring of Prince Kael'thas",
+      type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+    {
+      questID = 11370,
+      questName = "Wanted: The Warlord's Treatise",
+      type = UH.Enums.QUEST_TYPE.DUNGEON_HEROIC,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+
+    -- Professions - Cooking
+    {
+      questID = 11380,
+      questName = "Manalicious",
+      type = UH.Enums.QUEST_TYPE.PROFESSION_COOKING,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+    {
+      questID = 11377,
+      questName = "Revenge is Tasty",
+      type = UH.Enums.QUEST_TYPE.PROFESSION_COOKING,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+    {
+      questID = 11381,
+      questName = "Soup for the Soul",
+      type = UH.Enums.QUEST_TYPE.PROFESSION_COOKING,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+    {
+      questID = 11379,
+      questName = "Super Hot Stew",
+      type = UH.Enums.QUEST_TYPE.PROFESSION_COOKING,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+
+    -- Professions - Fishing
+    {
+      questID = 11666,
+      questName = "Bait Bandits",
+      type = UH.Enums.QUEST_TYPE.PROFESSION_FISHING,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+    {
+      questID = 11665,
+      questName = "Crocolisks in the City",
+      type = UH.Enums.QUEST_TYPE.PROFESSION_FISHING,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+    {
+      questID = 11669,
+      questName = "Felblood Fillet",
+      type = UH.Enums.QUEST_TYPE.PROFESSION_FISHING,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+    {
+      questID = 11668,
+      questName = "Shrimpin' Ain't Easy",
+      type = UH.Enums.QUEST_TYPE.PROFESSION_FISHING,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+    {
+      questID = 11667,
+      questName = "The One That Got Away",
+      type = UH.Enums.QUEST_TYPE.PROFESSION_FISHING,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+
+    -- Consortium
+    {
+      questID = 9884,
+      questName = "Membership Benefits",
+      type = UH.Enums.QUEST_TYPE.CONSORTIUM,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.MONTHLY,
+    },
+    {
+      questID = 9885,
+      questName = "Membership Benefits",
+      type = UH.Enums.QUEST_TYPE.CONSORTIUM,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.MONTHLY,
+    },
+    {
+      questID = 9886,
+      questName = "Membership Benefits",
+      type = UH.Enums.QUEST_TYPE.CONSORTIUM,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.MONTHLY,
+    },
+    {
+      questID = 9887,
+      questName = "Membership Benefits",
+      type = UH.Enums.QUEST_TYPE.CONSORTIUM,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.MONTHLY,
+    },
+
+    -- Sha'tari Skyguard
+    {
+      questID = 11008,
+      questName = "Fires Over Skettis",
+      type = UH.Enums.QUEST_TYPE.SHATARI_SKYGUARD,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+    {
+      questID = 11085,
+      questName = "Escape from Skettis",
+      type = UH.Enums.QUEST_TYPE.SHATARI_SKYGUARD,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+    },
+
+    -- Ogri'la
+    {
+      questID = 11080,
+      questName = "The Relic's Emanation",
+      type = UH.Enums.QUEST_TYPE.OGRILA,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+      GetRequirements = function()
+        return { questID = 11058 };
+      end
+    },
+    {
+      questID = 11051,
+      questName = "Banish More Demons",
+      type = UH.Enums.QUEST_TYPE.OGRILA,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+      GetRequirements = function()
+        return { questID = 11026 };
+      end
+    },
+
+    -- Sha'tari Skyguard and Ogri'la
+    {
+      questID = 11023,
+      questName = "Bomb Them Again!",
+      type = UH.Enums.QUEST_TYPE.OGRILA,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+      GetRequirements = function()
+        return { questID = 11010 };
+      end
+    },
+    {
+      questID = 11066,
+      questName = "Wrangle More Aether Rays!",
+      type = UH.Enums.QUEST_TYPE.OGRILA,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+      GetRequirements = function()
+        return { questID = 11065 };
+      end
+    },
+    -- NETHERWING
+    -- NEUTRAL
+    {
+      questID = 11020,
+      questName = "A Slow Death",
+      type = UH.Enums.QUEST_TYPE.NETHERWING,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+      GetRequirements = function()
+        return {
+          factions = {
+            { factionID = 1015, standingID = UH.Enums.REPUTATION_STANDING.NEUTRAL },
+          },
+        };
+      end
+    },
+    {
+      questID = 11015,
+      questName = "Netherwing Crystals",
+      type = UH.Enums.QUEST_TYPE.NETHERWING,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+      GetRequirements = function()
+        return {
+          factions = {
+            { factionID = 1015, standingID = UH.Enums.REPUTATION_STANDING.NEUTRAL },
+          },
+        };
+      end
+    },
+    {
+      questID = 11035,
+      questName = "The Not-So-Friendly Skies...",
+      type = UH.Enums.QUEST_TYPE.NETHERWING,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+      GetRequirements = function()
+        return {
+          factions = {
+            { factionID = 1015, standingID = UH.Enums.REPUTATION_STANDING.NEUTRAL },
+          },
+        };
+      end
+    },
+    {
+      questID = 11018,
+      questName = "Nethercite Ore",
+      type = UH.Enums.QUEST_TYPE.NETHERWING,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+      GetRequirements = function()
+        return {
+          profession = "Mining:350",
+          factions = {
+            { factionID = 1015, standingID = UH.Enums.REPUTATION_STANDING.NEUTRAL },
+          },
+        };
+      end
+    },
+    {
+      questID = 11017,
+      questName = "Netherdust Pollen",
+      type = UH.Enums.QUEST_TYPE.NETHERWING,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+      GetRequirements = function()
+        return {
+          profession = "Herbalism:350",
+          factions = {
+            { factionID = 1015, standingID = UH.Enums.REPUTATION_STANDING.NEUTRAL },
+          },
+        };
+      end
+    },
+    {
+      questID = 11016,
+      questName = "Nethermine Flayer Hide",
+      type = UH.Enums.QUEST_TYPE.NETHERWING,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+      GetRequirements = function()
+        return {
+          profession = "Skinning:350",
+          factions = {
+            { factionID = 1015, standingID = UH.Enums.REPUTATION_STANDING.NEUTRAL },
+          },
+        };
+      end
+    },
+
+    -- Friendly
+    {
+      questID = 11076,
+      questName = "Picking Up The Pieces...",
+      type = UH.Enums.QUEST_TYPE.NETHERWING,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+      GetRequirements = function()
+        return {
+          factions = {
+            { factionID = 1015, standingID = UH.Enums.REPUTATION_STANDING.FRIENDLY },
+          },
+        };
+      end
+    },
+    {
+      questID = 11077,
+      questName = "Dragons are the Least of Our Problems",
+      type = UH.Enums.QUEST_TYPE.NETHERWING,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+      GetRequirements = function()
+        return {
+          factions = {
+            { factionID = 1015, standingID = UH.Enums.REPUTATION_STANDING.FRIENDLY },
+          },
+        };
+      end
+    },
+    {
+      questID = 11055,
+      questName = "The Booterang: A Cure For The Common Worthless Peon",
+      type = UH.Enums.QUEST_TYPE.NETHERWING,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+      GetRequirements = function()
+        return {
+          factions = {
+            { factionID = 1015, standingID = UH.Enums.REPUTATION_STANDING.FRIENDLY },
+          },
+        };
+      end
+    },
+
+    -- Honored
+    {
+      questID = 11086,
+      questName = "Disrupting the Twilight Portal",
+      type = UH.Enums.QUEST_TYPE.NETHERWING,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+      GetRequirements = function()
+        return {
+          factions = {
+            { factionID = 1015, standingID = UH.Enums.REPUTATION_STANDING.HONORED },
+          },
+        };
+      end
+    },
+
+    -- Revered
+    {
+      questID = 11101,
+      questName = "The Deadliest Trap Ever Laid", -- Aldor
+      type = UH.Enums.QUEST_TYPE.NETHERWING,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+      GetRequirements = function()
+        return {
+          factions = {
+            { factionID = 1015, standingID = UH.Enums.REPUTATION_STANDING.REVERED },
+            { factionID = 932,  standingID = UH.Enums.REPUTATION_STANDING.FRIENDLY },
+          },
+          questID = 11100, -- Commander Arcus
+        };
+      end
+    },
+    {
+      questID = 11097,
+      questName = "The Deadliest Trap Ever Laid", -- Scryer
+      type = UH.Enums.QUEST_TYPE.NETHERWING,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+      GetRequirements = function()
+        return {
+          factions = {
+            { factionID = 1015, standingID = UH.Enums.REPUTATION_STANDING.REVERED },
+            { factionID = 934,  standingID = UH.Enums.REPUTATION_STANDING.FRIENDLY },
+          },
+          questID = 11095, -- Commander Hobb
+        };
+      end
+    },
+
+    -- PVP
+    {
+      questID = 10110,
+      questName = "Hellfire Fortifications", -- Horde
+      type = UH.Enums.QUEST_TYPE.PVP,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+      GetRequirements = function()
+        return {
+          level = 55,
+          side = UH.Enums.SIDE.HORDE,
+          questID = 10124, -- Forward Base: Reaver's Fall
+        };
+      end
+    },
+    {
+      questID = 10106,
+      questName = "Hellfire Fortifications", -- Alliance
+      type = UH.Enums.QUEST_TYPE.PVP,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+      GetRequirements = function()
+        return {
+          level = 55,
+          side = UH.Enums.SIDE.ALLIANCE,
+          questID = 10483, -- Ill Omens
+        };
+      end
+    },
+    {
+      questID = 11503,
+      questName = "Enemies, Old and New", -- Horde
+      type = UH.Enums.QUEST_TYPE.PVP,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+      GetRequirements = function()
+        return {
+          side = UH.Enums.SIDE.HORDE,
+          level = 64,
+          factions = {
+            { factionID = 941, standingID = UH.Enums.REPUTATION_STANDING.NEUTRAL },
+          },
+        };
+      end,
+    },
+    {
+      questID = 11502,
+      questName = "In Defense of Halaa", -- Alliance
+      type = UH.Enums.QUEST_TYPE.PVP,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+      GetRequirements = function()
+        return {
+          side = UH.Enums.SIDE.ALLIANCE,
+          level = 64,
+          factions = {
+            { factionID = 978, standingID = UH.Enums.REPUTATION_STANDING.NEUTRAL },
+          },
+        };
+      end,
+    },
+    {
+      questID = 11506,
+      questName = "Spirits of Auchindoun", -- Horde
+      type = UH.Enums.QUEST_TYPE.PVP,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+      GetRequirements = function()
+        return {
+          side = UH.Enums.SIDE.HORDE,
+          level = 62,
+        };
+      end,
+    },
+    {
+      questID = 11505,
+      questName = "Spirits of Auchindoun", -- Alliance
+      type = UH.Enums.QUEST_TYPE.PVP,
+      expansion = UH.Enums.EXPANSIONS.TBC,
+      periodicity = UH.Enums.PERIODICITY.DAILY,
+      GetRequirements = function()
+        return {
+          side = UH.Enums.SIDE.ALLIANCE,
+          level = 62,
+        };
+      end,
+    },
   },
+};
+
+---@type QuestDB
+Module.QuestDB = setmetatable(
+  questDBTable,
   {
+    ---@type QuestDBMetatable
     __index = {
       GetQuestsByType = function(self, type, expansion)
         local quests = {};
@@ -683,17 +714,22 @@ Module.QuestDB = setmetatable(
   }
 );
 
+Module.CollapsedGroups = {};
+
 local DAY_IN_SECONDS = 24 * 60 * 60;
 local WEEK_IN_SECONDS = 24 * 60 * 60 * 7;
 ---@return string "Converted time"
 ---@return boolean "If its ready"
 ---@return table "RGB"
 local function GetRemainingTime(quest)
-  function ToRGB(rgb)
+  ---@param rgb BasicRGB
+  ---@return BasicRGB
+  function NormalizeRGB(rgb)
     return { r = rgb.r / 255, g = rgb.g / 255, b = rgb.b / 255 };
   end
 
   local isQuestComplete = false;
+
   if (quest.isQuestVariationGroup) then
     isQuestComplete = Module.QuestDB.complete[quest.quests[1].questID];
   else
@@ -701,14 +737,14 @@ local function GetRemainingTime(quest)
   end
 
   if (not isQuestComplete) then
-    return "Ready", true, ToRGB({ r = 16, g = 179, b = 16 });
+    return "Ready", true, NormalizeRGB({ r = 16, g = 179, b = 16 });
   end
 
   local seconds = nil;
 
   if (quest.type == UH.Enums.QUEST_TYPE.CONSORTIUM) then
     local now   = GetServerTime();
-    local month = tonumber(date("%m", now));
+    local month = tonumber(date("%m", now)) or 0;
     local year  = tonumber(date("%Y", now));
     local t     = {
       year = year,
@@ -727,7 +763,7 @@ local function GetRemainingTime(quest)
 
   if (seconds >= DAY_IN_SECONDS) then
     local days = math.floor(seconds / DAY_IN_SECONDS);
-    return days .. (days == 1 and " day" or " days"), false, ToRGB({ r = 255, g = 255, b = 255 });
+    return days .. (days == 1 and " day" or " days"), false, NormalizeRGB({ r = 255, g = 255, b = 255 });
   end
 
   local hours = math.floor(seconds / 3600);
@@ -739,10 +775,12 @@ local function GetRemainingTime(quest)
     rgb = { r = 255, g = 71, b = 71 };
   end
 
-  return string.format("%02d:%02d:%02d", hours, minutes, seconds), false, ToRGB(rgb);
+  return string.format("%02d:%02d:%02d", hours, minutes, seconds), false, NormalizeRGB(rgb);
 end
 
----@param requirements QuestRequirements | nil
+---@param requirements QuestRequirements|nil
+---@return boolean
+---@return RequirementValidation[]|nil
 function ValidateRequirements(requirements)
   local validators = {
     quest = function(requirements)
@@ -879,7 +917,7 @@ function ValidateRequirements(requirements)
   local errors = {};
   local errorCount = 0;
 
-  for key, fn in pairs(validators) do
+  for _, fn in pairs(validators) do
     local pass, validationResult = fn(requirements);
     tinsert(errors, { pass = pass, error = validationResult });
 
@@ -921,13 +959,14 @@ end
 
 function Module:UpdateFlags()
   UH.db.char.lastDailyQuestCheck = GetServerTime();
-  Module.QuestDB.flags = {};
 
   for _, value in ipairs(Module.QuestDB.data) do
     Module:UpdateFlagsByID(value.questID);
   end
 end
 
+---@param questID number
+---@return Quest|nil
 function Module:UpdateFlagsByID(questID)
   ---@type QuestRequirements | nil
   local requirements, quest = Module.QuestDB:GetQuestRequirements(questID);
@@ -944,6 +983,8 @@ function Module:UpdateFlagsByID(questID)
   return quest;
 end;
 
+---@param questID number
+---@return number
 function Module:UpdateFlagsByNonDaily(questID)
   local updatedQuestsCount = 0;
 
@@ -959,7 +1000,10 @@ function Module:UpdateFlagsByNonDaily(questID)
   return updatedQuestsCount;
 end
 
+---@param factionID number
 function Module:UpdateFlagsByFaction(factionID)
+  ---@param requirements QuestRequirements
+  ---@return boolean
   function RequirementsIncludeFaction(requirements)
     if (requirements.factions and #requirements.factions > 0) then
       for _, faction in ipairs(requirements.factions) do
@@ -1016,7 +1060,7 @@ function Module:CheckIfRefreshIsNeeded()
     isdst = false,
   };
 
-  -- As the reset is always day 1,
+  -- Considering that reset is always day 1
   lastReset   = time(t);
 
   if (lastReset > lastCheck) then
@@ -1094,8 +1138,6 @@ function Module:CreateDailyQuestsFrame()
       factory("TreeGroupButtonTemplate", Initializer);
     elseif (elementData.questName) then
       local function Initializer(button, node)
-        local width = button:GetWidth();
-
         button:SetPushedTextOffset(0, 0);
         button:SetHighlightAtlas("search-highlight");
         button:SetNormalFontObject(GameFontHighlight);
@@ -1150,9 +1192,34 @@ function Module:CreateDailyQuestsFrame()
 end
 
 function Module:UpdateDailyQuestsFrameList()
-  local groups = setmetatable({}, {
+  ---@class DailyQuest
+  ---@field groupName string
+  ---@field questName string
+  ---@field questID number
+  ---@field type EnumQuestType
+
+  ---@class DailyQuestGroup
+  ---@field group string
+  ---@field isQuestVariationGroup boolean
+  ---@field type EnumQuestType
+  ---@field quests DailyQuest[]
+
+  ---@class DailyQuestsTable
+  ---@field data DailyQuestGroup[]
+
+  ---@class DailyQuestMetatable
+  ---@field InsertOrGetGroup fun(self: DailyQuestList, group: DailyQuestGroup): DailyQuestGroup
+  ---@field ToTreeDataProvider fun(self: DailyQuestList): table
+
+  ---@type DailyQuestsTable
+  local groupsTable = {
+    data = {},
+  };
+  ---@class DailyQuestList : DailyQuestsTable & DailyQuestMetatable
+  local groups = setmetatable(groupsTable, {
+    ---@type DailyQuestMetatable
     __index = {
-      InsertGroup = function(self, group)
+      InsertOrGetGroup = function(self, group)
         for _, loopGroup in ipairs(self) do
           if (loopGroup.group == group.group) then
             return loopGroup;
@@ -1166,8 +1233,8 @@ function Module:UpdateDailyQuestsFrameList()
       ToTreeDataProvider = function(self)
         local dataProvider = CreateTreeDataProvider();
 
-        for _, groupOrNode in pairs(self) do
-          if (groupOrNode.isQuestVariationGroup) then
+        for _, groupOrNode in pairs(self.data) do
+          if (groupOrNode.isQuestVariationGroup and groupOrNode.quests[1]) then
             -- As it is a QuestVariationGroup, just by checking the first requirement should be enough
             if (Module.QuestDB.requirementsOK[groupOrNode.quests[1].questID]) then
               dataProvider:Insert({
@@ -1204,6 +1271,7 @@ function Module:UpdateDailyQuestsFrameList()
   });
 
   for _, quest in pairs(Module.QuestDB.data) do
+    ---@type string|nil
     local groupName = nil;
     local questName = "";
     local isQuestVariationGroup = false;
@@ -1241,7 +1309,7 @@ function Module:UpdateDailyQuestsFrameList()
     end
 
     if (groupName or isQuestVariationGroup) then
-      local group = groups:InsertGroup({
+      local group = groups:InsertOrGetGroup({
         group = groupName or questName,
         isQuestVariationGroup = isQuestVariationGroup,
         type = quest.type,
@@ -1304,6 +1372,7 @@ function Module:OnInitialize()
 end
 
 -- Events
+---@param questID number|string|nil
 function Module:OnQuestTurnedIn(questID)
   if (type(questID) == "string") then
     questID = tonumber(questID);

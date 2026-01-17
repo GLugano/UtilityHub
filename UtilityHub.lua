@@ -15,6 +15,7 @@ UH.IsClassic = (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC) and (interfaceVersion < 2
 UH.IsTBC = (interfaceVersion >= 20505) and (interfaceVersion < 30000);
 UH.IsTBCorLater = interfaceVersion >= 20505;
 
+---@type boolean
 UH.addonReady = false;
 UH.Options = setmetatable({}, {
   __index = {
@@ -65,6 +66,8 @@ UH.Enums.MINIMAP_ICON = {
   NORMAL = "Interface\\Addons\\UtilityHub\\Assets\\Icons\\addon.blp",
   NOTIFICATION = "Interface\\ICONS\\INV_Enchant_FormulaEpic_01.blp",
 };
+
+---@enum EnumQuestType
 UH.Enums.QUEST_TYPE = {
   DUNGEON_NORMAL = 0,
   DUNGEON_HEROIC = 1,
@@ -77,6 +80,7 @@ UH.Enums.QUEST_TYPE = {
   NETHERWING = 8,
   PVP = 9,
 }
+---@enum EnumExpansion
 UH.Enums.EXPANSIONS = {
   CLASSIC = 0,
   TBC = 1,
@@ -96,6 +100,7 @@ UH.Enums.PERIODICITY = {
   WEEKLY = 2,
   MONTHLY = 3,
 };
+---@enum EnumSide
 UH.Enums.SIDE = {
   ALLIANCE = "Alliance",
   HORDE = "Horde",

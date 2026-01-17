@@ -6,6 +6,7 @@ local moduleName = 'AutoBuy';
 ---@diagnostic disable-next-line: undefined-field
 local Module = UH:NewModule(moduleName);
 
+---@type boolean
 Module.eventRegistered = false;
 
 function Module:SearchAndBuyRares()
@@ -27,7 +28,7 @@ function Module:SearchAndBuyRares()
         UH.Helpers:ShowNotification("Doesn't have enough money for " .. searchResult);
       elseif (not priceTooHigh) then
         UH.Helpers:ShowNotification("The price of " ..
-        searchResult .. " is too high (would give a high price popup warn)");
+          searchResult .. " is too high (would give a high price popup warn)");
       end
 
       if (canAfford and not priceTooHigh) then

@@ -1,10 +1,6 @@
 local ADDON_NAME = ...;
 ---@type UtilityHub
 local UH = LibStub('AceAddon-3.0'):GetAddon(ADDON_NAME);
-local moduleName = 'Compatibility';
----@class Compatibility
----@diagnostic disable-next-line: undefined-field
-local Module = UH:NewModule(moduleName);
 
 function UH.Compatibility.Baganator()
   UH.Compatibility:FuncOrWaitFrame({ "Baganator", "Dejunk" }, function()

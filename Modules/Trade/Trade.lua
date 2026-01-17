@@ -6,8 +6,15 @@ local moduleName = 'Trade';
 ---@diagnostic disable-next-line: undefined-field
 local Module = UH:NewModule(moduleName);
 Module.whispers = {};
+---@type table|nil
 Module.TradeDataFrameRef = nil;
-Module.Buttons = { Water = nil, Food = nil };
+---@class TradeButtons
+Module.Buttons = {
+  ---@type table|nil
+  Water = nil,
+  ---@type table|nil
+  Food = nil,
+};
 
 -- Need to be outside of OnInitialize to catch whispers while trade frame is not opened before
 EventRegistry:RegisterFrameEventAndCallback("CHAT_MSG_WHISPER", function(_, text, name)
@@ -134,11 +141,15 @@ function Module:ShowFrames()
   end
 end
 
+---@param frame table
+---@param text string|nil
+---@param fontSize number|nil
+---@return table
 function CreateLabel(frame, text, fontSize)
   local label = UH.UTILS.AceGUI:Create("Label");
   local fontPath, _, fontFlags = label.label:GetFont();
   label.label:SetFont(fontPath, fontSize or 16, fontFlags);
-  label:SetText(text);
+  label:SetText(text or "");
   label.label:SetWordWrap(true);
   label:SetFullWidth(true);
   frame:AddChild(label);
@@ -159,6 +170,9 @@ function Module:UpdateItemFromButtons()
   local waterItemIDs = { 8079, 8078, 8077, 3772, 2136, 2288, 5350 };
   local foodItemIDs = { 22895, 8076, 8075, 1487, 1114, 1113, 5349 };
 
+  ---@param type "Water" | "Food"
+  ---@param spellIDs number[]
+  ---@param itemIDs number[]
   function UpdateItem(type, spellIDs, itemIDs)
     if (not Module.Buttons[type]) then
       return;
@@ -177,6 +191,10 @@ function Module:UpdateItemFromButtons()
   UpdateItem("Food", foodSpellIDs, foodItemIDs);
 end
 
+---@param spells number[]
+---@param items number[]
+---@return number|nil
+---@return number|nil
 function Module:GetItemIDBy(spells, items)
   for index, spellID in ipairs(spells) do
     ---@diagnostic disable-next-line: deprecated
@@ -188,6 +206,9 @@ function Module:GetItemIDBy(spells, items)
   return nil, nil;
 end
 
+---@param name string
+---@param parent table|nil
+---@return table|Button|UHTradeItemButtonTemplate
 function Module:CreateItemButton(name, parent)
   local button = CreateFrame("Button", name, TradeFrame, "UHTradeItemButtonTemplate");
   button.ModuleRef = Module;
@@ -220,7 +241,8 @@ function Module:CreateItemButton(name, parent)
 end
 
 -- Mixins
-UHTradeItemButtonMixin = {}
+UHTradeItemButtonMixin = {};
+
 function UHTradeItemButtonMixin:OnLoad()
   self:RegisterEvent("ACTIONBAR_UPDATE_USABLE");
   self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN"); -- not updating cooldown from lua anymore, see SetActionUIButton
@@ -272,6 +294,7 @@ function UHTradeItemButtonMixin:UpdateState()
 end
 
 function UHTradeItemButtonMixin:UpdateCooldown()
+  ---@type number
   local start, duration, enable;
   local modRate = 1.0;
 
@@ -339,8 +362,11 @@ function UHTradeItemButtonMixin:OnClickNotShift(...)
       return;
     end
 
+    ---@type integer|nil
     local bagFromBiggerStack = nil;
+    ---@type integer|nil
     local slotFromBiggerStack = nil;
+    ---@type integer
     local stackSize = 0;
 
     for bag = 0, NUM_BAG_SLOTS do

@@ -105,7 +105,12 @@
     "PLAYER_LEVEL_UP",
     "PVP",
     "MANA",
-    "RANGED_ATTACK_POWER"
+    "LibStub",
+    "WOW_PROJECT_ID",
+    "Baganator",
+    "DejunkApi",
+    "GetNumFactions",
+    "GetFactionInfo"
   ],
   "Lua.runtime.version": "Lua 5.1",
   "Lua.runtime.builtin": {

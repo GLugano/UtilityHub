@@ -24,9 +24,7 @@ function Module:GetAccountCharactersGeneratorFunction()
       local group = row.group or UH.Enums.CHARACTER_GROUP.UNGROUPED;
       local groupList = groups[group];
 
-      if (groupList) then
-        tinsert(groupList, row);
-      end
+      tinsert(groupList, row);
     end
 
     local indexGroupWithData = 1;

@@ -909,6 +909,12 @@ function Module:ToggleNewPresetFrame()
   end
 end
 
+---@param name string
+---@param labelText string
+---@param parent table
+---@param y number
+---@return table|EditBox|InputBoxTemplate input
+---@return table label
 function Module:CreateFormField(name, labelText, parent, y)
   local label = parent:CreateFontString(nil, "OVERLAY");
   label:SetFontObject("GameFontHighlight");
@@ -927,6 +933,8 @@ function Module:CreateFormField(name, labelText, parent, y)
   return input, label;
 end
 
+---@param text string
+---@param onHideFn fun()|nil
 function Module:ShowFormErrorPopup(text, onHideFn)
   local popupName = ADDON_NAME .. "NewPresetError";
   StaticPopupDialogs[popupName] = {
@@ -946,7 +954,9 @@ function Module:ShowFormErrorPopup(text, onHideFn)
   StaticPopup_Show(popupName);
 end
 
----@return boolean | nil
+---@param data any
+---@param dataID number
+---@return boolean
 function Module:SavePreset(data, dataID)
   local preset = {};
 
@@ -969,7 +979,8 @@ function Module:SavePreset(data, dataID)
         Module.NewPresetFrame.NameInput:SetFocus();
       end
     end);
-    return;
+
+    return false;
   end
 
   if (not preset.to or #preset.to < 1) then
@@ -978,7 +989,8 @@ function Module:SavePreset(data, dataID)
         Module.NewPresetFrame.ToInput:SetFocus();
       end
     end);
-    return;
+
+    return false;
   end
 
   local atLeastOneCheck = false;
@@ -1001,7 +1013,7 @@ function Module:SavePreset(data, dataID)
 
   if (UH.UTILS:TableLength(preset.custom) == 0 and (not atLeastOneCheck)) then
     Module:ShowFormErrorPopup("At least one item group needs to be checked or one item added to the inclusions");
-    return;
+    return false;
   end
 
   -- Save
