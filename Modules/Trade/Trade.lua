@@ -256,7 +256,7 @@ function UHTradeItemButtonMixin:OnLoad()
   self:RegisterEvent("START_AUTOREPEAT_SPELL");
   self:RegisterEvent("STOP_AUTOREPEAT_SPELL");
   self:RegisterEvent("UNIT_INVENTORY_CHANGED");
-  self:RegisterEvent("LEARNED_SPELL_IN_TAB");
+  self:RegisterEvent("SPELLS_CHANGED");
   self:RegisterEvent("PET_STABLE_UPDATE");
   self:RegisterEvent("PET_STABLE_SHOW");
   self:RegisterUnitEvent("LOSS_OF_CONTROL_ADDED", "player");

@@ -463,7 +463,10 @@ local BLOCK_CLASSIC                   = {
 };
 
 local BLOCK                           = {
-  pattern = "Increases your shield block rating by (%d+)",
+  pattern = {
+    "Increases your shield block rating by (%d+)",
+    "Increases your block rating by (%d+)"
+  },
   FormatText = function(self, text)
     local defense = text:match("by (%d+)");
     return string.format("+%s Block Rating", defense);
@@ -535,7 +538,8 @@ end
 
 local function ExtractPrefix(text)
   local prefixes = {
-    "^%(%d%) Set:",    -- Set bonus
+    "^%(%d%) Set:",    -- Set bonus active
+    "Set:",            -- Set bonus inactive
     "^Equip:",         -- Equip
     "^Chance on hit:", -- Equip
     "^Use:",           -- Equip
@@ -667,6 +671,14 @@ function Module:OnEnable()
 
   if (not Module.gameTooltipHooked) then
     Module.gameTooltipHooked = GameTooltip:HookScript("OnTooltipSetItem", OnTooltipSetItemEvent);
+  end
+
+  if (not Module.shopping1TooltipHooked) then
+    Module.shopping1TooltipHooked = ShoppingTooltip1:HookScript("OnTooltipSetItem", OnTooltipSetItemEvent);
+  end
+
+  if (not Module.shopping2TooltipHooked) then
+    Module.shopping2TooltipHooked = ShoppingTooltip2:HookScript("OnTooltipSetItem", OnTooltipSetItemEvent);
   end
 end
 
