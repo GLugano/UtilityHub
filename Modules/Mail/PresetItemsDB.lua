@@ -374,7 +374,7 @@ addonTable.classicItems = {
 
   },
   ---@type PresetItemsDBItem[]
-  rawCooking = {
+  rawFood = {
     { itemID = 2665,  name = "Stormwind Seasoning Herbs" },
     { itemID = 23676, name = "Moongraze Stag Tenderloin" },
     { itemID = 27668, name = "Lynx Meat" },

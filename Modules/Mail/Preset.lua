@@ -343,13 +343,13 @@ Module.ItemGroupOptions = {
       end
     end
   },
-  ["RawCooking"] = {
-    label = "Raw Cooking Materials",
+  ["RawFood"] = {
+    label = "Raw food",
     checkItemBelongsToGroup = function(itemLink)
       local _, _, _, _, _, _, _, _, _, _, _, classID, subclassID = C_Item.GetItemInfo(itemLink);
 
       if (UH.IsClassic) then
-        return CheckItemLinkInList(itemLink, classicItems.leather);
+        return CheckItemLinkInList(itemLink, classicItems.rawFood);
       else
         return classID == Enum.ItemClass.Tradegoods and subclassID == 8;
       end

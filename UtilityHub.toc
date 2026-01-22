@@ -16,9 +16,9 @@ Options/ItemList.lua
 Options/Options.lua
 Layout/TreeGroup/TreeGroup.lua
 Layout/TreeGroup/TreeGroup.xml
-Modules/Mail/Preset.lua
-Modules/Mail/Characters.lua
 Modules/Mail/PresetItemsDB.lua
+Modules/Mail/Characters.lua
+Modules/Mail/Preset.lua
 Modules/Mail/Mail.lua
 Modules/Trade/Trade.xml
 Modules/AutoBuy/AutoBuy.lua
