@@ -37,6 +37,9 @@ local baseCooldowns = {
   Leatherworking = {},
 };
 
+-- Still a cooldown in the tbc pre patch
+tinsert(baseCooldowns.Leatherworking, { name = "Refined Deeprock Salt", itemID = 15846 });
+
 if (UH.IsClassic) then
   tinsert(baseCooldowns.Tailoring, { name = "Mooncloth", spellID = 18560 });
 
@@ -55,8 +58,6 @@ if (UH.IsClassic) then
     tinsert(transmutes.spellList, { name = "Mithril to Truesilver", spellID = 11480 });
     tinsert(transmutes.spellList, { name = "Iron to Gold", spellID = 11479 });
   end
-
-  tinsert(baseCooldowns.Leatherworking, { name = "Cured Rugged Hide", itemID = 15846 });
 elseif (UH.IsTBC) then
   tinsert(baseCooldowns.Tailoring, { name = "Shadowcloth", spellID = 36686 });
   tinsert(baseCooldowns.Tailoring, { name = "Spellcloth", spellID = 31373 });

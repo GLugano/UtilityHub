@@ -11,6 +11,10 @@ local PresetModule;
 ---@type Characters
 local CharactersModule;
 
+UH.Events:RegisterCallback("PLAYER_GUILD_UPDATE", function(_, name)
+  Module:UpdateMailButtons();
+end);
+
 function Module:CreateMailIconButtons()
   function CreateNewPresetButton(previousFrame)
     -- New
@@ -236,12 +240,22 @@ function Module:CreateMailIconButtons()
 
   local previousFrame = nil;
 
-  -- previousFrame = CreateNewPresetButton();
   previousFrame = CreateLoadPresetButton(previousFrame);
-  -- CreateManagePresetButton();
   previousFrame = CreateCharactersButton(previousFrame);
   previousFrame = CreateGuildButton(previousFrame);
   previousFrame = CreateConfigEmailButton(previousFrame);
+
+  Module:UpdateMailButtons();
+end
+
+function Module:UpdateMailButtons()
+  if (MailFrame.GuildButton) then
+    if (IsInGuild()) then
+      MailFrame.GuildButton:Enable();
+    else
+      MailFrame.GuildButton:Disable();
+    end
+  end
 end
 
 function Module:OnInitialize()

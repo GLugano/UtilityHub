@@ -114,7 +114,8 @@
     "ShoppingTooltip1",
     "ShoppingTooltip2",
     "FriendsFrame",
-    "MenuConstants"
+    "MenuConstants",
+    "CUSTOM_CLASS_COLORS"
   ],
   "Lua.runtime.version": "Lua 5.1",
   "Lua.runtime.builtin": {

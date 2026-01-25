@@ -77,7 +77,7 @@ function UH.Helpers:AsyncGetItemInfo(item, cb)
   return tryCB(nil);
 end;
 
----@param className string
+---@param className string|nil
 ---@return BasicRGB
 function UH.Helpers:GetRGBFromClassName(className)
   ---@type BasicRGB

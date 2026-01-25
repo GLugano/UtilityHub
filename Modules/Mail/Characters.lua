@@ -90,6 +90,11 @@ function Module:GetGuildCharactersGeneratorFunction()
       characterButton:SetEnabled(player.name ~= UnitName("player"));
     end
 
+    -- If guild members still pending to load
+    if (#players == 0) then
+      columns = 1;
+    end
+
     rootDescription:SetGridMode(MenuConstants.VerticalGridDirection, columns);
   end
 end
