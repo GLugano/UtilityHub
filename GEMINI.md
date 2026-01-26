@@ -66,8 +66,17 @@ As a World of Warcraft AddOn, there is no traditional "build" process. To instal
 ## Development Conventions
 
 *   **Module-based Structure:** Features are organized into separate modules (e.g., `Modules/Mail`, `Modules/AutoBuy`).
-*   **Ace3 Framework:** Heavily relies on Ace3 libraries for core functionalities, configuration, and data management.
+*   **Ace3 Framework:** Should be used for the module structure, saving data between sessions and characters, options. Outside this scope of things, try not using it unless necessary or required.
 *   **Event-driven:** Utilizes `CallbackRegistryMixin` for internal event handling and communication between modules.
 *   **SavedVariables:** Uses `AceDB-3.0` to persist user settings and data across game sessions.
 *   **Localization (Implied):** While not explicitly covered in the reviewed files, WoW AddOns typically support localization, often managed through separate `.lua` or `.xml` files.
 *   **Lua Type Annotations:** The code includes LuaDoc-style type annotations for better code readability and IDE support.
+
+## Sources of information
+
+1. \\wsl.localhost\Ubuntu\home\dev\wow-ui-source - Source code of the WoW Interface - TBC Anniversary Version
+2. https://warcraft.wiki.gg/ - Most accurate source documentation for the WoW Interface API
+3. https://github.com/TheMouseNest/Baganator - Good addon to be used as example
+4. https://github.com/TheMouseNest/Auctionator - Good addon to be used as example
+5. https://github.com/Karl-HeinzSchneider/WoW-DragonflightUI - Good addon to be used as example
+6. ../ - My current addons folder with mostly recently updated addons
