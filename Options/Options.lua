@@ -454,6 +454,7 @@ function addonTable.GenerateOptions()
               custom = UH.tempPreset.custom,
               itemGroups = itemGroups,
               exclusion = UH.tempPreset.exclusion,
+              color = UH.tempPreset.color,
             }, UH.tempPreset.id);
 
             if (result) then
@@ -617,11 +618,17 @@ function addonTable.GenerateOptions()
                 heightSizeType = "full",
                 CustomizeRowElement = function(self, frame, rowData, helpers)
                   local widget = self;
+                  local color = rowData.color;
 
                   frame:SetText(rowData.name);
                   frame:GetFontString():SetTextColor(1, 1, 1);
                   frame:GetFontString():SetPoint("LEFT", 6, 0);
                   frame:GetFontString():SetPoint("RIGHT", -20, 0);
+                  frame:GetFontString():SetTextColor(
+                    color and color.r or 1,
+                    color and color.g or 1,
+                    color and color.b or 1
+                  );
 
                   local function CreateEditIconButton()
                     frame.customElements[widget.name].EditIconButton = CreateFrame("Button", nil, frame);

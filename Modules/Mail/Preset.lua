@@ -770,7 +770,7 @@ function Module:ShowFormErrorPopup(text, onHideFn)
 end
 
 ---@param data any
----@param dataID number
+---@param dataID number|nil
 ---@return boolean
 function Module:SavePreset(data, dataID)
   local preset = {};
