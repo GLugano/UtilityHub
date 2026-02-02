@@ -1,7 +1,7 @@
 local ADDON_NAME, addonTable = ...;
 ---@class UtilityHub
 local UH = LibStub("AceAddon-3.0"):NewAddon(ADDON_NAME, "AceComm-3.0");
-local interfaceVersion = select(4, GetBuildInfo())
+local interfaceVersion = select(4, GetBuildInfo());
 
 UH:SetDefaultModuleState(false);
 local LDB = LibStub:GetLibrary("LibDataBroker-1.1");

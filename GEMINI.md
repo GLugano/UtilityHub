@@ -76,9 +76,9 @@ As a World of Warcraft AddOn, there is no traditional "build" process. To instal
 
 ## Sources of information
 
-1. \\wsl.localhost\Ubuntu\home\dev\wow-ui-source - Source code of the WoW Interface - TBC Anniversary Version
-2. https://warcraft.wiki.gg/ - Most accurate source documentation for the WoW Interface API
-3. https://github.com/TheMouseNest/Baganator - Good addon to be used as example
-4. https://github.com/TheMouseNest/Auctionator - Good addon to be used as example
-5. https://github.com/Karl-HeinzSchneider/WoW-DragonflightUI - Good addon to be used as example
-6. ../ - My current addons folder with mostly recently updated addons
+1. Source code of the WoW Interface - TBC Anniversary Version `https://github.com/Gethe/wow-ui-source/tree/classic_anniversary` 
+2. Most accurate source documentation for the WoW Interface API `https://warcraft.wiki.gg/`
+3. Good addon to be used as example `https://github.com/TheMouseNest/Baganator`
+4. Good addon to be used as example `https://github.com/TheMouseNest/Auctionator`
+5. Good addon to be used as example `https://github.com/Karl-HeinzSchneider/WoW-DragonflightUI`
+6. My current addons folder with mostly recently updated addons `../`
