@@ -99,14 +99,17 @@ Module.ItemGroupOptions = {
   ["Enchant"] = {
     label = "Enchant",
     checkItemBelongsToGroup = function(itemLink)
-      local itemName, _, _, _, _, _, _, _, _, _, _, classID = C_Item.GetItemInfo(
-        itemLink);
+      local _, _, _, _, _, _, _, _, _, _, _, classID, subclassID = C_Item.GetItemInfo(itemLink);
 
-      if (classID ~= 7) then
-        return false;
+      if (UH.IsClassic) then
+        if (classID ~= 7) then
+          return false;
+        end
+
+        return CheckItemLinkInList(itemLink, classicItems.enchant);
+      else
+        return classID == Enum.ItemClass.Tradegoods and subclassID == 12;
       end
-
-      return CheckItemLinkInList(itemLink, classicItems.enchant);
     end
   },
   ["Cloth"] = {
