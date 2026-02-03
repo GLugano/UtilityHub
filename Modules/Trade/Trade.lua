@@ -216,10 +216,6 @@ end
 local moduleData = CreateModule();
 
 -- Lifecycle
-function module:OnEnable()
-  moduleData.Show();
-end
-
 function module:OnDisable()
   moduleData.Hide();
 end
