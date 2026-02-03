@@ -83,6 +83,11 @@ function UHTradeItemButtonMixin:OnEnter()
     GameTooltip:SetSpellByID(spell);
   else
     local item = self:GetAttribute('itemID');
+
+    if (not item) then
+      return;
+    end
+
     local itemLink = select(2, C_Item.GetItemInfo(item));
 
     if (not itemLink) then
