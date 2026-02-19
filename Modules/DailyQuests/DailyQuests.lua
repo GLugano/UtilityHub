@@ -1068,10 +1068,23 @@ end
 
 -- Frames
 function Module:CreateDailyQuestsFrame()
+  local MIN_WIDTH = 220;
+  local MIN_HEIGHT = 180;
+  local DEFAULT_WIDTH = 350;
+  local DEFAULT_HEIGHT = 350;
+
   local frame = CreateFrame("Frame", nil, UIParent, "SettingsFrameTemplate");
   Module.Frame = frame;
-  frame:SetSize(350, 350);
+  frame:SetResizable(true);
+  frame:SetResizeBounds(MIN_WIDTH, MIN_HEIGHT);
   frame:Hide();
+
+  local savedSize = UtilityHub.Database.global.dailyQuestsFrameSize;
+  if (savedSize) then
+    frame:SetSize(savedSize.width, savedSize.height);
+  else
+    frame:SetSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+  end
   local savedPosition = UtilityHub.Database.global.dailyQuestsFramePosition;
 
   if (UtilityHub.Database.global.dailyQuestsFramePosition) then
@@ -1091,6 +1104,24 @@ function Module:CreateDailyQuestsFrame()
     UtilityHub.Database.global.dailyQuestsFramePosition = pos;
   end);
 
+  local resizeHandle = CreateFrame("Button", nil, frame);
+  resizeHandle:SetSize(16, 16);
+  resizeHandle:SetPoint("BOTTOMRIGHT", -4, 4);
+  resizeHandle:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up");
+  resizeHandle:SetHighlightTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight");
+  resizeHandle:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down");
+  resizeHandle:SetScript("OnMouseDown", function(self, button)
+    if (button == "LeftButton") then
+      frame:StartSizing("BOTTOMRIGHT");
+    end
+  end);
+  resizeHandle:SetScript("OnMouseUp", function(self, button)
+    frame:StopMovingOrSizing();
+    local w, h = frame:GetSize();
+    UtilityHub.Database.global.dailyQuestsFrameSize = { width = math.floor(w), height = math.floor(h) };
+    Module:UpdateDailyQuestsFrameList();
+  end);
+
   local content = CreateFrame("Frame", nil, frame);
   frame.Content = content;
   content:SetWidth(frame:GetSize());
@@ -1104,6 +1135,19 @@ function Module:CreateDailyQuestsFrame()
   frame.ScrollBox = CreateFrame("Frame", nil, content, "WowScrollBoxList");
   frame.ScrollBox:SetPoint("TOPLEFT", 2, -4);
   frame.ScrollBox:SetPoint("BOTTOMRIGHT", frame.ScrollBar, "BOTTOMLEFT", -3, 0);
+
+  local function UpdateScrollBoxAnchor()
+    frame.ScrollBox:ClearAllPoints();
+    frame.ScrollBox:SetPoint("TOPLEFT", 2, -4);
+    if (frame.ScrollBar:IsShown()) then
+      frame.ScrollBox:SetPoint("BOTTOMRIGHT", frame.ScrollBar, "BOTTOMLEFT", -3, 0);
+    else
+      frame.ScrollBox:SetPoint("BOTTOMRIGHT", content, "BOTTOMRIGHT", -3, 0);
+    end
+  end
+
+  frame.ScrollBar:HookScript("OnShow", UpdateScrollBoxAnchor);
+  frame.ScrollBar:HookScript("OnHide", UpdateScrollBoxAnchor);
 
   local indent = 10;
   local padLeft = 0;
@@ -1185,6 +1229,7 @@ function Module:CreateDailyQuestsFrame()
   end);
 
   ScrollUtil.InitScrollBoxListWithScrollBar(frame.ScrollBox, frame.ScrollBar, view);
+  ScrollUtil.AddManagedScrollBarVisibilityBehavior(frame.ScrollBox, frame.ScrollBar);
 end
 
 function Module:UpdateDailyQuestsFrameList()

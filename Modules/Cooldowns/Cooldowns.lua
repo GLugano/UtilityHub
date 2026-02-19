@@ -412,10 +412,23 @@ end
 
 -- Frame
 function Module:CreateCooldownsFrame()
+  local MIN_WIDTH = 250;
+  local MIN_HEIGHT = 180;
+  local DEFAULT_WIDTH = 400;
+  local DEFAULT_HEIGHT = 450;
+
   local frame = CreateFrame("Frame", nil, UIParent, "SettingsFrameTemplate");
   Module.Frame = frame;
-  frame:SetSize(400, 450);
+  frame:SetResizable(true);
+  frame:SetResizeBounds(MIN_WIDTH, MIN_HEIGHT);
   frame:Hide();
+
+  local savedSize = UtilityHub.Database.global.cooldownFrameSize;
+  if (savedSize) then
+    frame:SetSize(savedSize.width, savedSize.height);
+  else
+    frame:SetSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+  end
   local savedPosition = UtilityHub.Database.global.cooldownFramePosition;
 
   if (UtilityHub.Database.global.cooldownFramePosition) then
@@ -433,6 +446,24 @@ function Module:CreateCooldownsFrame()
   frame.NineSlice.Text:SetText("Cooldowns");
   UtilityHub.Libs.Utils:AddMovableToFrame(frame, function(pos)
     UtilityHub.Database.global.cooldownFramePosition = pos;
+  end);
+
+  local resizeHandle = CreateFrame("Button", nil, frame);
+  resizeHandle:SetSize(16, 16);
+  resizeHandle:SetPoint("BOTTOMRIGHT", -4, 4);
+  resizeHandle:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up");
+  resizeHandle:SetHighlightTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight");
+  resizeHandle:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down");
+  resizeHandle:SetScript("OnMouseDown", function(self, button)
+    if (button == "LeftButton") then
+      frame:StartSizing("BOTTOMRIGHT");
+    end
+  end);
+  resizeHandle:SetScript("OnMouseUp", function(self, button)
+    frame:StopMovingOrSizing();
+    local w, h = frame:GetSize();
+    UtilityHub.Database.global.cooldownFrameSize = { width = math.floor(w), height = math.floor(h) };
+    Module:UpdateCooldownsFrameList();
   end);
 
   local content = CreateFrame("Frame", nil, frame);
@@ -521,6 +552,19 @@ function Module:CreateCooldownsFrame()
   frame.ScrollBox:SetPoint("TOPLEFT", 2, -30);
   frame.ScrollBox:SetPoint("BOTTOMRIGHT", frame.ScrollBar, "BOTTOMLEFT", -3, 0);
 
+  local function UpdateScrollBoxAnchor()
+    frame.ScrollBox:ClearAllPoints();
+    frame.ScrollBox:SetPoint("TOPLEFT", 2, -30);
+    if (frame.ScrollBar:IsShown()) then
+      frame.ScrollBox:SetPoint("BOTTOMRIGHT", frame.ScrollBar, "BOTTOMLEFT", -3, 0);
+    else
+      frame.ScrollBox:SetPoint("BOTTOMRIGHT", content, "BOTTOMRIGHT", -3, 0);
+    end
+  end
+
+  frame.ScrollBar:HookScript("OnShow", UpdateScrollBoxAnchor);
+  frame.ScrollBar:HookScript("OnHide", UpdateScrollBoxAnchor);
+
   local indent = 10;
   local padLeft = 0;
   local pad = 5;
@@ -593,6 +637,7 @@ function Module:CreateCooldownsFrame()
         button:SetNormalFontObject(GameFontHighlight);
         button:SetText(elementData.cooldown);
         button.elementData = elementData;
+        button:GetFontString():ClearAllPoints();
         button:GetFontString():SetPoint("LEFT", 12, 0);
         button:GetFontString():SetPoint("RIGHT", -(timerWidth + 6), 0);
         button:GetFontString():SetJustifyH("LEFT");
@@ -602,20 +647,22 @@ function Module:CreateCooldownsFrame()
           button.Timer = button:CreateFontString(nil, "OVERLAY");
           local font, size, flags = GameFontNormal:GetFont();
           button.Timer:SetFont(font, size, flags);
-          button.Timer:SetPoint("TOPRIGHT", -6, -2);
-          button.Timer:SetPoint("LEFT", width - timerWidth - 6, 0);
           button.Timer:SetJustifyH("RIGHT");
         end
+        button.Timer:ClearAllPoints();
+        button.Timer:SetPoint("TOPRIGHT", -6, -2);
+        button.Timer:SetPoint("LEFT", width - timerWidth - 6, 0);
 
         if (not button.ReadyDate) then
           button.ReadyDate = button:CreateFontString(nil, "OVERLAY");
           local font, size, flags = GameFontNormal:GetFont();
           button.ReadyDate:SetFont(font, size - 2, flags);
-          button.ReadyDate:SetPoint("BOTTOMRIGHT", -6, 2);
-          button.ReadyDate:SetPoint("LEFT", width - timerWidth - 6, 0);
           button.ReadyDate:SetJustifyH("RIGHT");
           button.ReadyDate:SetTextColor(0.7, 0.7, 0.7);
         end
+        button.ReadyDate:ClearAllPoints();
+        button.ReadyDate:SetPoint("BOTTOMRIGHT", -6, 2);
+        button.ReadyDate:SetPoint("LEFT", width - timerWidth - 6, 0);
 
         function button.Timer:Update()
           local parent = self:GetParent();
@@ -666,6 +713,7 @@ function Module:CreateCooldownsFrame()
   end);
 
   ScrollUtil.InitScrollBoxListWithScrollBar(frame.ScrollBox, frame.ScrollBar, view);
+  ScrollUtil.AddManagedScrollBarVisibilityBehavior(frame.ScrollBox, frame.ScrollBar);
 end
 
 function Module:UpdateCooldownsFrameList()

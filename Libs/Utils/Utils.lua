@@ -1,4 +1,4 @@
-local MAJOR, MINOR = "Utils-1.0", 10;
+local MAJOR, MINOR = "Utils-1.0", 11;
 ---@class UTILS
 local UTILS = LibStub:NewLibrary(MAJOR, MINOR);
 
@@ -45,14 +45,14 @@ function UTILS:AddMovableToFrame(frameRef, stopMovingCb)
 
   frameRef.isMoving = false
   frameRef:SetScript("OnMouseDown", function(self, button)
-    if (button == "MiddleButton" and not frameRef.isMoving) then
+    if (button == "LeftButton" and not frameRef.isMoving) then
       frameRef:StartMoving();
       frameRef.isMoving = true;
     end
   end)
 
   frameRef:SetScript("OnMouseUp", function(self, button)
-    if (button == "MiddleButton" and frameRef.isMoving) then
+    if (button == "LeftButton" and frameRef.isMoving) then
       frameRef:StopMovingOrSizing();
       frameRef.isMoving = false;
 
