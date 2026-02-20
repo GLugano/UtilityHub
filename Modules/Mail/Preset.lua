@@ -142,7 +142,7 @@ Module.ItemGroupOptions = {
       end
     end
   },
-  ["Consumables"] = {
+  ["Consumable"] = {
     label = "Consumables (except mana/health potions)",
     CheckItemBelongsToGroup = function(itemLink)
       local itemName, _, _, _, _, _, _, _, _, _, _, classID, subclassID = C_Item.GetItemInfo(itemLink);
@@ -273,7 +273,7 @@ Module.ItemGroupOptions = {
     end
   },
   ["PotionsMana"] = {
-    label = "Potions: Mana",
+    label = "Potion: Mana",
     CheckItemBelongsToGroup = function(itemLink)
       local itemName, _, _, _, _, _, _, _, _, _, _, classID, subclassID = C_Item.GetItemInfo(itemLink);
 
@@ -305,7 +305,7 @@ Module.ItemGroupOptions = {
     end
   },
   ["Scrolls"] = {
-    label = "Scrolls",
+    label = "Scroll",
     CheckItemBelongsToGroup = function(itemLink)
       local itemName, _, _, _, _, _, _, _, _, _, _, classID, subclassID = C_Item.GetItemInfo(itemLink);
 
@@ -366,7 +366,7 @@ Module.ItemGroupOptions = {
     end
   },
   ["EngiMats"] = {
-    label = "Enginnering Materials",
+    label = "Enginnering Material",
     CheckItemBelongsToGroup = function(itemLink)
       local _, _, _, _, _, _, _, _, _, _, _, classID, subclassID = C_Item.GetItemInfo(itemLink);
 
