@@ -38,6 +38,38 @@ UtilityHub = {
         originalValues = {},
         presetApplied = nil,
       },
+      -- MouseRing
+      mouseRing = {
+        enabled = false,
+        size = 34,
+        shape = "thick_ring.tga",
+        colorR = 1,
+        colorG = 1,
+        colorB = 1,
+        useClassColor = true,
+        hideBackground = false,
+        showOutOfCombat = true,
+        hideOnRightClick = false,
+        -- Cast swipe
+        castSwipeEnabled = true,
+        castSwipeR = 1,
+        castSwipeG = 1,
+        castSwipeB = 1,
+        castSwipeUseClassColor = false,
+        -- GCD swipe
+        gcdEnabled = true,
+        gcdR = 1,
+        gcdG = 1,
+        gcdB = 1,
+        gcdUseClassColor = false,
+        -- Trail
+        trailEnabled = false,
+        trailR = 1,
+        trailG = 0.8,
+        trailB = 0.2,
+        trailUseClassColor = false,
+        trailDuration = 0.6,
+      },
     },
     ---@type Option[]
     options = {},

@@ -22,6 +22,7 @@ Options/OptionsCanvas.lua
 Options/Pages/GeneralPage.lua
 Options/Pages/AutoBuyPage.lua
 Options/Pages/MailPage.lua
+Options/Pages/MouseRingPage.lua
 Options/Options.lua
 Layout/TreeGroup/TreeGroup.lua
 Layout/TreeGroup/TreeGroup.xml
@@ -41,6 +42,7 @@ Modules/Tooltip/Tooltip.lua
 Modules/Cooldowns/Cooldowns.lua
 Modules/Cooldowns/Sync.lua
 Modules/DailyQuests/DailyQuests.lua
+Modules/MouseRing/MouseRing.lua
 Modules/DebugLog/DebugLogViewer.lua
 Modules/GraphicsSettings/GraphicsSettings.lua
 Options/Pages/GraphicsSettingsPage.lua

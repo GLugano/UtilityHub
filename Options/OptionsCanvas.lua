@@ -108,7 +108,7 @@ function OptionsCanvas:Create()
   local mainFrame = self:CreateMainFrame();
 
   -- Register pages (order matters for navigation)
-  self.pageOrder = { "general", "autoBuy", "mail", "graphicsSettings" };
+  self.pageOrder = { "general", "autoBuy", "mail", "graphicsSettings", "mouseRing" };
   self.pages = {
     general = {
       label = "General",
@@ -132,6 +132,12 @@ function OptionsCanvas:Create()
       label = "Graphics",
       CreateFrame = function(parent)
         return UtilityHub.OptionsPages.GraphicsSettings:Create(parent);
+      end
+    },
+    mouseRing = {
+      label = "Mouse Ring",
+      CreateFrame = function(parent)
+        return UtilityHub.OptionsPages.MouseRing:Create(parent);
       end
     },
   };

@@ -599,6 +599,17 @@ UtilityHub.Events:RegisterCallback("OPTIONS_CHANGED", function(_, name)
     end
   end
 
+
+  if (name == "mouseRing") then
+    if (UtilityHub.Addon:GetModule("MouseRing", true)) then
+      local db = UtilityHub.Database.global.options.mouseRing;
+      if (db and db.enabled) then
+        UtilityHub.Addon:EnableModule("MouseRing");
+      else
+        UtilityHub.Addon:DisableModule("MouseRing");
+      end
+    end
+  end
 end);
 
 UtilityHub.Events:RegisterCallback("COUNT_READY_COOLDOWNS_CHANGED", function(_, count, first)
@@ -649,4 +660,16 @@ function UtilityHub.Addon:OnInitialize()
   end
 
   UtilityHub.Addon:EnableModule("GraphicsSettings");
+
+  if (not UtilityHub.Database.global.options.mouseRing) then
+    local defaults = UtilityHub.GameOptions.defaults.mouseRing;
+    local copy = {};
+    for k, v in pairs(defaults) do copy[k] = v end;
+    UtilityHub.Database.global.options.mouseRing = copy;
+  end
+
+  local mouseRingDB = UtilityHub.Database.global.options.mouseRing;
+  if (mouseRingDB and mouseRingDB.enabled and UtilityHub.Addon:GetModule("MouseRing", true)) then
+    UtilityHub.Addon:EnableModule("MouseRing");
+  end
 end
