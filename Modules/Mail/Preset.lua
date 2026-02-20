@@ -310,7 +310,7 @@ Module.ItemGroupOptions = {
       local itemName, _, _, _, _, _, _, _, _, _, _, classID, subclassID = C_Item.GetItemInfo(itemLink);
 
       if (UtilityHub.Constants.IsClassic) then
-        return classID == 0 and CheckItemLinkInList(itemLink, classicItems.bar);
+        return classID == 0 and CheckItemLinkInList(itemLink, classicItems.scroll);
       else
         if (classID == Enum.ItemClass.Consumable and subclassID == 4) then
           return true;
@@ -363,6 +363,18 @@ Module.ItemGroupOptions = {
     end,
     CheckItemBelongsToGroup = function(itemLink)
       return CheckItemLinkInList(itemLink, classicItems.aldorScryer);
+    end
+  },
+  ["EngiMats"] = {
+    label = "Enginnering Materials",
+    CheckItemBelongsToGroup = function(itemLink)
+      local _, _, _, _, _, _, _, _, _, _, _, classID, subclassID = C_Item.GetItemInfo(itemLink);
+
+      if (classID == Enum.ItemClass.Tradegoods and subclassID == 1) then
+        return true;
+      end
+
+      return false;
     end
   },
 };
