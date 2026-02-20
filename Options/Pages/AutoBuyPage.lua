@@ -263,7 +263,7 @@ function AutoBuyPage:Create(parent)
     end
   end);
 
-  local framesHelper = UtilityHub.GameOptions.framesHelper;
+  local framesHelper         = UtilityHub.GameOptions.framesHelper;
 
   -- Forward-declare so closures defined before the function bodies can capture them
   local RefreshList;
@@ -272,9 +272,9 @@ function AutoBuyPage:Create(parent)
   -- ===== Collapsible Add Item section =====
   local ADD_COLLAPSED_HEIGHT = 26;
   local ADD_EXPANDED_HEIGHT  = 155;
-  local addExpanded = false;
+  local addExpanded          = false;
 
-  local addSection = CreateFrame("Frame", nil, frame, "InsetFrameTemplate");
+  local addSection           = CreateFrame("Frame", nil, frame, "InsetFrameTemplate");
   addSection:SetPoint("TOPLEFT", enableCheckbox, "BOTTOMLEFT", 0, -15);
   addSection:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -20, 0);
   addSection:SetHeight(ADD_COLLAPSED_HEIGHT);
@@ -631,8 +631,8 @@ function AutoBuyPage:Create(parent)
         return rowData.itemLink;
       end,
       GetText = function(rowData)
-        local itemName, icon = GetItemDisplay(rowData.itemLink);
-        local displayName = itemName or rowData.itemLink or "Unknown";
+        local _, icon = GetItemDisplay(rowData.itemLink);
+        local displayName = rowData.itemLink or "Unknown";
         local qty = rowData.quantity or 1;
         local scopeTag = GetScopeTag(rowData);
 
