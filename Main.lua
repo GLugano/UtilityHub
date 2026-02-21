@@ -135,6 +135,11 @@ local function MigrateDB(version, oldVersion)
   if (not UtilityHub.Database.global.options.cooldowsList) then
     UtilityHub.Database.global.options.cooldowsList = {};
   end
+
+  if (not UtilityHub.Database.global.options.mouseRing) then
+    local defaults = UtilityHub.GameOptions.defaults.mouseRing;
+    UtilityHub.Database.global.options.mouseRing = CopyTable(defaults);
+  end
 end
 
 local function InitVariables()
@@ -169,7 +174,6 @@ local function InitVariables()
   if (oldVersion and oldVersion ~= version) then
     MigrateDB(version, oldVersion);
   end
-
 end
 
 local function SetupSlashCommands()
@@ -603,6 +607,7 @@ UtilityHub.Events:RegisterCallback("OPTIONS_CHANGED", function(_, name)
   if (name == "mouseRing") then
     if (UtilityHub.Addon:GetModule("MouseRing", true)) then
       local db = UtilityHub.Database.global.options.mouseRing;
+
       if (db and db.enabled) then
         UtilityHub.Addon:EnableModule("MouseRing");
       else
@@ -661,14 +666,8 @@ function UtilityHub.Addon:OnInitialize()
 
   UtilityHub.Addon:EnableModule("GraphicsSettings");
 
-  if (not UtilityHub.Database.global.options.mouseRing) then
-    local defaults = UtilityHub.GameOptions.defaults.mouseRing;
-    local copy = {};
-    for k, v in pairs(defaults) do copy[k] = v end;
-    UtilityHub.Database.global.options.mouseRing = copy;
-  end
-
   local mouseRingDB = UtilityHub.Database.global.options.mouseRing;
+
   if (mouseRingDB and mouseRingDB.enabled and UtilityHub.Addon:GetModule("MouseRing", true)) then
     UtilityHub.Addon:EnableModule("MouseRing");
   end

@@ -4,17 +4,17 @@ local ADDON_NAME = ...;
 local MouseRingPage = {};
 
 local SHAPE_OPTIONS = {
-  { file = "ring.tga",       label = "Ring"       },
-  { file = "ring2.tga",      label = "Ring 2"     },
+  { file = "ring.tga",       label = "Ring" },
+  { file = "ring2.tga",      label = "Ring 2" },
   { file = "thick_ring.tga", label = "Thick Ring" },
-  { file = "thin_ring.tga",  label = "Thin Ring"  },
+  { file = "thin_ring.tga",  label = "Thin Ring" },
 };
 
 --------------------------------------------------------------------------------
 -- Helpers
 --------------------------------------------------------------------------------
 
----@return table
+---@return MouseRingData
 local function GetDB()
   return UtilityHub.Database.global.options.mouseRing;
 end
@@ -49,7 +49,9 @@ local function CreateCheckbox(parent, labelText, dbKey, tooltip, anchor)
       GameTooltip:Show();
     end);
     checkbox:SetScript("OnLeave", function(self)
-      if (GameTooltip:IsOwned(self)) then GameTooltip:Hide() end
+      if (GameTooltip:IsOwned(self)) then
+        GameTooltip:Hide();
+      end
     end);
   end
 
@@ -128,25 +130,39 @@ local function CreateSliderRow(parent, labelText, dbKey, minVal, maxVal, step, a
   local high = _G[sliderName .. "High"];
   local text = _G[sliderName .. "Text"];
 
-  if (low) then low:SetText(tostring(minVal)) end
-  if (high) then high:SetText(tostring(maxVal)) end
+  if (low) then
+    low:SetText(tostring(minVal))
+  end
+
+  if (high) then
+    high:SetText(tostring(maxVal))
+  end
 
   local db = GetDB();
   local currentVal = db[dbKey] or minVal;
   slider:SetValue(currentVal);
-  if (text) then text:SetText(tostring(currentVal)) end
+
+  if (text) then
+    text:SetText(tostring(currentVal))
+  end
 
   slider:SetScript("OnValueChanged", function(self, value)
     local rounded = math.floor(value / step + 0.5) * step;
     GetDB()[dbKey] = rounded;
-    if (text) then text:SetText(tostring(rounded)) end
+
+    if (text) then
+      text:SetText(tostring(rounded));
+    end
+
     UtilityHub.Events:TriggerEvent("OPTIONS_CHANGED", "mouseRing");
   end);
 
   container.UpdateFromDB = function()
     local val = GetDB()[dbKey] or minVal;
     slider:SetValue(val);
-    if (text) then text:SetText(tostring(val)) end
+    if (text) then
+      text:SetText(tostring(val));
+    end
   end;
 
   return container;
@@ -166,9 +182,11 @@ local function CreateShapeSelector(parent, anchor)
 
   local function GetCurrentIndex()
     local current = GetDB().shape or "ring.tga";
+
     for i, s in ipairs(SHAPE_OPTIONS) do
       if (s.file == current) then return i end
     end
+
     return 1;
   end
 
@@ -249,8 +267,15 @@ function MouseRingPage:Create(parent)
   btnRestore:SetScript("OnClick", function()
     local defaults = UtilityHub.GameOptions.defaults.mouseRing;
     local db = GetDB();
-    for k, v in pairs(defaults) do db[k] = v end;
-    if (refreshFn) then refreshFn() end;
+
+    for k, v in pairs(defaults) do
+      db[k] = v;
+    end;
+
+    if (refreshFn) then
+      refreshFn();
+    end;
+
     UtilityHub.Events:TriggerEvent("OPTIONS_CHANGED", "mouseRing");
   end);
 
@@ -273,93 +298,183 @@ function MouseRingPage:Create(parent)
     GameTooltip:Show();
   end);
   cbEnable:SetScript("OnLeave", function(self)
-    if (GameTooltip:IsOwned(self)) then GameTooltip:Hide() end
+    if (GameTooltip:IsOwned(self)) then
+      GameTooltip:Hide();
+    end
   end);
 
   -- ── Ring ─────────────────────────────────────────────────────────────────
 
-  local secRing = CreateSectionHeader(content, "Ring", cbEnable);
+  local secRing = CreateSectionHeader(
+    content,
+    "Ring",
+    cbEnable
+  );
 
-  local shapeSelector = CreateShapeSelector(content, secRing);
+  local shapeSelector = CreateShapeSelector(
+    content,
+    secRing
+  );
 
-  local sizeSlider = CreateSliderRow(content, "Size:", "size", 24, 96, 2, shapeSelector);
+  local sizeSlider = CreateSliderRow(
+    content,
+    "Size:",
+    "size",
+    24,
+    96,
+    2,
+    shapeSelector
+  );
 
   local cbClassColor = CreateCheckbox(
-    content, "Use class color", "useClassColor",
-    "Tint the ring with your class color", sizeSlider
+    content,
+    "Use class color",
+    "useClassColor",
+    "Tint the ring with your class color",
+    sizeSlider
   );
 
   local ringColor = CreateColorRow(
-    content, "Ring color:", "colorR", "colorG", "colorB", cbClassColor
+    content,
+    "Ring color:",
+    "colorR",
+    "colorG",
+    "colorB",
+    cbClassColor
   );
 
   local cbHideBg = CreateCheckbox(
-    content, "Hide background ring", "hideBackground",
-    "Only show overlays, not the base ring texture", ringColor
+    content,
+    "Hide background ring",
+    "hideBackground",
+    "Only show overlays, not the base ring texture",
+    ringColor
   );
 
   local cbOutOfCombat = CreateCheckbox(
-    content, "Show out of combat", "showOutOfCombat",
-    "Keep the ring visible when not in combat", cbHideBg
+    content,
+    "Show out of combat",
+    "showOutOfCombat",
+    "Keep the ring visible when not in combat",
+    cbHideBg
   );
 
   local cbHideOnClick = CreateCheckbox(
-    content, "Hide while right mouse held", "hideOnRightClick",
-    "Hide the ring while holding right mouse button (camera rotation)", cbOutOfCombat
+    content,
+    "Hide while right mouse held",
+    "hideOnRightClick",
+    "Hide the ring while holding right mouse button (camera rotation)",
+    cbOutOfCombat
   );
 
   -- ── GCD Swipe ─────────────────────────────────────────────────────────────
 
-  local secGcd = CreateSectionHeader(content, "GCD Swipe", cbHideOnClick);
+  local secGcd = CreateSectionHeader(
+    content,
+    "GCD Swipe",
+    cbHideOnClick
+  );
 
   local cbGcd = CreateCheckbox(
-    content, "Enable GCD swipe", "gcdEnabled",
-    "Show a fill animation after casting any spell (tracks the 1.5s GCD)", secGcd
+    content,
+    "Enable GCD swipe",
+    "gcdEnabled",
+    "Show a fill animation after casting any spell (tracks the 1.5s GCD)",
+    secGcd
   );
 
   local cbGcdClassColor = CreateCheckbox(
-    content, "Use class color for GCD", "gcdUseClassColor", nil, cbGcd
+    content,
+    "Use class color for GCD",
+    "gcdUseClassColor",
+    nil,
+    cbGcd
   );
 
   local gcdColor = CreateColorRow(
-    content, "GCD color:", "gcdR", "gcdG", "gcdB", cbGcdClassColor
+    content,
+    "GCD color:",
+    "gcdR",
+    "gcdG",
+    "gcdB",
+    cbGcdClassColor
   );
 
   -- ── Cast / Channel Swipe ─────────────────────────────────────────────────
 
-  local secCast = CreateSectionHeader(content, "Cast / Channel Swipe", gcdColor);
+  local secCast = CreateSectionHeader(
+    content,
+    "Cast / Channel Swipe",
+    gcdColor
+  );
 
   local cbCastSwipe = CreateCheckbox(
-    content, "Enable cast/channel swipe", "castSwipeEnabled",
-    "Show a fill animation on the ring while casting or channeling", secCast
+    content,
+    "Enable cast/channel swipe",
+    "castSwipeEnabled",
+    "Show a fill animation on the ring while casting or channeling",
+    secCast
   );
 
   local cbCastClassColor = CreateCheckbox(
-    content, "Use class color for swipe", "castSwipeUseClassColor", nil, cbCastSwipe
+    content,
+    "Use class color for swipe",
+    "castSwipeUseClassColor",
+    nil,
+    cbCastSwipe
   );
 
   local castColor = CreateColorRow(
-    content, "Swipe color:", "castSwipeR", "castSwipeG", "castSwipeB", cbCastClassColor
+    content,
+    "Swipe color:",
+    "castSwipeR",
+    "castSwipeG",
+    "castSwipeB",
+    cbCastClassColor
   );
 
   -- ── Trail ────────────────────────────────────────────────────────────────
 
-  local secTrail = CreateSectionHeader(content, "Mouse Trail", castColor);
+  local secTrail = CreateSectionHeader(
+    content,
+    "Mouse Trail",
+    castColor
+  );
 
   local cbTrail = CreateCheckbox(
-    content, "Enable mouse trail", "trailEnabled",
-    "Show a glowing particle trail following the mouse cursor", secTrail
+    content,
+    "Enable mouse trail",
+    "trailEnabled",
+    "Show a glowing particle trail following the mouse cursor",
+    secTrail
   );
 
   local cbTrailClassColor = CreateCheckbox(
-    content, "Use class color for trail", "trailUseClassColor", nil, cbTrail
+    content,
+    "Use class color for trail",
+    "trailUseClassColor",
+    nil,
+    cbTrail
   );
 
   local trailColor = CreateColorRow(
-    content, "Trail color:", "trailR", "trailG", "trailB", cbTrailClassColor
+    content,
+    "Trail color:",
+    "trailR",
+    "trailG",
+    "trailB",
+    cbTrailClassColor
   );
 
-  local trailDurationSlider = CreateSliderRow(content, "Trail duration (s):", "trailDuration", 0.1, 2.0, 0.1, trailColor);
+  local trailDurationSlider = CreateSliderRow(
+    content,
+    "Trail duration (s):",
+    "trailDuration",
+    0.1,
+    2.0,
+    0.1,
+    trailColor
+  );
 
   refreshFn = function()
     local db = GetDB();

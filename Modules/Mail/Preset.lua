@@ -142,8 +142,8 @@ Module.ItemGroupOptions = {
       end
     end
   },
-  ["Consumable"] = {
-    label = "Consumables (except mana/health potions)",
+  ["Consumables"] = {
+    label = "Consumable (except mana/health potions)",
     CheckItemBelongsToGroup = function(itemLink)
       local itemName, _, _, _, _, _, _, _, _, _, _, classID, subclassID = C_Item.GetItemInfo(itemLink);
 
