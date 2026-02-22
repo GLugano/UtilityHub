@@ -3,7 +3,7 @@
 ## Title: UtilityHub
 ## IconTexture: Interface\Addons\UtilityHub\Assets\Icons\addon
 ## Author: Cacetinho-Nightslayer 
-## Version: 0.22
+## Version: 0.23
 ## SavedVariables: UHdatabase, MDHdatabase
 
 # XMLs
@@ -15,7 +15,6 @@ Constants.lua
 Enums.lua
 Helpers.lua
 Main.lua
-Options/ItemList.lua
 Options/OptionList.lua
 Options/OptionList.xml
 Options/OptionsCanvas.lua
