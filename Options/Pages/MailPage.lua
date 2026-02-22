@@ -49,7 +49,8 @@ function MailPage:Create(parent)
       Predicate = function(rowData)
         return rowData.name;
       end,
-      CustomizeRow = function(frame, rowData, helpers)
+      CustomizeRow = function(frame, helpers)
+        local rowData = frame.rowData;
         local color = rowData.color;
         local fontString = frame:GetFontString();
 

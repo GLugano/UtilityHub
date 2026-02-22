@@ -16,7 +16,9 @@ function UtilityHub_OptionListControlMixin:OnLoad()
     end
   end);
 
-  local function CreateDeleteIconButton(self, frame, rowData)
+  local function CreateDeleteIconButton(self, frame)
+    local rowData = frame.rowData;
+
     if (not frame.customElements) then
       frame.customElements = {};
     end
@@ -56,7 +58,9 @@ function UtilityHub_OptionListControlMixin:OnLoad()
     return frame.customElements.DeleteIconButton;
   end
 
-  local function CreateEditIconButton(self, frame, rowData)
+  local function CreateEditIconButton(self, frame)
+    local rowData = frame.rowData;
+
     if (not frame.customElements) then
       frame.customElements = {};
     end
@@ -157,7 +161,8 @@ function UtilityHub_OptionListControlMixin:OnLoad()
     end);
 
     if (configuration.showRemoveIcon) then
-      local btn = CreateDeleteIconButton(self, frame, rowData);
+      local btn = CreateDeleteIconButton(self, frame);
+
       if (btn) then
         btn:Show();
       end
@@ -168,7 +173,8 @@ function UtilityHub_OptionListControlMixin:OnLoad()
     end
 
     if (configuration.showEditIcon) then
-      local btn = CreateEditIconButton(self, frame, rowData);
+      local btn = CreateEditIconButton(self, frame);
+
       if (btn) then
         btn:Show();
       end
@@ -183,7 +189,6 @@ function UtilityHub_OptionListControlMixin:OnLoad()
     if (CustomizeRow) then
       CustomizeRow(
         frame,
-        rowData,
         {
           CreateDeleteIconButton = CreateDeleteIconButton,
           CreateEditIconButton = CreateEditIconButton
@@ -422,7 +427,7 @@ end
 ---@field hasHyperlink? boolean
 ---@field showRemoveIcon? boolean
 ---@field showEditIcon? boolean
----@field CustomizeRow? fun(frame: table, rowData: any, helpers)
+---@field CustomizeRow? fun(frame: table, helpers)
 ---@field NewRow? fun(text: string): any
 ---@field GetText? fun(rowData: any): string
 ---@field GetHyperlink? fun(rowData: any): string

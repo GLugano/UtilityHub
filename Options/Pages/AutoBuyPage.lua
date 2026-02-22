@@ -450,7 +450,9 @@ function AutoBuyPage:Create(parent)
       GetHyperlink = function(rowData)
         return rowData.itemLink or "";
       end,
-      CustomizeRow = function(listFrame, rowData, helpers)
+      CustomizeRow = function(listFrame, helpers)
+        local rowData = frame.rowData;
+
         if (not rowData.alreadyAdded) then
           listFrame:SetScript("OnClick", function()
             local dialog = GetOrCreateEditDialog();
@@ -666,7 +668,9 @@ function AutoBuyPage:Create(parent)
         UtilityHub.Events:TriggerEvent("OPTIONS_CHANGED", "autoBuyList", list);
         RefreshList();
       end,
-      CustomizeRow = function(listFrame, rowData, helpers)
+      CustomizeRow = function(listFrame, helpers)
+        local rowData = frame.rowData;
+
         if (not listFrame.customElements) then
           listFrame.customElements = {};
         end

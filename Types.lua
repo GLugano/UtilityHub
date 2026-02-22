@@ -37,7 +37,7 @@
 ---@class OptionsCreateList
 ---@field GetText? fun(rowData): string
 ---@field SortComparator fun(a: any, b: any): boolean
----@field CustomizeRow? fun(frame: table, rowData: any, helpers)
+---@field CustomizeRow? fun(frame: table, helpers)
 ---@field showCheckbox? boolean
 ---@field showRemoveIcon? boolean
 ---@field OnRemove? fun(rowData, OptionsCreateList): boolean

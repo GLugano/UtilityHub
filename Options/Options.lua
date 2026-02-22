@@ -259,7 +259,6 @@ local framesHelper = {
       if (configuration.CustomizeRow) then
         configuration.CustomizeRow(
           frame,
-          rowData,
           {}
         );
       end
