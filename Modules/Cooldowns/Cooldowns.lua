@@ -63,6 +63,31 @@ elseif (UtilityHub.Constants.IsTBC) then
   tinsert(baseCooldowns.Tailoring, { name = "Shadowcloth", spellID = 36686 });
   tinsert(baseCooldowns.Tailoring, { name = "Spellcloth", spellID = 31373 });
   tinsert(baseCooldowns.Tailoring, { name = "Primal Mooncloth", spellID = 26751 });
+
+  local transmutes = baseCooldowns.Alchemy[1];
+
+  if (transmutes) then
+    tinsert(transmutes.spellList, { name = "Transmute: Primal Might", spellID = 29688 });
+    tinsert(transmutes.spellList, { name = "Transmute: Earthstorm Diamond", spellID = 32765 });
+    tinsert(transmutes.spellList, { name = "Transmute: Skyfire Diamond", spellID = 32766 });
+    -- Air to
+    tinsert(transmutes.spellList, { name = "Transmute: Primal Air to Fire", spellID = 28566 });
+    -- Earth to
+    tinsert(transmutes.spellList, { name = "Transmute: Primal Earth to Water", spellID = 28567 });
+    tinsert(transmutes.spellList, { name = "Transmute: Primal Earth to Life", spellID = 28585 });
+    -- Fire to
+    tinsert(transmutes.spellList, { name = "Transmute: Primal Fire to Mana", spellID = 28583 });
+    tinsert(transmutes.spellList, { name = "Transmute: Primal Fire to Earth", spellID = 28568 });
+    -- Life to
+    tinsert(transmutes.spellList, { name = "Transmute: Primal Life to Earth", spellID = 28584 });
+    -- Mana to
+    tinsert(transmutes.spellList, { name = "Transmute: Primal Mana to Fire", spellID = 28582 });
+    -- Shadow to
+    tinsert(transmutes.spellList, { name = "Transmute: Primal Shadow to Water", spellID = 28580 });
+    -- Water to
+    tinsert(transmutes.spellList, { name = "Transmute: Primal Water to Air", spellID = 28569 });
+    tinsert(transmutes.spellList, { name = "Transmute: Primal Water to Shadow", spellID = 28581 });
+  end
 end
 
 --- @param cooldowns table<string, CurrentCooldown[]>
