@@ -377,6 +377,18 @@ Module.ItemGroupOptions = {
       return false;
     end
   },
+  ["CookedFood"] = {
+    label = "Cooked food",
+    CheckItemBelongsToGroup = function(itemLink)
+      local _, _, _, _, _, _, _, _, _, _, _, classID, subclassID = C_Item.GetItemInfo(itemLink);
+
+      if (UtilityHub.Constants.IsClassic) then
+        return CheckItemLinkInList(itemLink, classicItems.rawFood);
+      else
+        return classID == Enum.ItemClass.Consumable and subclassID == Enum.ItemConsumableSubclass.Fooddrink;
+      end
+    end
+  },
 };
 
 ---@param text string
