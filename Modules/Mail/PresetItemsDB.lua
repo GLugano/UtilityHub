@@ -459,10 +459,12 @@ addonTable.classicItems = {
     { itemID = 29425, name = "Mark of Kil'jaeden" },
     { itemID = 30809, name = "Mark of Sargeras" },
     { itemID = 29740, name = "Fel Armament" },
+    { itemID = 25802, name = "Dreadfang Venom Sac" },
     -- Scryer
     { itemID = 29426, name = "Firewing Signet" },
     { itemID = 30810, name = "Sunfury Signet" },
     { itemID = 29739, name = "Arcane Tome" },
+    { itemID = 25744, name = "Dampscale Basilisk Eye" },
   },
 };
 
