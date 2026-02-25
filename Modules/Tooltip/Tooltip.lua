@@ -164,7 +164,7 @@ local SPELL_HIT                       = {
     "Improves spell hit rating by (%d+)"
   },
   FormatText = function(self, text)
-    local hit = text:match("(%d+)");
+    local hit = text:match("spell hit rating by (%d+)");
     return string.format("+%s Spell Hit Rating", hit);
   end
 };
