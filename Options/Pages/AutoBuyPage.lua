@@ -451,11 +451,12 @@ function AutoBuyPage:Create(parent)
         return rowData.itemLink or "";
       end,
       CustomizeRow = function(listFrame, helpers)
-        local rowData = frame.rowData;
+        local rowData = listFrame.rowData;
 
         if (not rowData.alreadyAdded) then
           listFrame:SetScript("OnClick", function()
             local dialog = GetOrCreateEditDialog();
+
             dialog:Open(
               rowData.itemLink,
               { quantity = 1, scope = UtilityHub.Enums.AutoBuyScope.ACCOUNT, scopeValue = nil },
@@ -638,10 +639,9 @@ function AutoBuyPage:Create(parent)
         local qty = rowData.quantity or 1;
         local scopeTag = GetScopeTag(rowData);
 
-        local qtyText;
-        if (qty == 1) then
-          qtyText = "Once";
-        else
+        local qtyText = "Once";
+
+        if (qty ~= 1) then
           qtyText = "Restock: " .. qty;
         end
 
@@ -657,6 +657,7 @@ function AutoBuyPage:Create(parent)
         for i = #list, 1, -1 do
           if (list[i].itemLink) then
             local existingID = tonumber(string.match(list[i].itemLink, "item:(%d+):"));
+
             if (existingID == removeID) then
               tremove(list, i);
               break;

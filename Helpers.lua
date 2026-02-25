@@ -210,6 +210,7 @@ end
 ---@return number
 function UtilityHub.Helpers.Item:GetFreeBagSlots()
   local totalFree = 0;
+
   for i = 0, NUM_BAG_SLOTS do
     local containerInfo = C_Container.GetContainerNumSlots(i);
     if (containerInfo and containerInfo > 0) then
@@ -217,6 +218,7 @@ function UtilityHub.Helpers.Item:GetFreeBagSlots()
       totalFree = totalFree + freeSlots;
     end
   end
+
   return totalFree;
 end
 
