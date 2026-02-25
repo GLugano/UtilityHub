@@ -669,7 +669,7 @@ function AutoBuyPage:Create(parent)
         RefreshList();
       end,
       CustomizeRow = function(listFrame, helpers)
-        local rowData = frame.rowData;
+        local rowData = listFrame.rowData;
 
         if (not listFrame.customElements) then
           listFrame.customElements = {};
