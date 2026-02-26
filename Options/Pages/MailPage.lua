@@ -74,7 +74,7 @@ function MailPage:Create(parent)
           UtilityHub.Textures:ApplyTexture("OrangeCogs", texture);
 
           editButton:SetScript("OnClick", function(self)
-            local selectedPreset = CopyTable(rowData);
+            local selectedPreset = CopyTable(self:GetParent().rowData);
 
             if (not selectedPreset.custom) then
               selectedPreset.custom = {};
