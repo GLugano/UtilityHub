@@ -39,8 +39,10 @@
 ---@field SortComparator fun(a: any, b: any): boolean
 ---@field CustomizeRow? fun(frame: table, helpers)
 ---@field showCheckbox? boolean
+---@field OnCheckedChange? fun(rowFrame: table, rowData)
 ---@field showRemoveIcon? boolean
 ---@field OnRemove? fun(rowData, OptionsCreateList): boolean
+---@field OnUpdate? fun(frame: table)
 ---@field hasHyperlink? boolean
 ---@field GetHyperlink? fun(rowData: any): string
 

@@ -670,8 +670,6 @@ function AutoBuyPage:Create(parent)
         RefreshList();
       end,
       CustomizeRow = function(listFrame, helpers)
-        local rowData = listFrame.rowData;
-
         if (not listFrame.customElements) then
           listFrame.customElements = {};
         end
@@ -700,6 +698,8 @@ function AutoBuyPage:Create(parent)
         -- Re-bind OnClick each time to capture the current rowData.
         listFrame.customElements.EditButton:SetScript("OnClick", function(self)
           local dialog = GetOrCreateEditDialog();
+          local rowData = self:GetParent().rowData;
+
           dialog:Open(rowData.itemLink, rowData, function(qty, scope, scopeValue)
             local list = UtilityHub.Database.global.options.autoBuyList or {};
             local editID = tonumber(string.match(rowData.itemLink, "item:(%d+):"));

@@ -133,7 +133,10 @@ local framesHelper = {
       configuration,
       frameTemplate
   )
-    local function CreateListCheckbox(frame)
+    ---comment
+    ---@param frame table
+    ---@param OnCheckedChange? fun(frame: table, rowData)
+    local function CreateListCheckbox(frame, OnCheckedChange)
       if (frame.customElements.Checkbox) then
         frame.customElements.Checkbox:SetChecked(frame.rowData.checked);
         return;
@@ -157,6 +160,10 @@ local framesHelper = {
         local checked = self:GetChecked();
         self:GetParent().checked = checked;
         frame.rowData.checked = checked;
+
+        if (OnCheckedChange) then
+          OnCheckedChange(frame, frame.rowData);
+        end
       end);
     end
 
@@ -210,55 +217,56 @@ local framesHelper = {
 
     local view = CreateScrollBoxListLinearView();
     view:SetElementExtent(26);
-    view:SetElementInitializer("Button", function(frame, rowData)
+    view:SetElementInitializer("Button", function(rowFrame, rowData)
       local GetText = configuration.GetText or function(rowData)
         return rowData;
       end;
 
-      frame:SetPushedTextOffset(0, 0);
-      frame:SetHighlightAtlas("search-highlight");
-      frame:SetNormalFontObject(GameFontHighlight);
-      frame.rowData = rowData;
-      frame.configuration = configuration;
-      frame:SetText(GetText(rowData));
+      rowFrame:SetPushedTextOffset(0, 0);
+      rowFrame:SetHighlightAtlas("search-highlight");
+      rowFrame:SetNormalFontObject(GameFontHighlight);
+      rowFrame.rowData = rowData;
+      rowFrame.configuration = configuration;
+      rowFrame:SetText(GetText(rowData));
+      rowFrame.ScrollParent = frame;
 
-      frame:SetScript("OnEnter", function(self)
-        if (frame.configuration.hasHyperlink and frame.configuration.GetHyperlink) then
+      rowFrame:SetScript("OnEnter", function(self)
+        if (rowFrame.configuration.hasHyperlink and rowFrame.configuration.GetHyperlink) then
           GameTooltip:SetOwner(self, "ANCHOR_LEFT");
-          GameTooltip:SetHyperlink(frame.configuration.GetHyperlink(frame.rowData));
+          GameTooltip:SetHyperlink(rowFrame.configuration.GetHyperlink(rowFrame.rowData));
           GameTooltip:Show();
         end
       end);
-      frame:SetScript("OnLeave", function(self)
+      rowFrame:SetScript("OnLeave", function(self)
         if (GameTooltip:IsOwned(self)) then
           GameTooltip:Hide();
         end
       end);
 
-      if (not frame.customElements) then
-        frame.customElements = {};
+      if (not rowFrame.customElements) then
+        rowFrame.customElements = {};
       end
 
-      local fontString = frame:GetFontString();
+      local fontString = rowFrame:GetFontString();
       fontString:SetJustifyH("LEFT");
 
       if (configuration.showCheckbox) then
-        CreateListCheckbox(frame);
-        frame:GetFontString():SetPoint("LEFT", 40, 0);
+        CreateListCheckbox(rowFrame, configuration.OnCheckedChange);
+        rowFrame:GetFontString():SetPoint("LEFT", 40, 0);
       else
         fontString:SetPoint("LEFT", 6, 0);
       end
 
       if (configuration.showRemoveIcon) then
-        CreateDeleteIconButton(frame);
-        frame:GetFontString():SetPoint("RIGHT", -40, 0);
+        CreateDeleteIconButton(rowFrame);
+        rowFrame:GetFontString():SetPoint("RIGHT", -40, 0);
       else
-        frame:GetFontString():SetPoint("RIGHT", -6, 0);
+        rowFrame:GetFontString():SetPoint("RIGHT", -6, 0);
       end
 
       if (configuration.CustomizeRow) then
         configuration.CustomizeRow(
-          frame,
+          rowFrame,
           {}
         );
       end
@@ -286,6 +294,15 @@ local framesHelper = {
       for _, rowData in ipairs(data) do
         frame.dataProvider:Insert(rowData);
       end
+    end
+
+    if (configuration.OnUpdate) then
+      frame.dataProvider:RegisterCallback(
+        DataProviderMixin.Event.OnSizeChanged,
+        function(owner, newSize)
+          configuration.OnUpdate(frame);
+        end
+      );
     end
 
     return frame;
@@ -368,7 +385,7 @@ local framesHelper = {
   ---@class TabDefinition
   ---@field name string
   ---@field label string
-  ---@field CreateFrame fun(parent: Frame): table|Frame|InsetFrameTemplate
+  ---@field CreateFrame fun(parent: Frame, tab: table|Button|MinimalTabTemplate): table|Frame|InsetFrameTemplate
 
   ---@param name string
   ---@param tabs TabDefinition[]
@@ -497,7 +514,7 @@ local framesHelper = {
 
       previousTab = tab;
 
-      tab.frame = tabData.CreateFrame(frame);
+      tab.frame = tabData.CreateFrame(frame, tab);
       tab.frame:Hide();
       frame:PositionChildFrame(tab.frame);
 
@@ -666,14 +683,14 @@ UtilityHub.GameOptions.Register = function()
       color:SetPoint("TOPRIGHT", title, "BOTTOMRIGHT", -15, -10);
 
       local manualInclusionsEditBox, manualExclusionsEditBox;
-      local itemGroupsFrame, manualInclusionsFrame, manualExclusionsFrame;
-      local tabbedFrame = framesHelper:CreateCustomTabbedFrame(
+      local tabbedFrame, itemGroupsFrame, manualInclusionsFrame, manualExclusionsFrame;
+      tabbedFrame = framesHelper:CreateCustomTabbedFrame(
         type == "new" and "NewPresetTabbedFrame" or "EditPresetTabbedFrame",
         {
           { -- ItemGroups
             name = "ItemGroups",
             label = "Item groups",
-            CreateFrame = function(parent)
+            CreateFrame = function(parent, tab)
               itemGroupsFrame = framesHelper:CreateCustomList(
                 "ItemGroupsList",
                 parent,
@@ -684,6 +701,11 @@ UtilityHub.GameOptions.Register = function()
                   end,
                   GetText = function(rowData)
                     return rowData.name;
+                  end,
+                  OnCheckedChange = function(rowFrame, rowData)
+                    if (tabbedFrame) then
+                      tabbedFrame:UpdateTabsText();
+                    end
                   end,
                   showCheckbox = true,
                 }
@@ -747,6 +769,9 @@ UtilityHub.GameOptions.Register = function()
 
                     return false;
                   end,
+                  OnUpdate = function(frame)
+                    tabbedFrame:UpdateTabsText();
+                  end,
                   hasHyperlink = true,
                   showRemoveIcon = true,
                 }
@@ -759,6 +784,9 @@ UtilityHub.GameOptions.Register = function()
               manualInclusionsFrame:SetPoint("TOPRIGHT", manualInclusionsEditBox.ButtonAdd, "BOTTOMRIGHT", 0, -5);
               manualInclusionsFrame:SetPoint("BOTTOMLEFT");
               manualInclusionsFrame:SetPoint("BOTTOMRIGHT");
+
+              textListFrame.EditBox = manualInclusionsEditBox;
+              textListFrame.List = manualInclusionsFrame;
 
               return textListFrame;
             end
@@ -818,6 +846,9 @@ UtilityHub.GameOptions.Register = function()
 
                     return false;
                   end,
+                  OnUpdate = function(frame)
+                    tabbedFrame:UpdateTabsText();
+                  end,
                   hasHyperlink = true,
                   showRemoveIcon = true,
                 }
@@ -831,6 +862,9 @@ UtilityHub.GameOptions.Register = function()
               manualExclusionsFrame:SetPoint("BOTTOMLEFT");
               manualExclusionsFrame:SetPoint("BOTTOMRIGHT");
 
+              textListFrame.EditBox = manualExclusionsEditBox;
+              textListFrame.List = manualExclusionsFrame;
+
               return textListFrame;
             end
           },
@@ -839,6 +873,42 @@ UtilityHub.GameOptions.Register = function()
         presetFrame,
         to
       );
+
+      function tabbedFrame:UpdateTabsText()
+        local tab;
+
+        do -- ItemGroups
+          tab = tabbedFrame.tabs[1];
+
+          local count = 0;
+
+          for _, value in tab.frame.dataProvider:Enumerate() do
+            if (value.checked) then
+              count = count + 1;
+            end
+          end
+
+          local newTitle = string.format("Item groups (%s)", count);
+          tab.Text:SetText(newTitle);
+          tab.tabText = newTitle;
+        end
+
+        do -- Inclusions
+          tab = tabbedFrame.tabs[2];
+
+          local newTitle = string.format("Inclusions (%s)", #tab.frame.List:GetData());
+          tab.Text:SetText(newTitle);
+          tab.tabText = newTitle;
+        end
+
+        do -- Exclusions
+          tab = tabbedFrame.tabs[3];
+
+          local newTitle = string.format("Exclusions (%s)", #tab.frame.List:GetData());
+          tab.Text:SetText(newTitle);
+          tab.tabText = newTitle;
+        end
+      end
 
       local saveButton = framesHelper:CreateCustomButton(
         presetFrame,
@@ -924,6 +994,8 @@ UtilityHub.GameOptions.Register = function()
           manualInclusionsEditBox:SetText("");
           manualInclusionsFrame:ReplaceData(selectedPreset.custom or {});
           manualExclusionsFrame:ReplaceData(selectedPreset.exclusion or {});
+
+          tabbedFrame:UpdateTabsText();
         else
           selectedPreset = nil;
           UtilityHub.tempSelectedPreset = nil;
