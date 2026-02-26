@@ -19,9 +19,20 @@ function Module:SearchAndBuyItems()
 
   -- Iterate through autoBuyList in order
   for _, itemData in ipairs(autoBuyList) do
-    local boughtItems;
-    boughtItems, freeBagSlots = Module:FindAndBuyItem(itemData, freeBagSlots);
-    tAppendAll(purchasedItems, boughtItems);
+    local scope = itemData.scope or UtilityHub.Enums.AutoBuyScope.ACCOUNT;
+    local inScope = true;
+
+    if (scope == UtilityHub.Enums.AutoBuyScope.CHARACTER) then
+      inScope = (itemData.scopeValue == playerName);
+    elseif (scope == UtilityHub.Enums.AutoBuyScope.CLASS) then
+      inScope = (itemData.scopeValue == playerClass);
+    end
+
+    if (inScope) then
+      local boughtItems;
+      boughtItems, freeBagSlots = Module:FindAndBuyItem(itemData, freeBagSlots);
+      tAppendAll(purchasedItems, boughtItems);
+    end
   end
 
   -- Consolidated notification
@@ -48,14 +59,15 @@ function Module:BuyItemByStack(
     freeBagSlots,
     isPartial
 )
-  local itemName, _, _, stackCount = GetMerchantItemInfo(itemMerchantIndex);
+  local itemName = GetMerchantItemInfo(itemMerchantIndex);
+  local maxStack = GetMerchantItemMaxStack(itemMerchantIndex);
   ---@type number
   local totalBought = 0;
   local remainingToBuy = quantityToBuy;
   local purchasedItems = {};
 
   while (remainingToBuy > 0 and freeBagSlots > 0) do
-    local buyAmount = math.min(remainingToBuy, stackCount);
+    local buyAmount = math.min(remainingToBuy, maxStack);
     BuyMerchantItem(itemMerchantIndex, buyAmount);
     totalBought = totalBought + buyAmount;
     remainingToBuy = remainingToBuy - buyAmount;
@@ -116,8 +128,8 @@ function Module:FindAndBuyItem(itemData, freeBagSlots)
     -- Buy once mode: just buy 1
     quantityToBuy = 1;
   else
-    -- Restock mode: calculate deficit
-    local currentCount = UtilityHub.Helpers.Item:GetItemCount(itemID, true);
+    -- Doesnt count the bank items
+    local currentCount = C_Item.GetItemCount(itemID, false);
     local deficit = itemData.quantity - currentCount;
 
     if (deficit > 0) then

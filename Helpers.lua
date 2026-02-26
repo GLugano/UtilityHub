@@ -198,15 +198,6 @@ function UtilityHub.Helpers.Mail:SetRecipient(name)
   end
 end
 
--- Item count helper
-
----@param itemID number
----@param includeBank boolean
----@return number
-function UtilityHub.Helpers.Item:GetItemCount(itemID, includeBank)
-  return C_Item.GetItemCount(itemID, false, includeBank or false);
-end
-
 ---@return number
 function UtilityHub.Helpers.Item:GetFreeBagSlots()
   local totalFree = 0;
