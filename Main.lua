@@ -37,7 +37,7 @@ local function InitVariables()
   UtilityHub.Database.global.oldVersion = version;
 
   if (oldVersion and oldVersion ~= version) then
-    UtilityHub.MigrateDB(version, oldVersion);
+    UtilityHub:MigrateDB(version, oldVersion);
   end
 end
 
