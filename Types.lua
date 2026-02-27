@@ -19,6 +19,10 @@
 ---@field categoryID number
 
 -------- Preset
+---@class MailPresetItemType
+---@field classID number
+---@field subclassID? number
+
 ---@class MailPreset
 ---@field id? number
 ---@field name string
@@ -27,6 +31,7 @@
 ---@field itemGroups table<string, boolean>
 ---@field custom ItemLink[]
 ---@field exclusion ItemLink[]
+---@field itemType MailPresetItemType[]
 
 ---@class ItemGroupOption
 ---@field label string

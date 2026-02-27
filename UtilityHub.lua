@@ -167,14 +167,17 @@ UtilityHub = {
     if (version and oldVersion) then
       UtilityHub.Helpers.Notification:ShowNotification("Migrating DB version from " .. oldVersion .. " to " .. version);
     else
-      UtilityHub.Helpers.Notification:ShowNotification("Trying to fix DB");
+      UtilityHub.Helpers.Notification:ShowNotification("Migrating DB version - Forced action without any version change");
     end
 
     ---@type Preset
     local presetModule = UtilityHub.Addon:GetModule("Preset");
 
-    if (#UtilityHub.Database.global.presets > 0) then
-      for _, preset in pairs(UtilityHub.Database.global.presets) do
+    ---@type MailPreset[]
+    local presets = UtilityHub.Database.global.presets;
+
+    if (#presets > 0) then
+      for _, preset in pairs(presets) do
         local shouldFixEssenceElemental = false;
 
         for j, _ in pairs(preset.itemGroups) do
@@ -200,6 +203,10 @@ UtilityHub = {
         if (not preset.id) then
           preset.id = presetModule:GetNextID();
         end
+
+        if (not preset.itemType) then
+          preset.itemType = {};
+        end
       end
     end
 
@@ -207,8 +214,58 @@ UtilityHub = {
       UtilityHub.Database.global.options = UtilityHub.GameOptions.defaults;
     end
 
-    if (not UtilityHub.Database.global.options.autoBuyList) then
-      UtilityHub.Database.global.options.autoBuyList = UtilityHub.GameOptions.defaults.autoBuyList;
+    if (UtilityHub.Database.global.options.autoBuyList) then
+      local needsMigration = false;
+
+      -- Check if old format (array of strings)
+      if (#UtilityHub.Database.global.options.autoBuyList > 0 and type(UtilityHub.Database.global.options.autoBuyList[1]) == "string") then
+        needsMigration = true;
+      end
+
+      if (needsMigration) then
+        local newList = {};
+
+        -- Convert old autoBuyList strings to new format
+        for _, itemLink in ipairs(UtilityHub.Database.global.options.autoBuyList) do
+          tinsert(newList, {
+            itemLink = itemLink,
+            quantity = 1,
+          });
+        end
+
+        UtilityHub.Database.global.options.autoBuyList = newList;
+        UtilityHub.Helpers.Notification:ShowNotification("Migrated AutoBuy list to new format");
+      end
+    else
+      UtilityHub.Database.global.options.autoBuyList = UtilityHub.GameOptions.defaults.autoBuyList or {};
+    end
+
+    -- Migrate autoRestockList to unified autoBuyList
+    if (UtilityHub.Database.global.options.autoRestockList and #UtilityHub.Database.global.options.autoRestockList > 0) then
+      for _, restockItem in ipairs(UtilityHub.Database.global.options.autoRestockList) do
+        -- Check if item already exists in autoBuyList
+        local itemID = tonumber(string.match(restockItem.itemLink, "item:(%d+):"));
+        local exists = false;
+
+        for _, buyItem in ipairs(UtilityHub.Database.global.options.autoBuyList) do
+          local buyItemID = tonumber(string.match(buyItem.itemLink, "item:(%d+):"));
+          if (buyItemID == itemID) then
+            exists = true;
+            break;
+          end
+        end
+
+        if (not exists) then
+          tinsert(UtilityHub.Database.global.options.autoBuyList, {
+            itemLink = restockItem.itemLink,
+            quantity = restockItem.targetQuantity or 20,
+          });
+        end
+      end
+
+      -- Clear autoRestockList after migration
+      UtilityHub.Database.global.options.autoRestockList = nil;
+      UtilityHub.Helpers.Notification:ShowNotification("Merged Auto-Restock items into AutoBuy list");
     end
 
     if (UtilityHub.Database.global.characters) then
@@ -245,6 +302,13 @@ UtilityHub = {
     if (not UtilityHub.Database.global.options.cooldowsList) then
       UtilityHub.Database.global.options.cooldowsList = {};
     end
+
+    if (not UtilityHub.Database.global.options.mouseRing) then
+      local defaults = UtilityHub.GameOptions.defaults.mouseRing;
+      UtilityHub.Database.global.options.mouseRing = CopyTable(defaults);
+    end
+
+    UtilityHub.Helpers.Notification:ShowNotification("Migration complete");
   end
 };
 

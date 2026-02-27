@@ -25,7 +25,7 @@ end
 
 ---@param text string
 function UtilityHub.Helpers.Notification:ShowNotification(text)
-  UtilityHub.Libs.Utils:ShowChatNotification(text, UtilityHub.Constants.AddonPrefix);
+  UtilityHub.Libs.Utils:ShowChatNotification(text, UtilityHub.Constants.AddonName);
 end
 
 -- String
@@ -69,6 +69,33 @@ function UtilityHub.Helpers.Item:AsyncGetItemInfo(item, cb)
   end
 
   return tryCB(nil);
+end;
+
+---@param classID number
+---@param subclassID? number
+---@return AuctionHouseItemClassStructureClass
+---@return AuctionHouseItemClassStructureSubClass?
+function UtilityHub.Helpers.Item:GetClassAndSubclass(classID, subclassID)
+  ---@type AuctionHouseItemClassStructureClass|nil
+  local class = nil;
+
+  for _, loopClass in ipairs(UtilityHub.Constants.AuctionHouseItemClassStructure) do
+    if (classID == loopClass.classID) then
+      class = loopClass;
+
+      if (subclassID and loopClass.subClasses and #loopClass.subClasses > 0) then
+        for _, subclass in ipairs(class.subClasses) do
+          if (subclassID == subclass.subClassID) then
+            return class, subclass;
+          end
+        end
+
+        return class, nil;
+      else
+        return class, nil;
+      end
+    end
+  end
 end;
 
 -- Color

@@ -4,6 +4,7 @@ local interfaceVersion = select(4, GetBuildInfo());
 ---@class Constants
 UtilityHub.Constants = {
   --- Addon
+  AddonName = ADDON_NAME,
   AddonPrefix = "UH",
   AddonVersion = C_AddOns.GetAddOnMetadata(ADDON_NAME, "Version"),
 

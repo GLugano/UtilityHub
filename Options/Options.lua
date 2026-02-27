@@ -683,7 +683,7 @@ UtilityHub.GameOptions.Register = function()
       color:SetPoint("TOPRIGHT", title, "BOTTOMRIGHT", -15, -10);
 
       local manualInclusionsEditBox, manualExclusionsEditBox;
-      local tabbedFrame, itemGroupsFrame, manualInclusionsFrame, manualExclusionsFrame;
+      local tabbedFrame, itemGroupsFrame, manualInclusionsFrame, manualExclusionsFrame, itemTypesFrame;
       tabbedFrame = framesHelper:CreateCustomTabbedFrame(
         type == "new" and "NewPresetTabbedFrame" or "EditPresetTabbedFrame",
         {
@@ -868,6 +868,137 @@ UtilityHub.GameOptions.Register = function()
               return textListFrame;
             end
           },
+          { -- Item types
+            name = "ItemTypes",
+            label = "Item types",
+            CreateFrame = function(parent)
+              local textListFrame = CreateFrame("Frame", nil, parent);
+
+              local buttonAdd = CreateFrame("Button", nil, textListFrame, "UIPanelButtonTemplate");
+              buttonAdd:SetText("Add");
+              buttonAdd:SetSize(44, 24);
+              buttonAdd:SetPoint("TOPRIGHT", textListFrame, "TOPRIGHT", 0, 0);
+              buttonAdd:SetScript("OnClick", function()
+                ---@param class AuctionHouseItemClassStructureClass
+                ---@param subclass? AuctionHouseItemClassStructureSubClass
+                ---@return number
+                local function OnClickMenu(class, subclass)
+                  local classID, subclassID = class.classID, subclass and subclass.subClassID or nil;
+                  DevTool:AddData(selectedPreset);
+                  for _, value in ipairs(selectedPreset.itemType) do
+                    if (value.classID == classID and value.subclassID == subclassID) then
+                      return MenuResponse.Close;
+                    end
+                  end
+
+                  ---@type MailPresetItemType
+                  local data = { classID = classID, subclassID = subclassID };
+                  tinsert(selectedPreset.itemType, data);
+                  itemTypesFrame.dataProvider:Insert(data);
+
+                  return MenuResponse.Close;
+                end
+
+                MenuUtil.CreateContextMenu(buttonAdd, function(owner, rootDescription)
+                  rootDescription:CreateTitle("Item types");
+
+                  for _, class in pairs(UtilityHub.Constants.AuctionHouseItemClassStructure) do
+                    local classButton = rootDescription:CreateButton(class.name);
+
+                    if (#class.subClasses > 0) then
+                      for _, subClass in ipairs(class.subClasses) do
+                        local subClassButton = classButton:CreateButton(subClass.name);
+                        subClassButton:SetResponder(function(data, menuInputData, menu)
+                          return OnClickMenu(class, subClass);
+                        end);
+                      end
+                    end
+
+                    classButton:SetResponder(function(data, menuInputData, menu)
+                      return OnClickMenu(class, nil);
+                    end);
+                  end
+                end);
+              end);
+
+              itemTypesFrame = framesHelper:CreateCustomList(
+                "ItemTypesList",
+                textListFrame,
+                null,
+                {
+                  ---@param a MailPresetItemType
+                  ---@param b MailPresetItemType
+                  SortComparator = function(a, b)
+                    if (a.classID == b.classID) then
+                      if (not a.subclassID and b.subclassID) then
+                        return true;
+                      elseif (a.subclassID and not b.subclassID) then
+                        return false;
+                      end
+
+                      return a.subclassID < b.subclassID;
+                    end
+
+                    return a.classID < b.classID;
+                  end,
+                  ---@param rowData MailPresetItemType
+                  GetText = function(rowData)
+                    local class, subclass = UtilityHub.Helpers.Item:GetClassAndSubclass(
+                      rowData.classID,
+                      rowData.subclassID
+                    );
+                    local text = tostring(class.name);
+
+                    if (subclass) then
+                      text = text .. " > " .. subclass.name;
+                    end
+
+                    return text;
+                  end,
+                  ---@param rowData MailPresetItemType
+                  ---@return string
+                  Predicate = function(rowData)
+                    local text = tostring(rowData.classID);
+
+                    if (rowData.subclassID) then
+                      text = text .. "-" .. tostring(rowData.subclassID);
+                    end
+
+                    return text;
+                  end,
+                  OnRemove = function(rowData, configuration)
+                    local predicate = configuration.Predicate(rowData);
+
+                    for index, value in ipairs(selectedPreset.itemType) do
+                      if (predicate == configuration.Predicate(value)) then
+                        tremove(selectedPreset.itemType, index);
+                        itemTypesFrame.dataProvider:RemoveByPredicate(function(elementData)
+                          return configuration.Predicate(elementData) == configuration.Predicate(rowData);
+                        end);
+
+                        return true;
+                      end
+                    end
+
+                    return false;
+                  end,
+                  OnUpdate = function(frame)
+                    tabbedFrame:UpdateTabsText();
+                  end,
+                  showRemoveIcon = true,
+                }
+              );
+
+              itemTypesFrame:SetPoint("TOPRIGHT", buttonAdd, "BOTTOMRIGHT", 0, -5);
+              itemTypesFrame:SetPoint("BOTTOMLEFT");
+              itemTypesFrame:SetPoint("BOTTOMRIGHT");
+
+              textListFrame.EditBox = manualExclusionsEditBox;
+              textListFrame.List = itemTypesFrame;
+
+              return textListFrame;
+            end
+          },
         },
         400,
         presetFrame,
@@ -908,6 +1039,14 @@ UtilityHub.GameOptions.Register = function()
           tab.Text:SetText(newTitle);
           tab.tabText = newTitle;
         end
+
+        do -- ItemTypes
+          tab = tabbedFrame.tabs[4];
+
+          local newTitle = string.format("Item types (%s)", #tab.frame.List:GetData());
+          tab.Text:SetText(newTitle);
+          tab.tabText = newTitle;
+        end
       end
 
       local saveButton = framesHelper:CreateCustomButton(
@@ -928,6 +1067,7 @@ UtilityHub.GameOptions.Register = function()
             itemGroups = itemGroups,
             exclusion = manualExclusionsFrame:GetData(),
             color = color:GetColor(),
+            itemType = itemTypesFrame:GetData(),
           });
 
           if (result) then
@@ -994,6 +1134,8 @@ UtilityHub.GameOptions.Register = function()
           manualInclusionsEditBox:SetText("");
           manualInclusionsFrame:ReplaceData(selectedPreset.custom or {});
           manualExclusionsFrame:ReplaceData(selectedPreset.exclusion or {});
+          DevTool:AddData(selectedPreset);
+          itemTypesFrame:ReplaceData(selectedPreset.itemType or {});
 
           tabbedFrame:UpdateTabsText();
         else

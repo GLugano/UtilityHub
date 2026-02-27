@@ -412,8 +412,7 @@ function Module:ShowFormErrorPopup(text, onHideFn)
   StaticPopup_Show(popupName);
 end
 
----@param data any
----@param dataID number|nil
+---@param data MailPreset
 ---@return boolean
 function Module:SavePreset(data)
   local dataID = data.id;
@@ -442,8 +441,21 @@ function Module:SavePreset(data)
     end
   end
 
+  if (not atLeastOneCheck) then
+    if (#data.custom > 0) then
+      atLeastOneCheck = true;
+    end
+  end
+
+  if (not atLeastOneCheck) then
+    if (#data.itemType > 0) then
+      atLeastOneCheck = true;
+    end
+  end
+
   if (UtilityHub.Libs.Utils:TableLength(data.custom) == 0 and (not atLeastOneCheck)) then
-    Module:ShowFormErrorPopup("At least one item group needs to be checked or one item added to the inclusions");
+    Module:ShowFormErrorPopup(
+      "At least one thing of the following need to be done: one item group checked, one item in the inclusions or one item type");
     return false;
   end
 
@@ -485,6 +497,7 @@ function Module:GetNewEmptyPreset()
     itemGroups = {},
     custom = {},
     exclusion = {},
+    itemType = {},
   };
 
   for itemGroupName, itemGroup in UtilityHub.Libs.Utils:OrderedPairs(Module.ItemGroupOptions) do
@@ -541,6 +554,7 @@ function Module:GetManagePresetGeneratorFunction()
   end
 end
 
+---@param preset MailPreset
 function Module:ExecutePreset(preset)
   UtilityHub.Helpers.Mail:OpenSendMailTab(function()
     UtilityHub.Helpers.Mail:ClearAllMailSlots();
@@ -563,7 +577,17 @@ function Module:ExecutePreset(preset)
           local isSoulbound = C_Item.IsBound(ItemLocation:CreateFromBagAndSlot(bag, slot));
           local isConjured = UtilityHub.Libs.Utils:IsItemConjured(itemLink);
 
-          if (not isSoulbound and not isConjured and Module:ItemShouldBeAdded(itemLink, itemGroupFunctions, preset.custom, preset.exclusion)) then
+          if (
+                not isSoulbound
+                and not isConjured
+                and Module:ItemShouldBeAdded(
+                  itemLink,
+                  itemGroupFunctions,
+                  preset.custom,
+                  preset.exclusion,
+                  preset.itemType
+                )
+              ) then
             UtilityHub.Helpers.Mail:AddItemToNextEmptyMailSlot(bag, slot);
           end
         end
@@ -584,12 +608,52 @@ function Module:ItemLinkIsMemberOfGroup(itemLink, itemGroupFunctions)
   return false;
 end
 
-function Module:ItemShouldBeAdded(itemLink, itemGroupFunctions, customItems, excludedItems)
-  return not Module:ItemIsMemberOfList(itemLink, excludedItems) and
-      (Module:ItemLinkIsMemberOfGroup(itemLink, itemGroupFunctions) or Module:ItemIsMemberOfList(itemLink, customItems));
+---@param itemTypes MailPresetItemType[]
+---@return boolean
+function Module:ItemLinkIsMemberOfItemType(itemLink, itemTypes)
+  local _, _, _, _, _, _, _, _, _, _, _, classID, subclassID = C_Item.GetItemInfo(itemLink);
+
+  if (#itemTypes == 0) then
+    return false;
+  end
+
+  for _, itemType in ipairs(itemTypes) do
+    if (itemType.classID == classID) then
+      if (itemType.subclassID) then
+        if (itemType.subclassID == subclassID) then
+          return true;
+        end
+      else
+        return true;
+      end
+    end
+  end
+
+  return false;
 end
 
-function Module:ItemIsMemberOfList(itemLink, list)
+---@param itemLink ItemLink
+---@param itemGroupFunctions any
+---@param customItems ItemLink[]
+---@param excludedItems ItemLink[]
+---@param itemTypes MailPresetItemType[]
+---@return boolean
+function Module:ItemShouldBeAdded(
+    itemLink,
+    itemGroupFunctions,
+    customItems,
+    excludedItems,
+    itemTypes
+)
+  return not Module:ItemLinkIsMemberOfList(itemLink, excludedItems)
+      and (
+        Module:ItemLinkIsMemberOfGroup(itemLink, itemGroupFunctions)
+        or Module:ItemLinkIsMemberOfList(itemLink, customItems)
+        or Module:ItemLinkIsMemberOfItemType(itemLink, itemTypes)
+      );
+end
+
+function Module:ItemLinkIsMemberOfList(itemLink, list)
   if (not list or #list == 0) then
     return false;
   end
