@@ -884,7 +884,7 @@ UtilityHub.GameOptions.Register = function()
                 ---@return number
                 local function OnClickMenu(class, subclass)
                   local classID, subclassID = class.classID, subclass and subclass.subClassID or nil;
-                  DevTool:AddData(selectedPreset);
+
                   for _, value in ipairs(selectedPreset.itemType) do
                     if (value.classID == classID and value.subclassID == subclassID) then
                       return MenuResponse.Close;
@@ -1134,7 +1134,6 @@ UtilityHub.GameOptions.Register = function()
           manualInclusionsEditBox:SetText("");
           manualInclusionsFrame:ReplaceData(selectedPreset.custom or {});
           manualExclusionsFrame:ReplaceData(selectedPreset.exclusion or {});
-          DevTool:AddData(selectedPreset);
           itemTypesFrame:ReplaceData(selectedPreset.itemType or {});
 
           tabbedFrame:UpdateTabsText();

@@ -13,8 +13,8 @@ UtilityHub.Events:RegisterCallback("PLAYER_GUILD_UPDATE", function(_, name)
 end);
 
 function Module:GetMailAnchorFrame()
-  if (UtilityHub.Flags.tsmLoaded and not MailFrame:IsVisible()) then
-    local tsmFrame = UtilityHub.Integration:GetTSMMailFrame();
+  if (UtilityHub.Integration.TSM.Enabled and not MailFrame:IsVisible()) then
+    local tsmFrame = UtilityHub.Integration.TSM:GetTSMMailFrame();
     if (tsmFrame) then
       return tsmFrame;
     end
@@ -430,12 +430,12 @@ function Module:OnInitialize()
   MailFrame:HookScript("OnHide", function()
     if (not Module.ButtonContainer) then return end
 
-    if (UtilityHub.Flags.tsmLoaded) then
+    if (UtilityHub.Integration.TSM.Enabled) then
       -- Delay to give TSM time to show and position its frame
       C_Timer.After(0.3, function()
         if (not Module.ButtonContainer:IsShown()) then return end
 
-        local tsmFrame = UtilityHub.Integration:GetTSMMailFrame();
+        local tsmFrame = UtilityHub.Integration.TSM:GetTSMMailFrame();
         if (tsmFrame) then
           Module:AnchorButtons();
 

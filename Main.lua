@@ -505,9 +505,10 @@ function UtilityHub.Addon:OnInitialize()
   CreateMinimapIcon();
 
   UtilityHub.GameOptions.Register();
-  UtilityHub.Integration.Baganator();
-  UtilityHub.Integration.Auctionator();
-  UtilityHub.Integration.TSM();
+  UtilityHub.Integration.Baganator:Init();
+  -- UtilityHub.Integration.Auctionator();
+  UtilityHub.Integration.TSM:Init();
+  UtilityHub.Integration.DragonflightUI:Init();
 
   if (UtilityHub.Database.global.options.simpleStatsTooltip) then
     UtilityHub.Addon:EnableModule("Tooltip");

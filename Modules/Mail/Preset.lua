@@ -362,7 +362,7 @@ Module.ItemGroupOptions = {
       return UtilityHub.Constants.IsTBCorLater;
     end,
     CheckItemBelongsToGroup = function(itemLink)
-      return CheckItemLinkInList(itemLink, classicItems.aldorScryer);
+      return CheckItemLinkInList(itemLink, tbcItems.aldorScryer);
     end
   },
   ["EngiMats"] = {
@@ -387,6 +387,15 @@ Module.ItemGroupOptions = {
       else
         return classID == Enum.ItemClass.Consumable and subclassID == Enum.ItemConsumableSubclass.Fooddrink;
       end
+    end
+  },
+  ["CenarionExpedition"] = {
+    label = "Cenarion Expedition",
+    IsEnabledInThisExpansion = function()
+      return UtilityHub.Constants.IsTBCorLater;
+    end,
+    CheckItemBelongsToGroup = function(itemLink)
+      return CheckItemLinkInList(itemLink, tbcItems.cenarionExpedition);
     end
   },
 };

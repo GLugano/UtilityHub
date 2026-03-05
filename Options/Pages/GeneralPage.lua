@@ -104,9 +104,23 @@ function GeneralPage:Create(parent)
   );
   cbDaily:SetPoint("TOPLEFT", sectionDaily, "BOTTOMLEFT", 0, -10);
 
+  -- Section: Professions
+  local sectionProfessions = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+  sectionProfessions:SetPoint("TOPLEFT", cbDaily, "BOTTOMLEFT", 0, -20);
+  sectionProfessions:SetText("Professions");
+
+  local cbEnchant = self:CreateCheckbox(
+    frame,
+    "Automatic filter enchants when trading",
+    "automaticEnchantFilter",
+    "When trading and the enchant frame is open, the filter will be updated when the person you are trading change the item in the non-trade slot",
+    cbDaily
+  );
+  cbEnchant:SetPoint("TOPLEFT", sectionProfessions, "BOTTOMLEFT", 0, -10);
+
   -- Section: Cooldowns
   local sectionCooldowns = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
-  sectionCooldowns:SetPoint("TOPLEFT", cbDaily, "BOTTOMLEFT", 0, -20);
+  sectionCooldowns:SetPoint("TOPLEFT", cbEnchant, "BOTTOMLEFT", 0, -20);
   sectionCooldowns:SetText("Cooldowns");
 
   local cbCooldowns = self:CreateCheckbox(

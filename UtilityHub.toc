@@ -37,6 +37,7 @@ Modules/Integration/Integration.lua
 Modules/Integration/Baganator.lua
 Modules/Integration/Auctionator.lua
 Modules/Integration/TSM.lua
+Modules/Integration/DragonflightUI.lua
 Modules/Tooltip/Tooltip.lua
 Modules/Cooldowns/Cooldowns.lua
 Modules/Cooldowns/Sync.lua
@@ -45,3 +46,4 @@ Modules/MouseRing/MouseRing.lua
 Modules/DebugLog/DebugLogViewer.lua
 Modules/GraphicsSettings/GraphicsSettings.lua
 Options/Pages/GraphicsSettingsPage.lua
+Modules/Professions/Enchanting.lua

@@ -114,7 +114,7 @@ local function CreateAuctionatorUsableItems()
 end;
 
 function UtilityHub.Integration.Auctionator()
-  UtilityHub.Integration:FuncOrWaitFrame({ "Auctionator" }, function()
+  UtilityHub.Integration:ResolveWhenAddonIsLoaded({ "Auctionator" }, function()
     CreateAuctionatorUsableItems();
   end);
 end;

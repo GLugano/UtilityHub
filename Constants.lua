@@ -27,6 +27,22 @@ UtilityHub.Constants = {
 
   ---@type AuctionHouseItemClassStructureClass[]
   AuctionHouseItemClassStructure = {},
+
+  SlotValueToCraftSlotMap = {
+    INVTYPE_CHEST = "CHESTSLOT",
+    INVTYPE_ROBE = "CHESTSLOT",
+    INVTYPE_FEET = "FEETSLOT",
+    INVTYPE_WRIST = "WRISTSLOT",
+    INVTYPE_HAND = "HANDSLOT",
+    INVTYPE_FINGER = "FINGER0SLOT",
+    INVTYPE_CLOAK = "BACKSLOT",
+    INVTYPE_WEAPON = "ENCHSLOT_WEAPON",
+    INVTYPE_SHIELD = "SHIELDSLOT",
+    INVTYPE_2HWEAPON = "ENCHSLOT_2HWEAPON",
+    INVTYPE_WEAPONMAINHAND = "ENCHSLOT_WEAPON",
+    INVTYPE_WEAPONOFFHAND = "SHIELDSLOT",
+    INVTYPE_HOLDABLE = "SHIELDSLOT",
+  },
 };
 
 if (UtilityHub.Constants.IsClassic) then

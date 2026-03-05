@@ -22,6 +22,8 @@ UtilityHub = {
       autoBuy = false,
       ---@type AutoBuyItem[]
       autoBuyList = {},
+      -- Profession
+      automaticEnchantFilter = true,
       -- Cooldowns
       cooldowns = true,
       cooldowsList = {},
@@ -120,8 +122,6 @@ UtilityHub = {
   Flags = {
     ---@type boolean
     addonReady = false,
-    ---@type boolean
-    tsmLoaded = false,
     ---@type Frame|nil
     tsmMailFrame = nil,
   },
