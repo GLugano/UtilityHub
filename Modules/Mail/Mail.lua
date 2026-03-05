@@ -418,8 +418,8 @@ function Module:OnInitialize()
   -- Priority: hook capture (Blizzard UI) > SetRecipient cache (TSM) > field text (fallback)
   EventRegistry:RegisterFrameEventAndCallback("MAIL_SEND_SUCCESS", function()
     local recipient = Module.pendingRecipient
-      or UtilityHub.Helpers.Mail.lastRecipient
-      or SendMailNameEditBox:GetText();
+        or UtilityHub.Helpers.Mail.lastRecipient
+        or SendMailNameEditBox:GetText();
     Module.pendingRecipient = nil;
     UtilityHub.Helpers.Mail.lastRecipient = nil;
     if (recipient and recipient ~= "") then
@@ -436,6 +436,7 @@ function Module:OnInitialize()
         if (not Module.ButtonContainer:IsShown()) then return end
 
         local tsmFrame = UtilityHub.Integration.TSM:GetTSMMailFrame();
+
         if (tsmFrame) then
           Module:AnchorButtons();
 
@@ -449,7 +450,7 @@ function Module:OnInitialize()
             tsmFrame:HookScript("OnHide", function()
               if (Module.ButtonContainer) then
                 Module.ButtonContainer:Hide();
-                UtilityHub.Flags.tsmMailFrame = nil;
+                UtilityHub.Integration.TSM.mailFrame = nil;
               end
             end);
             tsmFrame.uhHooked = true;
@@ -458,13 +459,13 @@ function Module:OnInitialize()
         end
 
         Module.ButtonContainer:Hide();
-        UtilityHub.Flags.tsmMailFrame = nil;
+        UtilityHub.Integration.TSM.mailFrame = nil;
       end);
       return;
     end
 
     Module.ButtonContainer:Hide();
-    UtilityHub.Flags.tsmMailFrame = nil;
+    UtilityHub.Integration.TSM.mailFrame = nil;
   end);
 end
 

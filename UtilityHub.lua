@@ -122,8 +122,6 @@ UtilityHub = {
   Flags = {
     ---@type boolean
     addonReady = false,
-    ---@type Frame|nil
-    tsmMailFrame = nil,
   },
   Textures = {
     ---@param nameOrTable string|TextureData

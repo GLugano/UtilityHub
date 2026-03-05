@@ -28,6 +28,8 @@ end
 UtilityHub.Integration.TSM = {
   ---@type boolean
   Enabled = false,
+  ---@type Frame|nil
+  mailFrame = nil,
   Init = function(self)
     UtilityHub.Integration:ResolveWhenAddonIsLoaded("TradeSkillMaster", function()
       UtilityHub.Integration.TSM.Enabled = true;
@@ -40,8 +42,8 @@ UtilityHub.Integration.TSM = {
     end
 
     -- Cache: if we already found it and it's still visible
-    if (UtilityHub.Flags.tsmMailFrame and UtilityHub.Flags.tsmMailFrame:IsVisible()) then
-      return UtilityHub.Flags.tsmMailFrame;
+    if (UtilityHub.Integration.TSM.mailFrame and UtilityHub.Integration.TSM.mailFrame:IsVisible()) then
+      return UtilityHub.Integration.TSM.mailFrame;
     end
 
     -- TSM frames are not direct children of UIParent
@@ -56,7 +58,7 @@ UtilityHub.Integration.TSM = {
         if (name and name:find("^TSM_FRAME") and name:find("LargeApplicationFrame")) then
           -- Verify this is the Mail frame by checking for Mail-specific elements
           if (HasMailSpecificElements(frame)) then
-            UtilityHub.Flags.tsmMailFrame = frame;
+            UtilityHub.Integration.TSM.mailFrame = frame;
             return frame;
           end
         end
