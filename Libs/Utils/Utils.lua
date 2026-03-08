@@ -1,4 +1,4 @@
-local MAJOR, MINOR = "Utils-1.0", 11;
+local MAJOR, MINOR = "Utils-1.0", 12;
 ---@class UTILS
 local UTILS = LibStub:NewLibrary(MAJOR, MINOR);
 
@@ -251,8 +251,15 @@ function UTILS:RawMoneyToGold(raw)
   return tonumber(goldString);
 end
 
-function UTILS:ShowChatNotification(text, prefix)
-  print("|cffddff00[" .. prefix .. "]|r " .. text)
+---@param text string
+---@param prefix string
+---@param hex string|nil
+function UTILS:ShowChatNotification(text, prefix, hex)
+  if (not hex) then
+    hex = "ffddff00";
+  end
+
+  print(string.format("|c%s[%s]|r %s", hex, prefix, text));
 end
 
 function UTILS:CreateCheckbox(name, parent, label, checked, onClick)

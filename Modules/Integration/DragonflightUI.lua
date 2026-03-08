@@ -27,7 +27,7 @@ UtilityHub.Integration.DragonflightUI = {
     searchBox:SetText(value);
   end,
   ---@return boolean
-  IsEnchantFrameOpen = function(self)
+  IsProfessionFrameOpen = function(self)
     return DragonflightUIProfessionFrame:IsShown();
   end,
   ---@return boolean
@@ -39,7 +39,7 @@ UtilityHub.Integration.DragonflightUI = {
       return false;
     end
 
-    for slotValue, craftSlot in pairs(UtilityHub.Constants.SlotValueToCraftSlotMap) do
+    for _, craftSlot in pairs(UtilityHub.Constants.SlotValueToCraftSlotMap) do
       if (getglobal(craftSlot) == text) then
         return true;
       end

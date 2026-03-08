@@ -7,6 +7,7 @@ UtilityHub.Constants = {
   AddonName = ADDON_NAME,
   AddonPrefix = "UH",
   AddonVersion = C_AddOns.GetAddOnMetadata(ADDON_NAME, "Version"),
+  AddonColorHex = "F5566EFF",
 
   --- Version
   IsClassic = (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC) and (interfaceVersion < 20000),

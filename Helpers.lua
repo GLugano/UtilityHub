@@ -1,5 +1,6 @@
 ---@class Helpers
 UtilityHub.Helpers = {
+  Debug = {},
   String = {},
   Time = {},
   Notification = {},
@@ -9,6 +10,21 @@ UtilityHub.Helpers = {
   DebugLog = {},
   Professions = {},
 };
+
+-- Debug
+
+---@param text string
+function UtilityHub.Helpers.Debug:ChatMessage(text)
+  if (not UtilityHub.Database.global.debugMode) then
+    return;
+  end
+
+  UtilityHub.Libs.Utils:ShowChatNotification(
+    text,
+    UtilityHub.Constants.AddonName .. " - " .. " DEBUG",
+    UtilityHub.Constants.AddonColorHex
+  );
+end
 
 -- Time
 
@@ -132,6 +148,7 @@ function UtilityHub.Helpers.Mail:AddToHistory(name)
   -- Copy existing values to a new table to ensure AceDB persists the write
   local existing = UtilityHub.Database.global.mailHistory;
   local history = {};
+
   if (existing) then
     for i, v in ipairs(existing) do
       history[i] = v;
@@ -146,7 +163,7 @@ function UtilityHub.Helpers.Mail:AddToHistory(name)
 
   table.insert(history, 1, name);
 
-  while (#history > 10) do
+  while (#history > 20) do
     table.remove(history);
   end
 

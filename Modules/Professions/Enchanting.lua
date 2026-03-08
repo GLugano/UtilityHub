@@ -24,9 +24,16 @@ local function IsEquipSlotValid(equipSlot)
   return false;
 end
 
+---@param isCraftFrameOpen? fun(): boolean
 ---@return number|nil
-local function GetCurrentProfessionID()
-  if (not CraftFrame or not CraftFrame:IsShown()) then
+local function GetCurrentProfessionID(isCraftFrameOpen)
+  if (not isCraftFrameOpen) then
+    isCraftFrameOpen = function()
+      return not CraftFrame or not CraftFrame:IsShown();
+    end;
+  end
+
+  if (not isCraftFrameOpen()) then
     return nil;
   end
 
@@ -49,6 +56,7 @@ end
 ---@return string|nil
 local function GetTradeTargetItem7Slot()
   local itemLink = GetTradeTargetItemLink(7);
+  UtilityHub.Helpers.Debug:ChatMessage(string.format("GetTradeTargetItemLink(7) = %s", itemLink or "nil"));
 
   if (not itemLink) then
     return nil;
@@ -98,74 +106,85 @@ local function UpdateCraftFilter(index)
   CraftFrame.Dropdown:SetText(getglobal(slot));
 end
 
+---@param attempt number
+local function OnEvent(attempt)
+  if (not UtilityHub.Database.global.options.automaticEnchantFilter) then
+    UtilityHub.Helpers.Debug:ChatMessage("automaticEnchantFilter flag disabled");
+    return;
+  end
+
+  local slotValue = GetTradeTargetItem7Slot();
+  local dfUIModuleActive = UtilityHub.Integration.DragonflightUI:ModuleActive();
+  local IsEnchantFrameOpen;
+
+  if (dfUIModuleActive) then
+    IsEnchantFrameOpen = function()
+      return UtilityHub.Integration.DragonflightUI:IsProfessionFrameOpen();
+    end;
+  end
+
+  -- Do nothing if craft frame inst open or the opened profession is something else
+  if (GetCurrentProfessionID(IsEnchantFrameOpen) ~= 7411) then
+    UtilityHub.Helpers.Debug:ChatMessage("No profession frame or wrong profession");
+    return;
+  end
+
+  -- If there is nothing in the slot that has a slotName
+  if (not slotValue) then
+    UtilityHub.Helpers.Debug:ChatMessage("No slot value");
+
+    if (attempt == 1) then
+      UtilityHub.Helpers.Debug:ChatMessage("Retrying to get item info in 0.5 seconds");
+      C_Timer.After(0.5, function() OnEvent(2) end);
+      return;
+    end
+
+    if (dfUIModuleActive) then
+      -- If the current text in the search box a slotName, clear it
+      if (UtilityHub.Integration.DragonflightUI:IsCurrentSearchSlotName()) then
+        UtilityHub.Integration.DragonflightUI:UpdateSearchBox("");
+      end
+    else
+      UpdateCraftFilter(0);
+    end
+
+    return;
+  end
+
+  if (not IsEquipSlotValid(slotValue)) then
+    UtilityHub.Helpers.Debug:ChatMessage(string.format("%s (%s)", "Invalid equipSlot", slotValue));
+    return;
+  end
+
+  local options = GetMenuSlotOptions();
+  local craftSlot = UtilityHub.Constants.SlotValueToCraftSlotMap[slotValue];
+  local index;
+
+  for i, value in ipairs(options) do
+    if (value == craftSlot) then
+      index = i;
+      break;
+    end
+  end
+
+  UtilityHub.Helpers.Debug:ChatMessage(string.format("craftSlot: %s / index: %s", craftSlot, index));
+
+  if (dfUIModuleActive) then
+    -- TODO: waiting karl add the filter this addon, slacker
+    -- local slot = GetSlotOptionNameByIndex(index);
+    -- local slotName = getglobal(slot);
+
+    -- UtilityHub.Integration.DragonflightUI:UpdateSearchBox(slotName);
+  else
+    UpdateCraftFilter(index);
+  end
+end
+
 local function RegisterEvent()
   EventRegistry:RegisterFrameEventAndCallback(
     "TRADE_TARGET_ITEM_CHANGED",
     function()
-      if (not UtilityHub.Database.global.options.automaticEnchantFilter) then
-        return;
-      end
-
-      local slotValue = GetTradeTargetItem7Slot();
-      local dfUIModuleActive = UtilityHub.Integration.DragonflightUI:ModuleActive();
-      local IsEnchantFrameOpen = function()
-        return CraftFrame:IsShown();
-      end;
-
-      if (dfUIModuleActive) then
-        IsEnchantFrameOpen = function()
-          return UtilityHub.Integration.DragonflightUI:IsEnchantFrameOpen();
-        end;
-      end
-
-      -- Do nothing if craft frame inst open or the opened profession is something else
-      if (GetCurrentProfessionID() ~= 7411) then
-        return;
-      end
-
-      -- If there is nothing in the slot that has a slotName
-      if (not slotValue) then
-        -- If the enchant frame is not open, nothing should be done
-        if (not IsEnchantFrameOpen()) then
-          return;
-        end
-
-        if (dfUIModuleActive) then
-          -- If the current text in the search box a slotName, clear it
-          if (UtilityHub.Integration.DragonflightUI:IsCurrentSearchSlotName()) then
-            UtilityHub.Integration.DragonflightUI:UpdateSearchBox("");
-          end
-        else
-          UpdateCraftFilter(0);
-        end
-
-        return;
-      end
-
-      if (not IsEquipSlotValid(slotValue) or not IsEnchantFrameOpen()) then
-        return;
-      end
-
-      local options = GetMenuSlotOptions();
-      local craftSlot = UtilityHub.Constants.SlotValueToCraftSlotMap[slotValue];
-      local index;
-
-      for i, value in ipairs(options) do
-        if (value == craftSlot) then
-          index = i;
-          break;
-        end
-      end
-
-      if (dfUIModuleActive) then
-        -- TODO: waiting karl add the filter this addon, slacker
-        -- local slot = GetSlotOptionNameByIndex(index);
-        -- local slotName = getglobal(slot);
-
-        -- UtilityHub.Integration.DragonflightUI:UpdateSearchBox(slotName);
-      else
-        UpdateCraftFilter(index);
-      end
+      OnEvent(1);
     end
   );
 end

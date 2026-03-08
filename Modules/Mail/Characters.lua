@@ -203,7 +203,21 @@ function Module:GetGuildCharactersGeneratorFunction()
       end
     end
 
-    for firstLetter, group in pairs(playerGroups) do
+    local sortedKeys = {};
+
+    for k in pairs(playerGroups) do
+      table.insert(sortedKeys, k);
+    end
+
+    table.sort(sortedKeys);
+
+    for _, firstLetter in ipairs(sortedKeys) do
+      local group = playerGroups[firstLetter];
+
+      if (not group) then
+        break;
+      end
+
       table.sort(group, function(a, b)
         return a.name < b.name;
       end);
