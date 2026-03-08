@@ -293,8 +293,8 @@ UtilityHub = {
       end
     end
 
-    if (not UtilityHub.Database.global.options.cooldowns) then
-      UtilityHub.Database.global.options.cooldowns = false;
+    if (UtilityHub.Database.global.options.cooldowns == nil) then
+      UtilityHub.Database.global.options.cooldowns = UtilityHub.GameOptions.defaults.cooldowns;
     end
 
     if (not UtilityHub.Database.global.options.cooldowsList) then
@@ -304,6 +304,10 @@ UtilityHub = {
     if (not UtilityHub.Database.global.options.mouseRing) then
       local defaults = UtilityHub.GameOptions.defaults.mouseRing;
       UtilityHub.Database.global.options.mouseRing = CopyTable(defaults);
+    end
+
+    if (UtilityHub.Database.global.options.automaticEnchantFilter == nil) then
+      UtilityHub.Database.global.options.automaticEnchantFilter = UtilityHub.GameOptions.defaults.automaticEnchantFilter;
     end
 
     UtilityHub.Helpers.Notification:ShowNotification("Migration complete");
