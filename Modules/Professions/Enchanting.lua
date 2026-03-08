@@ -24,16 +24,16 @@ local function IsEquipSlotValid(equipSlot)
   return false;
 end
 
----@param isCraftFrameOpen? fun(): boolean
+---@param IsCraftFrameOpen? fun(): boolean
 ---@return number|nil
-local function GetCurrentProfessionID(isCraftFrameOpen)
-  if (not isCraftFrameOpen) then
-    isCraftFrameOpen = function()
-      return not CraftFrame or not CraftFrame:IsShown();
+local function GetCurrentProfessionID(IsCraftFrameOpen)
+  if (not IsCraftFrameOpen) then
+    IsCraftFrameOpen = function()
+      return CraftFrame and CraftFrame:IsShown();
     end;
   end
 
-  if (not isCraftFrameOpen()) then
+  if (not IsCraftFrameOpen()) then
     return nil;
   end
 
@@ -115,16 +115,16 @@ local function OnEvent(attempt)
 
   local slotValue = GetTradeTargetItem7Slot();
   local dfUIModuleActive = UtilityHub.Integration.DragonflightUI:ModuleActive();
-  local IsEnchantFrameOpen;
+  local IsCraftFrameOpen;
 
   if (dfUIModuleActive) then
-    IsEnchantFrameOpen = function()
-      return UtilityHub.Integration.DragonflightUI:IsProfessionFrameOpen();
+    IsCraftFrameOpen = function()
+      return UtilityHub.Integration.DragonflightUI:IsCraftFrameOpen();
     end;
   end
 
   -- Do nothing if craft frame inst open or the opened profession is something else
-  if (GetCurrentProfessionID(IsEnchantFrameOpen) ~= 7411) then
+  if (GetCurrentProfessionID(IsCraftFrameOpen) ~= 7411) then
     UtilityHub.Helpers.Debug:ChatMessage("No profession frame or wrong profession");
     return;
   end
@@ -167,7 +167,14 @@ local function OnEvent(attempt)
     end
   end
 
-  UtilityHub.Helpers.Debug:ChatMessage(string.format("craftSlot: %s / index: %s", craftSlot, index));
+  UtilityHub.Helpers.Debug:ChatMessage(
+    string.format(
+      "slotValue: %s / craftSlot: %s / index: %s",
+      slotValue or "nil",
+      craftSlot or "nil",
+      index or "nil"
+    )
+  );
 
   if (dfUIModuleActive) then
     -- TODO: waiting karl add the filter this addon, slacker

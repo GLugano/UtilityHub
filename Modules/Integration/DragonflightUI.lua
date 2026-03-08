@@ -27,7 +27,7 @@ UtilityHub.Integration.DragonflightUI = {
     searchBox:SetText(value);
   end,
   ---@return boolean
-  IsProfessionFrameOpen = function(self)
+  IsCraftFrameOpen = function(self)
     return DragonflightUIProfessionFrame:IsShown();
   end,
   ---@return boolean
