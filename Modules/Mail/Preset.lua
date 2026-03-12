@@ -662,13 +662,19 @@ function Module:ItemShouldBeAdded(
       );
 end
 
+---@param itemLink ItemLink
+---@param list string[]
+---@return boolean
 function Module:ItemLinkIsMemberOfList(itemLink, list)
   if (not list or #list == 0) then
     return false;
   end
 
   for key, customItemLink in pairs(list) do
-    if (itemLink == customItemLink) then
+    local itemLinkID = UtilityHub.Libs.Utils:GetItemIDFromLink(itemLink);
+    local customItemLinkID = UtilityHub.Libs.Utils:GetItemIDFromLink(customItemLink);
+
+    if (itemLinkID == customItemLinkID) then
       return true;
     end
   end
