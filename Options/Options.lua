@@ -721,15 +721,19 @@ UtilityHub.GameOptions.Register = function()
               local textListFrame = CreateFrame("Frame", nil, parent);
               manualInclusionsEditBox = framesHelper:CreateCustomListAdd(
                 textListFrame,
-                function(text)
+                function(itemLink)
+                  local itemLinkID = UtilityHub.Libs.Utils:GetItemIDFromLink(itemLink);
+
                   for index, value in ipairs(selectedPreset.custom) do
-                    if (value == text) then
+                    local customItemLinkID = UtilityHub.Libs.Utils:GetItemIDFromLink(value);
+
+                    if (itemLinkID == customItemLinkID) then
                       return;
                     end
                   end
 
-                  tinsert(selectedPreset.custom, text);
-                  manualInclusionsFrame.dataProvider:Insert(text);
+                  tinsert(selectedPreset.custom, itemLink);
+                  manualInclusionsFrame.dataProvider:Insert(itemLink);
                 end
               );
 
@@ -798,15 +802,19 @@ UtilityHub.GameOptions.Register = function()
               local textListFrame = CreateFrame("Frame", nil, parent);
               manualExclusionsEditBox = framesHelper:CreateCustomListAdd(
                 textListFrame,
-                function(text)
-                  for index, value in ipairs(selectedPreset.exclusion) do
-                    if (value == text) then
+                function(itemLink)
+                  local itemLinkID = UtilityHub.Libs.Utils:GetItemIDFromLink(itemLink);
+
+                  for index, value in ipairs(selectedPreset.custom) do
+                    local customItemLinkID = UtilityHub.Libs.Utils:GetItemIDFromLink(value);
+
+                    if (itemLinkID == customItemLinkID) then
                       return;
                     end
                   end
 
-                  tinsert(selectedPreset.exclusion, text);
-                  manualExclusionsFrame.dataProvider:Insert(text);
+                  tinsert(selectedPreset.exclusion, itemLink);
+                  manualExclusionsFrame.dataProvider:Insert(itemLink);
                 end
               );
 
