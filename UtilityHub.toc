@@ -47,3 +47,4 @@ Modules/DebugLog/DebugLogViewer.lua
 Modules/GraphicsSettings/GraphicsSettings.lua
 Options/Pages/GraphicsSettingsPage.lua
 Modules/Professions/Enchanting.lua
+Modules/NPCs/NPCs.lua

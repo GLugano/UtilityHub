@@ -1,5 +1,3 @@
-local ADDON_NAME = ...;
-
 ---@class GeneralPage
 local GeneralPage = {};
 
@@ -57,18 +55,38 @@ end
 function GeneralPage:Create(parent)
   local frame = CreateFrame("Frame", "UtilityHubGeneralPage", parent);
 
+  -- Scroll frame
+  local scrollFrame = CreateFrame("ScrollFrame", nil, frame, "UIPanelScrollFrameTemplate");
+  scrollFrame:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, 0);
+  scrollFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -22, 0);
+
+  -- Scroll child (content lives here)
+  local content = CreateFrame("Frame", nil, scrollFrame);
+  content:SetHeight(650);
+  content:SetWidth(scrollFrame:GetWidth());
+  content:SetClipsChildren(true);
+  scrollFrame:SetScrollChild(content);
+
+  -- Keep content width in sync
+  scrollFrame:SetScript("OnSizeChanged", function(self, w)
+    content:SetWidth(w);
+  end);
+  scrollFrame:HookScript("OnShow", function(self)
+    content:SetWidth(self:GetWidth());
+  end);
+
   -- Title
-  local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge");
+  local title = content:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge");
   title:SetPoint("TOPLEFT", 20, -20);
   title:SetText("General Settings");
 
   -- Section: Tooltip
-  local sectionTooltip = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+  local sectionTooltip = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
   sectionTooltip:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -20);
   sectionTooltip:SetText("Tooltip");
 
   local cbTooltip = self:CreateCheckbox(
-    frame,
+    content,
     "Simplified stats display",
     "simpleStatsTooltip",
     "Change the way most stats are shown in the tooltip",
@@ -77,12 +95,12 @@ function GeneralPage:Create(parent)
   cbTooltip:SetPoint("TOPLEFT", sectionTooltip, "BOTTOMLEFT", 0, -10);
 
   -- Section: Trade
-  local sectionTrade = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+  local sectionTrade = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
   sectionTrade:SetPoint("TOPLEFT", cbTooltip, "BOTTOMLEFT", 0, -20);
   sectionTrade:SetText("Trade");
 
   local cbTrade = self:CreateCheckbox(
-    frame,
+    content,
     "Extra info frame",
     "tradeExtraInfo",
     "Show extra frame with more info about the person you are trading",
@@ -91,12 +109,12 @@ function GeneralPage:Create(parent)
   cbTrade:SetPoint("TOPLEFT", sectionTrade, "BOTTOMLEFT", 0, -10);
 
   -- Section: Daily Quests
-  local sectionDaily = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+  local sectionDaily = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
   sectionDaily:SetPoint("TOPLEFT", cbTrade, "BOTTOMLEFT", 0, -20);
   sectionDaily:SetText("Daily Quests");
 
   local cbDaily = self:CreateCheckbox(
-    frame,
+    content,
     "Enable tracking",
     "dailyQuests",
     "Enable tracking of daily quests",
@@ -105,12 +123,12 @@ function GeneralPage:Create(parent)
   cbDaily:SetPoint("TOPLEFT", sectionDaily, "BOTTOMLEFT", 0, -10);
 
   -- Section: Professions
-  local sectionProfessions = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+  local sectionProfessions = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
   sectionProfessions:SetPoint("TOPLEFT", cbDaily, "BOTTOMLEFT", 0, -20);
   sectionProfessions:SetText("Professions");
 
   local cbEnchant = self:CreateCheckbox(
-    frame,
+    content,
     "Automatic filter enchants when trading",
     "automaticEnchantFilter",
     "When trading and the enchant frame is open, the filter will be updated when the person you are trading change the item in the non-trade slot",
@@ -118,22 +136,44 @@ function GeneralPage:Create(parent)
   );
   cbEnchant:SetPoint("TOPLEFT", sectionProfessions, "BOTTOMLEFT", 0, -10);
 
+  -- Section: NPCs
+  local sectionNPCs = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+  sectionNPCs:SetPoint("TOPLEFT", cbEnchant, "BOTTOMLEFT", 0, -20);
+  sectionNPCs:SetText("NPCs");
+
+  local cbAutoOpenMerchantFrameLHCBlacksmith = self:CreateCheckbox(
+    content,
+    "Auto open merchant frame with BS in LHC",
+    "automaticOpenMerchantFrameLHCBlacksmith",
+    "Automatic open the trade window with the blacksmith in Light's Hope Chapel (Craftsman Wilhelm) when there is only one gossip option available",
+    cbDaily
+  );
+  cbAutoOpenMerchantFrameLHCBlacksmith:SetPoint("TOPLEFT", sectionNPCs, "BOTTOMLEFT", 0, -10);
+
+  local cbPopupFlyTBtoOrg = self:CreateCheckbox(
+    content,
+    "Ask before flying from TB to ORG (option)",
+    "askBeforeFlyingFromTBtoORGFromOption",
+    "When active, the option that enables you to fly from Thunder Bluff to Orgrimmar will ask first before flying",
+    cbAutoOpenMerchantFrameLHCBlacksmith
+  );
+
   -- Section: Cooldowns
-  local sectionCooldowns = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
-  sectionCooldowns:SetPoint("TOPLEFT", cbEnchant, "BOTTOMLEFT", 0, -20);
+  local sectionCooldowns = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+  sectionCooldowns:SetPoint("TOPLEFT", cbPopupFlyTBtoOrg, "BOTTOMLEFT", 0, -20);
   sectionCooldowns:SetText("Cooldowns");
 
   local cbCooldowns = self:CreateCheckbox(
-    frame,
+    content,
     "Enable tracking",
     "cooldowns",
     "Enable tracking and listing of all character cooldowns",
-    cbDaily
+    cbPopupFlyTBtoOrg
   );
   cbCooldowns:SetPoint("TOPLEFT", sectionCooldowns, "BOTTOMLEFT", 0, -10);
 
   local cbCooldownSound = self:CreateCheckbox(
-    frame,
+    content,
     "Play sound when ready",
     "cooldownPlaySound",
     "Play sound when a cooldown is ready",
@@ -141,15 +181,15 @@ function GeneralPage:Create(parent)
   );
 
   local cbCooldownCollapsed = self:CreateCheckbox(
-    frame,
+    content,
     "Start collapsed",
     "cooldownStartCollapsed",
-    "When opening the cooldowns frame, all groups will start minimized",
+    "When opening the cooldowns content, all groups will start minimized",
     cbCooldownSound
   );
 
   local cbCooldownSync = self:CreateCheckbox(
-    frame,
+    content,
     "Enable cross-account sync",
     "cooldownSync",
     "Sync cooldown data between multiple WoW accounts via a shared chat channel",
@@ -157,7 +197,7 @@ function GeneralPage:Create(parent)
   );
 
   -- Sync channel input
-  local syncChannelContainer = CreateFrame("Frame", nil, frame);
+  local syncChannelContainer = CreateFrame("Frame", nil, content);
   syncChannelContainer:SetSize(400, 30);
   syncChannelContainer:SetPoint("TOPLEFT", cbCooldownSync, "BOTTOMLEFT", 0, -10);
 
