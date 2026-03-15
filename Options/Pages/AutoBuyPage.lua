@@ -397,7 +397,7 @@ function AutoBuyPage:Create(parent)
 
     if (numericID) then
       -- Resolve asynchronously: works even if the item is not in the client cache yet
-      UtilityHub.Helpers.Item:AsyncGetItemInfo(numericID, ProceedWithLink);
+      UtilityHub.Helpers.Item:AsyncGetItemLink(numericID, ProceedWithLink);
     else
       ProceedWithLink(text);
     end

@@ -48,3 +48,4 @@ Modules/GraphicsSettings/GraphicsSettings.lua
 Options/Pages/GraphicsSettingsPage.lua
 Modules/Professions/Enchanting.lua
 Modules/NPCs/NPCs.lua
+Modules/Loot/Loot.lua

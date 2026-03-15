@@ -682,6 +682,26 @@ UtilityHub.GameOptions.Register = function()
 
       color:SetPoint("TOPRIGHT", title, "BOTTOMRIGHT", -15, -10);
 
+      ---@param itemLinkOrID ItemLink|number
+      ---@param list ItemLink[]
+      ---@param listFrame SimpleFrame
+      local function InsertIntoList(itemLinkOrID, list, listFrame)
+        UtilityHub.Helpers.Item:AsyncGetItemLink(itemLinkOrID, function(itemLink)
+          local itemLinkID = UtilityHub.Libs.Utils:GetItemIDFromLink(itemLink);
+
+          for _, value in ipairs(list) do
+            local customItemLinkID = UtilityHub.Libs.Utils:GetItemIDFromLink(value);
+
+            if (itemLinkID == customItemLinkID) then
+              return;
+            end
+          end
+
+          tinsert(list, itemLink);
+          listFrame.dataProvider:Insert(itemLink);
+        end);
+      end
+
       local manualInclusionsEditBox, manualExclusionsEditBox;
       local tabbedFrame, itemGroupsFrame, manualInclusionsFrame, manualExclusionsFrame, itemTypesFrame;
       tabbedFrame = framesHelper:CreateCustomTabbedFrame(
@@ -721,19 +741,8 @@ UtilityHub.GameOptions.Register = function()
               local textListFrame = CreateFrame("Frame", nil, parent);
               manualInclusionsEditBox = framesHelper:CreateCustomListAdd(
                 textListFrame,
-                function(itemLink)
-                  local itemLinkID = UtilityHub.Libs.Utils:GetItemIDFromLink(itemLink);
-
-                  for index, value in ipairs(selectedPreset.custom) do
-                    local customItemLinkID = UtilityHub.Libs.Utils:GetItemIDFromLink(value);
-
-                    if (itemLinkID == customItemLinkID) then
-                      return;
-                    end
-                  end
-
-                  tinsert(selectedPreset.custom, itemLink);
-                  manualInclusionsFrame.dataProvider:Insert(itemLink);
+                function(itemLinkOrID)
+                  InsertIntoList(itemLinkOrID, selectedPreset.custom, manualInclusionsFrame);
                 end
               );
 
@@ -802,19 +811,8 @@ UtilityHub.GameOptions.Register = function()
               local textListFrame = CreateFrame("Frame", nil, parent);
               manualExclusionsEditBox = framesHelper:CreateCustomListAdd(
                 textListFrame,
-                function(itemLink)
-                  local itemLinkID = UtilityHub.Libs.Utils:GetItemIDFromLink(itemLink);
-
-                  for index, value in ipairs(selectedPreset.custom) do
-                    local customItemLinkID = UtilityHub.Libs.Utils:GetItemIDFromLink(value);
-
-                    if (itemLinkID == customItemLinkID) then
-                      return;
-                    end
-                  end
-
-                  tinsert(selectedPreset.exclusion, itemLink);
-                  manualExclusionsFrame.dataProvider:Insert(itemLink);
+                function(itemLinkOrID)
+                  InsertIntoList(itemLinkOrID, selectedPreset.exclusion, manualExclusionsFrame);
                 end
               );
 

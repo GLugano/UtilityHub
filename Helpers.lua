@@ -56,7 +56,7 @@ end
 
 ---@param item number | string
 ---@param cb fun(itemLink) | nil
-function UtilityHub.Helpers.Item:AsyncGetItemInfo(item, cb)
+function UtilityHub.Helpers.Item:AsyncGetItemLink(item, cb)
   local function tryCB(value)
     if (cb) then
       cb(value);
@@ -65,13 +65,13 @@ function UtilityHub.Helpers.Item:AsyncGetItemInfo(item, cb)
     return value;
   end;
 
+  local itemID = tonumber(item);
+
   if (not item) then
     return tryCB(nil);
   end
 
-  local itemID = tonumber(item);
-
-  if (itemID and type(itemID) == "number") then
+  if (type(itemID) == "number") then
     local tempItem = Item:CreateFromItemID(itemID);
 
     tempItem:ContinueOnItemLoad(function()

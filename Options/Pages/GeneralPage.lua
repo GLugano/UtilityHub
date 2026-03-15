@@ -62,7 +62,7 @@ function GeneralPage:Create(parent)
 
   -- Scroll child (content lives here)
   local content = CreateFrame("Frame", nil, scrollFrame);
-  content:SetHeight(650);
+  content:SetHeight(700);
   content:SetWidth(scrollFrame:GetWidth());
   content:SetClipsChildren(true);
   scrollFrame:SetScrollChild(content);
@@ -269,6 +269,19 @@ function GeneralPage:Create(parent)
   syncChannelInput:SetText(initialValue);
   syncChannelInput:SetCursorPosition(0);
   syncChannelInput:ClearFocus();
+
+  -- Section: Cooldowns
+  local sectionLoot = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+  sectionLoot:SetPoint("TOPLEFT", syncChannelContainer, "BOTTOMLEFT", 0, -20);
+  sectionLoot:SetText("Loot");
+
+  local cbLootConfirmStrat = self:CreateCheckbox(
+    content,
+    "Disable loot confirm in Stratholme",
+    "disableLootConfirmInStrat",
+    "Disable the loot confirm popup while looting in Stratholme while level 70 or higher"
+  );
+  cbLootConfirmStrat:SetPoint("TOPLEFT", sectionLoot, "BOTTOMLEFT", 0, -10);
 
   return frame;
 end
