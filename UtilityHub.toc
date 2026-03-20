@@ -3,7 +3,7 @@
 ## Title: UtilityHub
 ## IconTexture: Interface\Addons\UtilityHub\Assets\Icons\addon
 ## Author: Cacetinho-Nightslayer 
-## Version: 0.30
+## Version: 0.31
 ## SavedVariables: UHdatabase, MDHdatabase
 
 # XMLs
@@ -49,3 +49,4 @@ Options/Pages/GraphicsSettingsPage.lua
 Modules/Professions/Enchanting.lua
 Modules/NPCs/NPCs.lua
 Modules/Loot/Loot.lua
+Modules/GroupFinderAlert/GroupFinderAlert.lua

@@ -62,7 +62,7 @@ function GeneralPage:Create(parent)
 
   -- Scroll child (content lives here)
   local content = CreateFrame("Frame", nil, scrollFrame);
-  content:SetHeight(700);
+  content:SetHeight(750);
   content:SetWidth(scrollFrame:GetWidth());
   content:SetClipsChildren(true);
   scrollFrame:SetScrollChild(content);
@@ -270,7 +270,7 @@ function GeneralPage:Create(parent)
   syncChannelInput:SetCursorPosition(0);
   syncChannelInput:ClearFocus();
 
-  -- Section: Cooldowns
+  -- Section: Loot
   local sectionLoot = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
   sectionLoot:SetPoint("TOPLEFT", syncChannelContainer, "BOTTOMLEFT", 0, -20);
   sectionLoot:SetText("Loot");
@@ -282,6 +282,19 @@ function GeneralPage:Create(parent)
     "Disable the loot confirm popup while looting in Stratholme while level 70 or higher"
   );
   cbLootConfirmStrat:SetPoint("TOPLEFT", sectionLoot, "BOTTOMLEFT", 0, -10);
+
+  -- Section: LFG
+  local sectionLFG = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+  sectionLFG:SetPoint("TOPLEFT", cbLootConfirmStrat, "BOTTOMLEFT", 0, -20);
+  sectionLFG:SetText("LFG");
+
+  local cbEnteringListedGroupWarning = self:CreateCheckbox(
+    content,
+    "Show warning when entering an already listed group",
+    "showWarningEnteringListedGroupInLFG",
+    "When you enter in a group with someone listed in the LFG (Ex: invited someone to enchant), you will be listed too even if the other player leaves, so this will make a warning show in the middle of the screen"
+  );
+  cbEnteringListedGroupWarning:SetPoint("TOPLEFT", sectionLFG, "BOTTOMLEFT", 0, -10);
 
   return frame;
 end
