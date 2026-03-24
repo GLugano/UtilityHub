@@ -2,6 +2,8 @@ local moduleName = 'DailyQuests';
 ---@class DailyQuests
 local Module = UtilityHub.Addon:NewModule(moduleName);
 
+local IsQuestComplete = C_QuestLog and C_QuestLog.IsComplete or IsQuestComplete;
+
 ---@class Quest
 ---@field questID number
 ---@field questName string
@@ -864,6 +866,19 @@ Module.QuestDB = setmetatable(
 
 Module.CollapsedGroups = {};
 
+---@param rgb BasicRGB
+---@return BasicRGB
+local function NormalizeRGB(rgb)
+  return { r = rgb.r / 255, g = rgb.g / 255, b = rgb.b / 255 };
+end
+
+local QUEST_READY_TO_TURNIN_COLOR = NormalizeRGB({ r = 16, g = 179, b = 16 });
+local QUEST_IN_QUESTLOG_COLOR = NormalizeRGB({ r = 3, g = 165, b = 252 });
+local QUEST_READY_COLOR = NormalizeRGB({ r = 245, g = 230, b = 66 });
+local QUEST_CD_MORE_THAN_DAY_COLOR = NormalizeRGB({ r = 255, g = 255, b = 255 });
+local QUEST_CD_LAST_THAN_HALF_DAY_COLOR = NormalizeRGB({ r = 255, g = 71, b = 71 });
+local QUEST_CD_BASE_COLOR = NormalizeRGB({ r = 252, g = 186, b = 3 });
+
 local DAY_IN_SECONDS = 24 * 60 * 60;
 local WEEK_IN_SECONDS = 24 * 60 * 60 * 7;
 ---@param quest DailyQuestDatasourceRow|DailyQuestGroupDatasourceRow
@@ -871,29 +886,37 @@ local WEEK_IN_SECONDS = 24 * 60 * 60 * 7;
 ---@return boolean "If its ready"
 ---@return table "RGB"
 local function GetRemainingTime(quest)
-  ---@param rgb BasicRGB
-  ---@return BasicRGB
-  function NormalizeRGB(rgb)
-    return { r = rgb.r / 255, g = rgb.g / 255, b = rgb.b / 255 };
-  end
-
   local type = nil;
-  local isQuestComplete = false;
+  local isQuestFlaggedComplete = false;
+  local isQuestReadyToTurnIn = false;
+  local isOnQuest = false;
 
   if (quest.group) then
     local firstQuest = quest.quests[1];
 
     if (firstQuest) then
-      isQuestComplete = Module.QuestDB.complete[firstQuest.questID];
+      isQuestFlaggedComplete = Module.QuestDB.complete[firstQuest.questID];
+      isOnQuest = C_QuestLog.IsOnQuest(firstQuest.questID);
+      isQuestReadyToTurnIn = IsQuestComplete(firstQuest.questID);
       type = firstQuest.type;
     end
   else
+    isQuestFlaggedComplete = Module.QuestDB.complete[quest.questID];
+    isOnQuest = C_QuestLog.IsOnQuest(quest.questID);
+    isQuestReadyToTurnIn = IsQuestComplete(quest.questID);
     type = quest.type;
-    isQuestComplete = Module.QuestDB.complete[quest.questID];
   end
 
-  if (not isQuestComplete) then
-    return "Ready", true, NormalizeRGB({ r = 16, g = 179, b = 16 });
+  if (isQuestReadyToTurnIn) then
+    return "Complete", true, QUEST_READY_TO_TURNIN_COLOR;
+  end
+
+  if (isOnQuest) then
+    return "Quest Log", true, QUEST_IN_QUESTLOG_COLOR;
+  end
+
+  if (not isQuestFlaggedComplete) then
+    return "Ready", true, QUEST_READY_COLOR;
   end
 
   local seconds = nil;
@@ -918,19 +941,19 @@ local function GetRemainingTime(quest)
 
   if (seconds >= DAY_IN_SECONDS) then
     local days = math.floor(seconds / DAY_IN_SECONDS);
-    return days .. (days == 1 and " day" or " days"), false, NormalizeRGB({ r = 255, g = 255, b = 255 });
+    return days .. (days == 1 and " day" or " days"), false, QUEST_CD_MORE_THAN_DAY_COLOR;
   end
 
   local hours = math.floor(seconds / 3600);
   local minutes = math.floor((seconds % 3600) / 60);
   local seconds = seconds % 60;
-  local rgb = { r = 252, g = 186, b = 3 };
+  local color = QUEST_CD_BASE_COLOR;
 
   if (hours < 12) then
-    rgb = { r = 255, g = 71, b = 71 };
+    color = QUEST_CD_LAST_THAN_HALF_DAY_COLOR;
   end
 
-  return string.format("%02d:%02d:%02d", hours, minutes, seconds), false, NormalizeRGB(rgb);
+  return string.format("%02d:%02d:%02d", hours, minutes, seconds), false, color;
 end
 
 ---@param requirements QuestRequirements|nil
