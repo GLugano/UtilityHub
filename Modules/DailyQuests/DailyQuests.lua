@@ -47,6 +47,15 @@ local Module = UtilityHub.Addon:NewModule(moduleName);
 ---@field pass boolean
 ---@field error RequirementValidationError[]
 
+---@class DailyQuestDatasourceRow
+---@field quest string
+---@field questID number
+---@field type EQuestType
+
+---@class DailyQuestGroupDatasourceRow
+---@field group string
+---@field quests DailyQuestDatasourceRow[]
+
 ---@type QuestDBTable
 local questDBTable = {
   requirementsOK = {},
@@ -857,6 +866,7 @@ Module.CollapsedGroups = {};
 
 local DAY_IN_SECONDS = 24 * 60 * 60;
 local WEEK_IN_SECONDS = 24 * 60 * 60 * 7;
+---@param quest DailyQuestDatasourceRow|DailyQuestGroupDatasourceRow
 ---@return string "Converted time"
 ---@return boolean "If its ready"
 ---@return table "RGB"
@@ -867,11 +877,18 @@ local function GetRemainingTime(quest)
     return { r = rgb.r / 255, g = rgb.g / 255, b = rgb.b / 255 };
   end
 
+  local type = nil;
   local isQuestComplete = false;
 
   if (quest.group) then
-    isQuestComplete = Module.QuestDB.complete[quest.quests[1].questID];
+    local firstQuest = quest.quests[1];
+
+    if (firstQuest) then
+      isQuestComplete = Module.QuestDB.complete[firstQuest.questID];
+      type = firstQuest.type;
+    end
   else
+    type = quest.type;
     isQuestComplete = Module.QuestDB.complete[quest.questID];
   end
 
@@ -881,21 +898,20 @@ local function GetRemainingTime(quest)
 
   local seconds = nil;
 
-  if (quest.type == UtilityHub.Enums.QuestType.CONSORTIUM) then
-    local now   = GetServerTime();
-    local month = tonumber(date("%m", now)) or 0;
-    local year  = tonumber(date("%Y", now));
-    local t     = {
-      year = year,
-      month = month + 1,
-      day = 1,
-      hour = 0,
-      min = 0,
-      sec = 0,
-      isdst = false,
-    };
+  if (type == UtilityHub.Enums.QuestType.CONSORTIUM) then
+    local now       = GetServerTime();
+    local d         = date("*t", now);
 
-    seconds     = time(t) - GetServerTime();
+    local resetTime = time({
+      year  = d.month == 12 and d.year + 1 or d.year,
+      month = d.month == 12 and 1 or d.month + 1,
+      day   = 1,
+      hour  = 0,
+      min   = 0,
+      sec   = 0,
+    })
+
+    seconds         = math.max(0, resetTime - now);
   else
     seconds = C_DateAndTime.GetSecondsUntilDailyReset();
   end
