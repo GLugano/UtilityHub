@@ -578,12 +578,12 @@ function Module:ExecutePreset(preset)
       end
     end
 
-    for bag = 0, 4 do -- Loops through bags 0 (backpack) to 4 (bags)
-      for slot = 1, C_Container.GetContainerNumSlots(bag) do
-        local itemLink = C_Container.GetContainerItemLink(bag, slot);
+    for _, bagID in pairs(UtilityHub.Constants.BagIDs) do
+      for slot = 1, C_Container.GetContainerNumSlots(bagID) do
+        local itemLink = C_Container.GetContainerItemLink(bagID, slot);
 
         if (itemLink) then
-          local isSoulbound = C_Item.IsBound(ItemLocation:CreateFromBagAndSlot(bag, slot));
+          local isSoulbound = C_Item.IsBound(ItemLocation:CreateFromBagAndSlot(bagID, slot));
           local isConjured = UtilityHub.Libs.Utils:IsItemConjured(itemLink);
 
           if (
@@ -597,7 +597,7 @@ function Module:ExecutePreset(preset)
                   preset.itemType
                 )
               ) then
-            UtilityHub.Helpers.Mail:AddItemToNextEmptyMailSlot(bag, slot);
+            UtilityHub.Helpers.Mail:AddItemToNextEmptyMailSlot(bagID, slot);
           end
         end
       end

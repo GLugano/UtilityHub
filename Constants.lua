@@ -44,6 +44,16 @@ UtilityHub.Constants = {
     INVTYPE_WEAPONOFFHAND = "SHIELDSLOT",
     INVTYPE_HOLDABLE = "SHIELDSLOT",
   },
+
+  -- Bags
+  BagIDs = {
+    BACKPACK = 0,
+    BAG_1 = 1,
+    BAG_2 = 2,
+    BAG_3 = 3,
+    BAG_4 = 4,
+    KEYRING = -2,
+  },
 };
 
 if (UtilityHub.Constants.IsClassic) then
