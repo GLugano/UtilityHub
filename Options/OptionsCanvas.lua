@@ -1,5 +1,3 @@
-local ADDON_NAME = ...;
-
 ---@class OptionsCanvas
 local OptionsCanvas = {};
 

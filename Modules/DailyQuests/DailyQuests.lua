@@ -566,6 +566,115 @@ local questDBTable = {
     },
 
     -- PVP
+    -- Warsong
+    {
+      questID = 11342,
+      questName = "Call to Arms: Warsong Gulch", -- Horde
+      type = UtilityHub.Enums.QuestType.PVP,
+      expansion = UtilityHub.Enums.Expansions.TBC,
+      periodicity = UtilityHub.Enums.Periodicity.DAILY,
+      GetRequirements = function()
+        return {
+          side = UtilityHub.Enums.Side.HORDE,
+          level = 11,
+        };
+      end,
+    },
+    {
+      questID = 11338,
+      questName = "Call to Arms: Warsong Gulch", -- Alliance
+      type = UtilityHub.Enums.QuestType.PVP,
+      expansion = UtilityHub.Enums.Expansions.TBC,
+      periodicity = UtilityHub.Enums.Periodicity.DAILY,
+      GetRequirements = function()
+        return {
+          side = UtilityHub.Enums.Side.ALLIANCE,
+          level = 11,
+        };
+      end,
+    },
+    -- Eye
+    {
+      questID = 11341,
+      questName = "Call to Arms: Eye of the Storm", -- HORDE
+      type = UtilityHub.Enums.QuestType.PVP,
+      expansion = UtilityHub.Enums.Expansions.TBC,
+      periodicity = UtilityHub.Enums.Periodicity.DAILY,
+      GetRequirements = function()
+        return {
+          side = UtilityHub.Enums.Side.HORDE,
+          level = 61,
+        };
+      end,
+    },
+    {
+      questID = 11337,
+      questName = "Call to Arms: Eye of the Storm", -- Alliance
+      type = UtilityHub.Enums.QuestType.PVP,
+      expansion = UtilityHub.Enums.Expansions.TBC,
+      periodicity = UtilityHub.Enums.Periodicity.DAILY,
+      GetRequirements = function()
+        return {
+          side = UtilityHub.Enums.Side.ALLIANCE,
+          level = 61,
+        };
+      end,
+    },
+    -- Alterac Valley
+    {
+      questID = 11340,
+      questName = "Call to Arms: Alterac Valley", -- HORDE
+      type = UtilityHub.Enums.QuestType.PVP,
+      expansion = UtilityHub.Enums.Expansions.TBC,
+      periodicity = UtilityHub.Enums.Periodicity.DAILY,
+      GetRequirements = function()
+        return {
+          side = UtilityHub.Enums.Side.HORDE,
+          level = 51,
+        };
+      end,
+    },
+    {
+      questID = 11336,
+      questName = "Call to Arms: Alterac Valley", -- Alliance
+      type = UtilityHub.Enums.QuestType.PVP,
+      expansion = UtilityHub.Enums.Expansions.TBC,
+      periodicity = UtilityHub.Enums.Periodicity.DAILY,
+      GetRequirements = function()
+        return {
+          side = UtilityHub.Enums.Side.ALLIANCE,
+          level = 51,
+        };
+      end,
+    },
+    -- Arathi Basin
+    {
+      questID = 11339,
+      questName = "Call to Arms: Arathi Basin", -- HORDE
+      type = UtilityHub.Enums.QuestType.PVP,
+      expansion = UtilityHub.Enums.Expansions.TBC,
+      periodicity = UtilityHub.Enums.Periodicity.DAILY,
+      GetRequirements = function()
+        return {
+          side = UtilityHub.Enums.Side.HORDE,
+          level = 51,
+        };
+      end,
+    },
+    {
+      questID = 11335,
+      questName = "Call to Arms: Arathi Basin", -- Alliance
+      type = UtilityHub.Enums.QuestType.PVP,
+      expansion = UtilityHub.Enums.Expansions.TBC,
+      periodicity = UtilityHub.Enums.Periodicity.DAILY,
+      GetRequirements = function()
+        return {
+          side = UtilityHub.Enums.Side.ALLIANCE,
+          level = 51,
+        };
+      end,
+    },
+    -- Hellfire
     {
       questID = 10110,
       questName = "Hellfire Fortifications", -- Horde
@@ -594,6 +703,7 @@ local questDBTable = {
         };
       end
     },
+    -- Halaa
     {
       questID = 11503,
       questName = "Enemies, Old and New", -- Horde
@@ -626,6 +736,7 @@ local questDBTable = {
         };
       end,
     },
+    -- Auchindoun
     {
       questID = 11506,
       questName = "Spirits of Auchindoun", -- Horde
@@ -726,7 +837,7 @@ local function GetRemainingTime(quest)
 
   local isQuestComplete = false;
 
-  if (quest.isQuestVariationGroup) then
+  if (quest.group) then
     isQuestComplete = Module.QuestDB.complete[quest.quests[1].questID];
   else
     isQuestComplete = Module.QuestDB.complete[quest.questID];
@@ -1159,29 +1270,29 @@ function Module:CreateDailyQuestsFrame()
   view:SetElementFactory(function(factory, node)
     local elementData = node:GetData();
 
-    if (elementData.group) then
+    if (elementData.section) then
       local function Initializer(button, node)
-        if (not Module.CollapsedGroups[elementData.group]) then
-          Module.CollapsedGroups[elementData.group] = node:IsCollapsed();
+        if (not Module.CollapsedGroups[elementData.section]) then
+          Module.CollapsedGroups[elementData.section] = node:IsCollapsed();
         end
-        button.Label:SetText(elementData.group);
-        button:SetCollapseState(Module.CollapsedGroups[elementData.group]);
+        button.Label:SetText(elementData.section);
+        button:SetCollapseState(Module.CollapsedGroups[elementData.section]);
 
         button:SetScript("OnClick", function(button)
           node:ToggleCollapsed();
-          Module.CollapsedGroups[elementData.group] = node:IsCollapsed();
+          Module.CollapsedGroups[elementData.section] = node:IsCollapsed();
           button:SetCollapseState(node:IsCollapsed());
           PlaySound(SOUNDKIT.IG_MAINMENU_OPTION);
         end);
       end
 
       factory("TreeGroupButtonTemplate", Initializer);
-    elseif (elementData.questName) then
+    elseif (elementData.quest or elementData.group) then
       local function Initializer(button, node)
         button:SetPushedTextOffset(0, 0);
         button:SetHighlightAtlas("search-highlight");
         button:SetNormalFontObject(GameFontHighlight);
-        button:SetText(elementData.questName);
+        button:SetText(elementData.quest or elementData.group);
         button.elementData = elementData;
         button:GetFontString():SetWordWrap(false);
         button:GetFontString():SetPoint("LEFT", 12, 0);
@@ -1204,7 +1315,7 @@ function Module:CreateDailyQuestsFrame()
 
         button.Timer:Update();
 
-        node:SetCollapsed(Module.CollapsedGroups[elementData.group]);
+        node:SetCollapsed(Module.CollapsedGroups[elementData.quest or elementData.group]);
       end
       factory("Button", Initializer);
     else
@@ -1217,11 +1328,11 @@ function Module:CreateDailyQuestsFrame()
     local baseElementHeight = 20;
     local categoryPadding = 5;
 
-    if (elementData.questName) then
+    if (elementData.section) then
       return baseElementHeight;
     end
 
-    if (elementData.group) then
+    if (elementData.group or elementData.quest) then
       return baseElementHeight + categoryPadding;
     end
 
@@ -1234,88 +1345,92 @@ end
 
 function Module:UpdateDailyQuestsFrameList()
   ---@class DailyQuest
-  ---@field groupName string
-  ---@field questName string
-  ---@field questID number
-  ---@field type EQuestType
+  ---@field groupName? string
+  ---@field questName? string
+  ---@field questID? number
+  ---@field type? EQuestType
+  ---@field quests? DailyQuest[]
 
-  ---@class DailyQuestGroup
-  ---@field group string
-  ---@field isQuestVariationGroup boolean
-  ---@field type EQuestType
+  ---@class DailyQuestSection
+  ---@field sectionName string
   ---@field quests DailyQuest[]
 
-  ---@class DailyQuestsTable
-  ---@field data DailyQuestGroup[]
+  ---@type DailyQuestSection[]
+  local sections = {};
 
-  ---@class DailyQuestMetatable
-  ---@field InsertOrGetGroup fun(self: DailyQuestList, group: DailyQuestGroup): DailyQuestGroup
-  ---@field ToTreeDataProvider fun(self: DailyQuestList): table
+  ---@param name string
+  ---@return DailyQuestSection|nil
+  local function GetSection(name)
+    for _, section in ipairs(sections) do
+      if (section.sectionName == name) then
+        return section;
+      end
+    end
 
-  ---@type DailyQuestsTable
-  local groupsTable = {
-    data = {},
-  };
-  ---@class DailyQuestList : DailyQuestsTable & DailyQuestMetatable
-  local groups = setmetatable(groupsTable, {
-    ---@type DailyQuestMetatable
-    __index = {
-      InsertOrGetGroup = function(self, group)
-        for _, loopGroup in ipairs(self.data) do
-          if (loopGroup.group == group.group) then
-            return loopGroup;
-          end
-        end
+    return nil;
+  end;
 
-        tinsert(self.data, group);
+  ---@param sectionName string
+  ---@param groupName string
+  ---@return DailyQuest|nil
+  local function GetSectionGroup(sectionName, groupName)
+    local section = GetSection(sectionName);
 
+    if (not section) then
+      return nil;
+    end
+
+    for _, group in ipairs(section.quests) do
+      if (group.groupName == groupName) then
         return group;
-      end,
-      ToTreeDataProvider = function(self)
-        local dataProvider = CreateTreeDataProvider();
+      end
+    end
 
-        for _, groupOrNode in pairs(self.data) do
-          if (groupOrNode.isQuestVariationGroup and groupOrNode.quests[1]) then
-            -- As it is a QuestVariationGroup, just by checking the first requirement should be enough
-            if (Module.QuestDB.requirementsOK[groupOrNode.quests[1].questID]) then
-              dataProvider:Insert({
-                groupName = nil,
-                questName = groupOrNode.group,
-                type = groupOrNode.type,
-                quests = groupOrNode.quests,
-                isQuestVariationGroup = groupOrNode.isQuestVariationGroup,
-              });
-            end
-          else
-            local quests = {};
+    return nil;
+  end;
 
-            for _, quest in pairs(groupOrNode.quests) do
-              if (Module.QuestDB.requirementsOK[quest.questID]) then
-                tinsert(quests, quest);
-              end
-            end
+  ---@param quests DailyQuest[]
+  ---@return DailyQuest[]
+  local function GetQuestsWithRequirementsOK(quests)
+    local questsOrGroups = {};
 
-            -- Only creates the parent node if there at least 1 valid child
-            if (#quests > 0) then
-              local groupDataNode = dataProvider:Insert({ group = groupOrNode.group });
+    for _, questOrGroup in ipairs(quests) do
+      if (questOrGroup.groupName and questOrGroup.quests) then
+        local groupQuests = GetQuestsWithRequirementsOK(questOrGroup.quests);
 
-              for _, quest in ipairs(quests) do
-                groupDataNode:Insert(quest);
-              end
-            end
-          end
+        if (#groupQuests > 0) then
+          tinsert(questsOrGroups, {
+            group = questOrGroup.groupName,
+            quests = groupQuests,
+            type = questOrGroup.type,
+          });
         end
+      end
 
-        return dataProvider;
-      end,
-    },
-  });
+      if (Module.QuestDB.requirementsOK[questOrGroup.questID]) then
+        tinsert(questsOrGroups, {
+          quest = questOrGroup.questName,
+          questID = questOrGroup.questID,
+          type = questOrGroup.type,
+        });
+      end
+    end
+
+    return questsOrGroups;
+  end
 
   for _, quest in pairs(Module.QuestDB.data) do
     ---@type string|nil
-    local groupName = nil;
     local questName = "";
     local isQuestVariationGroup = false;
+
+    local sectionName = nil;
+
+    if (quest.type == UtilityHub.Enums.QuestType.DUNGEON_HEROIC or quest.type == UtilityHub.Enums.QuestType.DUNGEON_NORMAL) then
+      sectionName = "Dungeon";
+    elseif (quest.type == UtilityHub.Enums.QuestType.PROFESSION_COOKING or quest.type == UtilityHub.Enums.QuestType.PROFESSION_FISHING) then
+      sectionName = "Profession";
+    end
 
     if (quest.type == UtilityHub.Enums.QuestType.DUNGEON_HEROIC) then
       questName = "Heroic Dungeon";
@@ -1330,43 +1445,96 @@ function Module:UpdateDailyQuestsFrameList()
       questName = "Fishing";
       isQuestVariationGroup = true;
     elseif (quest.type == UtilityHub.Enums.QuestType.CONSORTIUM) then
+      sectionName = "Consortium";
       questName = quest.questName .. " (monthly)";
       isQuestVariationGroup = true;
     elseif (quest.type == UtilityHub.Enums.QuestType.SHATARI_SKYGUARD) then
-      groupName = "Sha'tari Skyguard";
+      sectionName = "Sha'tari Skyguard";
       questName = quest.questName;
     elseif (quest.type == UtilityHub.Enums.QuestType.OGRILA) then
-      groupName = "Ogri'la";
+      sectionName = "Ogri'la";
       questName = quest.questName;
     elseif (quest.type == UtilityHub.Enums.QuestType.SHATARI_SKYGUARD_AND_OGRILA) then
-      groupName = "Sha'tari Skyguard and Ogri'la";
+      sectionName = "Sha'tari Skyguard and Ogri'la";
       questName = quest.questName;
     elseif (quest.type == UtilityHub.Enums.QuestType.NETHERWING) then
-      groupName = "Netherwing";
+      sectionName = "Netherwing";
       questName = quest.questName;
     elseif (quest.type == UtilityHub.Enums.QuestType.PVP) then
-      groupName = "PvP";
-      questName = quest.questName;
+      sectionName = "PVP";
+
+      if (string.find(quest.questName, "Call to Arms")) then
+        questName = "Call to Arms";
+        isQuestVariationGroup = true;
+      else
+        questName = quest.questName;
+      end
     end
 
-    if (groupName or isQuestVariationGroup) then
-      local group = groups:InsertOrGetGroup({
-        group = groupName or questName,
-        isQuestVariationGroup = isQuestVariationGroup,
-        type = quest.type,
-        quests = {},
-      });
+    if (sectionName) then
+      ---@type DailyQuestSection|nil
+      local section = GetSection(sectionName);
 
-      tinsert(group.quests, {
-        groupName = groupName,
-        questName = questName,
-        questID = quest.questID,
-        type = quest.type,
-      });
+      if (not section) then
+        section = {
+          sectionName = sectionName,
+          quests = {},
+        };
+        tinsert(sections, section);
+      end
+
+      if (isQuestVariationGroup) then
+        ---@type DailyQuest?
+        local questOrGroup = GetSectionGroup(sectionName, questName);
+
+        if (not questOrGroup) then
+          questOrGroup = {
+            groupName = questName,
+            quests = {},
+          };
+          tinsert(section.quests, questOrGroup);
+        end
+        questOrGroup.quests = questOrGroup.quests or {};
+
+        ---@type DailyQuest
+        local newQuest = {
+          questName = questName,
+          type = quest.type,
+          questID = quest.questID,
+        };
+
+        tinsert(questOrGroup.quests, newQuest);
+      else
+        ---@type DailyQuest
+        local questOrGroup = {
+          questName = questName,
+          type = quest.type,
+          questID = quest.questID,
+        };
+        tinsert(section.quests, questOrGroup);
+      end
     end
   end
 
-  Module.Frame.ScrollBox:SetDataProvider(groups:ToTreeDataProvider());
+  local dataProvider = CreateTreeDataProvider();
+
+  if (#sections > 0) then
+    for _, section in ipairs(sections) do
+      local questsOrGroups = GetQuestsWithRequirementsOK(section.quests);
+
+      if (#questsOrGroups > 0) then
+        local sectionNode = dataProvider:Insert({
+          section = section.sectionName
+        });
+
+        for _, questOrGroup in ipairs(questsOrGroups) do
+          sectionNode:Insert(questOrGroup);
+        end
+      end
+    end
+  end
+
+  Module.Frame.ScrollBox:SetDataProvider(dataProvider);
 end
 
 function Module:ShowFrame()

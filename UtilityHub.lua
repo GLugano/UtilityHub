@@ -15,25 +15,35 @@ UtilityHub = {
   ---@diagnostic disable-next-line: missing-fields
   Constants = {},
   GameOptions = {
+    ---@class GameOptionsValues
     defaults = {
       -- Tooltip
+      ---@type boolean
       simpleStatsTooltip = true,
       -- AutoBuy
+      ---@type boolean
       autoBuy = false,
       ---@type AutoBuyItem[]
       autoBuyList = {},
       -- Profession
+      ---@type boolean
       automaticEnchantFilter = true,
       -- Cooldowns
+      ---@type boolean
       cooldowns = true,
-      cooldowsList = {},
+      ---@type boolean
       cooldownPlaySound = true,
+      ---@type boolean
       cooldownStartCollapsed = false,
+      ---@type boolean
       cooldownSync = false,
+      ---@type string
       cooldownSyncChannel = "",
       -- DailyQuests
+      ---@type boolean
       dailyQuests = false,
       -- Trade
+      ---@type boolean
       tradeExtraInfo = false,
       -- GraphicsSettings
       graphicsSettings = {
@@ -72,6 +82,11 @@ UtilityHub = {
         trailUseClassColor = false,
         trailDuration = 0.6,
       },
+      -- LFG
+      ---@type boolean
+      showWarningLeavingListedGroupInLFG = false,
+      ---@type boolean
+      showWarningEnteringListedGroupInLFG = false,
     },
     ---@type Option[]
     options = {},
@@ -295,10 +310,6 @@ UtilityHub = {
 
     if (UtilityHub.Database.global.options.cooldowns == nil) then
       UtilityHub.Database.global.options.cooldowns = UtilityHub.GameOptions.defaults.cooldowns;
-    end
-
-    if (not UtilityHub.Database.global.options.cooldowsList) then
-      UtilityHub.Database.global.options.cooldowsList = {};
     end
 
     if (not UtilityHub.Database.global.options.mouseRing) then

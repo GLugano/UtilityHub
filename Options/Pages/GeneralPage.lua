@@ -62,7 +62,7 @@ function GeneralPage:Create(parent)
 
   -- Scroll child (content lives here)
   local content = CreateFrame("Frame", nil, scrollFrame);
-  content:SetHeight(750);
+  content:SetHeight(790);
   content:SetWidth(scrollFrame:GetWidth());
   content:SetClipsChildren(true);
   scrollFrame:SetScrollChild(content);
@@ -295,6 +295,14 @@ function GeneralPage:Create(parent)
     "When you enter in a group with someone listed in the LFG (Ex: invited someone to enchant), you will be listed too even if the other player leaves, so this will make a warning show in the middle of the screen"
   );
   cbEnteringListedGroupWarning:SetPoint("TOPLEFT", sectionLFG, "BOTTOMLEFT", 0, -10);
+
+  local cbLeavingListedGroupWarning = self:CreateCheckbox(
+    content,
+    "Show warning when leaving an already listed group",
+    "showWarningLeavingListedGroupInLFG",
+    "When you leave a group with someone listed in the LFG (Ex: invited by someone to enchant), you will be listed too even if the other player leaves, so this will make a warning show in the middle of the screen",
+    cbEnteringListedGroupWarning
+  );
 
   return frame;
 end
