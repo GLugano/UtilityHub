@@ -299,6 +299,14 @@ local questDBTable = {
       type = UtilityHub.Enums.QuestType.CONSORTIUM,
       expansion = UtilityHub.Enums.Expansions.TBC,
       periodicity = UtilityHub.Enums.Periodicity.MONTHLY,
+      GetRequirements = function()
+        return {
+          level = 63,
+          factions = {
+            { factionID = 933, standingID = UtilityHub.Enums.ReputationStanding.FRIENDLY },
+          },
+        };
+      end,
     },
     {
       questID = 9885,
@@ -306,6 +314,14 @@ local questDBTable = {
       type = UtilityHub.Enums.QuestType.CONSORTIUM,
       expansion = UtilityHub.Enums.Expansions.TBC,
       periodicity = UtilityHub.Enums.Periodicity.MONTHLY,
+      GetRequirements = function()
+        return {
+          level = 63,
+          factions = {
+            { factionID = 933, standingID = UtilityHub.Enums.ReputationStanding.HONORED },
+          },
+        };
+      end,
     },
     {
       questID = 9886,
@@ -313,6 +329,14 @@ local questDBTable = {
       type = UtilityHub.Enums.QuestType.CONSORTIUM,
       expansion = UtilityHub.Enums.Expansions.TBC,
       periodicity = UtilityHub.Enums.Periodicity.MONTHLY,
+      GetRequirements = function()
+        return {
+          level = 63,
+          factions = {
+            { factionID = 933, standingID = UtilityHub.Enums.ReputationStanding.REVERED },
+          },
+        };
+      end,
     },
     {
       questID = 9887,
@@ -320,6 +344,14 @@ local questDBTable = {
       type = UtilityHub.Enums.QuestType.CONSORTIUM,
       expansion = UtilityHub.Enums.Expansions.TBC,
       periodicity = UtilityHub.Enums.Periodicity.MONTHLY,
+      GetRequirements = function()
+        return {
+          level = 63,
+          factions = {
+            { factionID = 933, standingID = UtilityHub.Enums.ReputationStanding.EXALTED },
+          },
+        };
+      end,
     },
 
     -- Sha'tari Skyguard
@@ -964,7 +996,7 @@ function ValidateRequirements(requirements)
         local standingID = GetFactionStandingID(faction.factionID);
 
         if (standingID) then
-          if (faction.standingID < standingID) then
+          if (faction.standingID > standingID) then
             tinsert(errors, {
               factionID = faction.factionID,
               standingID = faction.standingID,
