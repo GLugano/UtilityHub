@@ -1662,6 +1662,7 @@ function Module:OnQuestTurnedIn(questID)
     return;
   end
 
+  ---@type number
   local updatedQuestCount = 0;
   local questFound = Module:UpdateFlagsByID(questID);
 
