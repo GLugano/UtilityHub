@@ -891,20 +891,25 @@ local function GetRemainingTime(quest)
   local isQuestReadyToTurnIn = false;
   local isOnQuest = false;
 
-  if (quest.group) then
-    local firstQuest = quest.quests[1];
+  ---@param currentQuest DailyQuestDatasourceRow
+  local function UpdateQuestVars(currentQuest)
+    isQuestFlaggedComplete = Module.QuestDB.complete[currentQuest.questID];
+    isOnQuest = C_QuestLog.IsOnQuest(currentQuest.questID);
+    isQuestReadyToTurnIn = IsQuestComplete(currentQuest.questID);
+    type = quest.type;
+  end
 
-    if (firstQuest) then
-      isQuestFlaggedComplete = Module.QuestDB.complete[firstQuest.questID];
-      isOnQuest = C_QuestLog.IsOnQuest(firstQuest.questID);
-      isQuestReadyToTurnIn = IsQuestComplete(firstQuest.questID);
-      type = firstQuest.type;
+  if (quest.group) then
+    for _, loopQuest in ipairs(quest.quests) do
+      UpdateQuestVars(loopQuest);
+
+      -- Stop in the first quest that changes a flag
+      if (isQuestFlaggedComplete or isOnQuest) then
+        break;
+      end
     end
   else
-    isQuestFlaggedComplete = Module.QuestDB.complete[quest.questID];
-    isOnQuest = C_QuestLog.IsOnQuest(quest.questID);
-    isQuestReadyToTurnIn = IsQuestComplete(quest.questID);
-    type = quest.type;
+    UpdateQuestVars(quest);
   end
 
   if (isQuestReadyToTurnIn) then
@@ -1653,7 +1658,7 @@ end
 
 -- Events
 ---@param questID number|string|nil
-function Module:OnQuestTurnedIn(questID)
+function Module:OnQuestChanged(questID)
   if (type(questID) == "string") then
     questID = tonumber(questID);
   end
@@ -1678,7 +1683,19 @@ function Module:OnQuestTurnedIn(questID)
 end
 
 EventRegistry:RegisterFrameEventAndCallback("QUEST_TURNED_IN", function(_, questID, ...)
-  Module:OnQuestTurnedIn(questID);
+  Module:OnQuestChanged(questID);
+end);
+
+EventRegistry:RegisterFrameEventAndCallback("QUEST_REMOVED", function(_, questID, ...)
+  Module:OnQuestChanged(questID);
+end);
+
+EventRegistry:RegisterFrameEventAndCallback("QUEST_ACCEPTED", function(_, index, questID, ...)
+  Module:OnQuestChanged(questID);
+end);
+
+EventRegistry:RegisterFrameEventAndCallback("QUEST_WATCH_UPDATE", function(_, questID, ...)
+  Module:OnQuestChanged(questID);
 end);
 
 EventRegistry:RegisterFrameEventAndCallback("CHAT_MSG_COMBAT_FACTION_CHANGE", function(_, _, msg)
