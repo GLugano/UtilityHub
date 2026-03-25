@@ -885,22 +885,22 @@ local WEEK_IN_SECONDS = 24 * 60 * 60 * 7;
 ---@return string "Converted time"
 ---@return boolean "If its ready"
 ---@return table "RGB"
-local function GetRemainingTime(quest)
+local function GetRemainingTime(questOrGroup)
   local type = nil;
   local isQuestFlaggedComplete = false;
   local isQuestReadyToTurnIn = false;
   local isOnQuest = false;
 
-  ---@param currentQuest DailyQuestDatasourceRow
-  local function UpdateQuestVars(currentQuest)
-    isQuestFlaggedComplete = Module.QuestDB.complete[currentQuest.questID];
-    isOnQuest = C_QuestLog.IsOnQuest(currentQuest.questID);
-    isQuestReadyToTurnIn = IsQuestComplete(currentQuest.questID);
+  ---@param quest DailyQuestDatasourceRow
+  local function UpdateQuestVars(quest)
+    isQuestFlaggedComplete = Module.QuestDB.complete[quest.questID];
+    isOnQuest = C_QuestLog.IsOnQuest(quest.questID);
+    isQuestReadyToTurnIn = IsQuestComplete(quest.questID);
     type = quest.type;
   end
 
-  if (quest.group) then
-    for _, loopQuest in ipairs(quest.quests) do
+  if (questOrGroup.group) then
+    for _, loopQuest in ipairs(questOrGroup.quests) do
       UpdateQuestVars(loopQuest);
 
       -- Stop in the first quest that changes a flag
@@ -909,7 +909,7 @@ local function GetRemainingTime(quest)
       end
     end
   else
-    UpdateQuestVars(quest);
+    UpdateQuestVars(questOrGroup);
   end
 
   if (isQuestReadyToTurnIn) then
