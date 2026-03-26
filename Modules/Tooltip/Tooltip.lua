@@ -62,6 +62,14 @@ local RANGED_ATTACK_POWER_CLASSIC     = {
   end
 };
 
+local RANGED_ATTACK_POWER                    = {
+  pattern = "Increases ranged attack power by (%d+).$",
+  FormatText = function(self, text)
+    local ap = text:match("Increases ranged attack power by (%d+)");
+    return string.format("+%s Ranged Attack Power", ap);
+  end
+};
+
 local PHYSICAL_CRITICAL_CLASSIC       = {
   pattern = "(critical strike by (%d+))",
   FormatText = function(self, text)
@@ -656,6 +664,7 @@ local function UpdatePatternConfig()
     tinsert(Module.patternConfigList, PHYSICAL_CRITICAL);
     tinsert(Module.patternConfigList, PHYSICAL_EXPERTISE);
     tinsert(Module.patternConfigList, PHYSICAL_ARMOR_PENETRATION);
+    tinsert(Module.patternConfigList, RANGED_ATTACK_POWER);
 
     tinsert(Module.patternConfigList, SPELL_HIT);
     tinsert(Module.patternConfigList, SPELL_DAMAGE);
