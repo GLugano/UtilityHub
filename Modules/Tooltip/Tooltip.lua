@@ -124,6 +124,14 @@ local DRUID_ATTACK_POWER              = {
   end
 };
 
+local PHYSICAL_ARMOR_PENETRATION      = {
+  pattern = "Your attacks ignore (%d+) of your opponent's armor.",
+  FormatText = function(self, text)
+    local ap = text:match("(%d+)");
+    return string.format("+%s Armor Penetration", ap);
+  end
+};
+
 -- Spell
 local SPELL_PENETRATION_CLASSIC       = {
   pattern = "Decreases the magical resistances",
@@ -647,6 +655,7 @@ local function UpdatePatternConfig()
     tinsert(Module.patternConfigList, DRUID_ATTACK_POWER);
     tinsert(Module.patternConfigList, PHYSICAL_CRITICAL);
     tinsert(Module.patternConfigList, PHYSICAL_EXPERTISE);
+    tinsert(Module.patternConfigList, PHYSICAL_ARMOR_PENETRATION);
 
     tinsert(Module.patternConfigList, SPELL_HIT);
     tinsert(Module.patternConfigList, SPELL_DAMAGE);
