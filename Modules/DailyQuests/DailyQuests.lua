@@ -1496,11 +1496,18 @@ function Module:CreateDailyQuestsFrame()
             GameTooltip:ClearLines();
             GameTooltip:AddLine("Possible quests for " .. row.group, 1, 1, 0);
 
+            local count = 0;
             for _, groupQuest in ipairs(row.quests) do
               local questTitle = C_QuestLog.GetQuestInfo(groupQuest.questID);
 
               if (questTitle) then
-                GameTooltip:AddLine(questTitle, 1, 1, 1);
+                count = count + 1;
+
+                if (count == 1) then
+                  GameTooltip:AddLine(" ");
+                end
+
+                GameTooltip:AddLine(count .. ". " .. questTitle, 1, 1, 1);
               end
             end
             -- If none of the other options, just return
