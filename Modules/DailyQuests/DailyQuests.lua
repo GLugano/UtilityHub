@@ -872,6 +872,53 @@ local function NormalizeRGB(rgb)
   return { r = rgb.r / 255, g = rgb.g / 255, b = rgb.b / 255 };
 end
 
+---@class QuestFlags
+---@field questID number|nil
+---@field type EQuestType|nil
+---@field isQuestFlaggedComplete boolean
+---@field isQuestReadyToTurnIn boolean
+---@field isOnQuest boolean
+
+---@param questOrGroup DailyQuestDatasourceRow|DailyQuestGroupDatasourceRow
+---@return QuestFlags
+local function GetQuestFlags(questOrGroup)
+  if (questOrGroup.group) then
+    ---@type QuestFlags|nil
+    local currentQuestFlags = nil;
+
+    for _, loopQuest in ipairs(questOrGroup.quests) do
+      local questFlags = GetQuestFlags(loopQuest);
+
+      if (questFlags.isOnQuest) then
+        return questFlags;
+      end
+
+      currentQuestFlags = questFlags;
+    end
+
+    -- If no quest in the group is complete nor you are in the quest, return "empty" like (maybe in the future show the current quest in the npc if stored somehow)
+    if (currentQuestFlags and not currentQuestFlags.isOnQuest) then
+      return {
+        questID = nil,
+        type = currentQuestFlags.type,
+        isQuestFlaggedComplete = currentQuestFlags.isQuestFlaggedComplete,
+        isOnQuest = currentQuestFlags.isOnQuest,
+        isQuestReadyToTurnIn = currentQuestFlags.isQuestReadyToTurnIn,
+      };
+    end
+
+    return currentQuestFlags;
+  else
+    return {
+      questID = questOrGroup.questID,
+      type = questOrGroup.type,
+      isQuestFlaggedComplete = Module.QuestDB.complete[questOrGroup.questID],
+      isOnQuest = C_QuestLog.IsOnQuest(questOrGroup.questID),
+      isQuestReadyToTurnIn = IsQuestComplete(questOrGroup.questID),
+    };
+  end
+end
+
 local QUEST_READY_TO_TURNIN_COLOR = NormalizeRGB({ r = 16, g = 179, b = 16 });
 local QUEST_IN_QUESTLOG_COLOR = NormalizeRGB({ r = 3, g = 165, b = 252 });
 local QUEST_READY_COLOR = NormalizeRGB({ r = 245, g = 230, b = 66 });
@@ -881,55 +928,30 @@ local QUEST_CD_BASE_COLOR = NormalizeRGB({ r = 252, g = 186, b = 3 });
 
 local DAY_IN_SECONDS = 24 * 60 * 60;
 local WEEK_IN_SECONDS = 24 * 60 * 60 * 7;
----@param quest DailyQuestDatasourceRow|DailyQuestGroupDatasourceRow
+---@param questOrGroup DailyQuestDatasourceRow|DailyQuestGroupDatasourceRow
 ---@return string "Converted time"
 ---@return boolean "If its ready"
 ---@return table "RGB"
 local function GetRemainingTime(questOrGroup)
-  local type = nil;
-  local isQuestFlaggedComplete = false;
-  local isQuestReadyToTurnIn = false;
-  local isOnQuest = false;
+  local questFlags = GetQuestFlags(questOrGroup);
 
-  ---@param quest DailyQuestDatasourceRow
-  local function UpdateQuestVars(quest)
-    isQuestFlaggedComplete = Module.QuestDB.complete[quest.questID];
-    isOnQuest = C_QuestLog.IsOnQuest(quest.questID);
-    isQuestReadyToTurnIn = IsQuestComplete(quest.questID);
-    type = quest.type;
-  end
-
-  if (questOrGroup.group) then
-    for _, loopQuest in ipairs(questOrGroup.quests) do
-      UpdateQuestVars(loopQuest);
-
-      -- Stop in the first quest that changes a flag
-      if (isQuestFlaggedComplete or isOnQuest) then
-        break;
-      end
-    end
-  else
-    UpdateQuestVars(questOrGroup);
-  end
-
-  if (isQuestReadyToTurnIn) then
+  if (questFlags.isQuestReadyToTurnIn) then
     return "Complete", true, QUEST_READY_TO_TURNIN_COLOR;
   end
 
-  if (isOnQuest) then
+  if (questFlags.isOnQuest) then
     return "Quest Log", true, QUEST_IN_QUESTLOG_COLOR;
   end
 
-  if (not isQuestFlaggedComplete) then
+  if (not questFlags.isQuestFlaggedComplete) then
     return "Ready", true, QUEST_READY_COLOR;
   end
 
   local seconds = nil;
 
-  if (type == UtilityHub.Enums.QuestType.CONSORTIUM) then
+  if (questFlags.type == UtilityHub.Enums.QuestType.CONSORTIUM) then
     local now       = GetServerTime();
     local d         = date("*t", now);
-
     local resetTime = time({
       year  = d.month == 12 and d.year + 1 or d.year,
       month = d.month == 12 and 1 or d.month + 1,
@@ -1388,6 +1410,71 @@ function Module:CreateDailyQuestsFrame()
             self:SetTextColor(rgb.r, rgb.g, rgb.b);
           end
         end
+
+        button:SetScript("OnEnter", function(self)
+          ---@type DailyQuestDatasourceRow|DailyQuestGroupDatasourceRow)
+          local row = self.elementData;
+          local questFlags = GetQuestFlags(row);
+
+          if (questFlags.type == UtilityHub.Enums.QuestType.CONSORTIUM and row.quests) then
+            -- this considers that the quest ordering is always from lower standing to higher standing
+            ---@type QuestFlags|nil
+            local currentQuestFlags = nil;
+
+            for _, groupQuest in ipairs(row.quests) do
+              if (Module.QuestDB.requirementsOK[groupQuest.questID]) then
+                currentQuestFlags = GetQuestFlags(groupQuest);
+              else
+                break;
+              end
+            end
+
+            if (currentQuestFlags) then
+              questFlags = currentQuestFlags;
+            end
+          end
+
+          if (not questFlags.questID) then
+            return;
+          end
+
+          local questTitle = C_QuestLog.GetQuestInfo(questFlags.questID);
+
+          if (not questTitle) then
+            return;
+          end
+
+          GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+          GameTooltip:ClearLines();
+          GameTooltip:AddLine(questTitle, 1, 1, 0);
+          GameTooltip:AddLine("Quest ID: " .. questFlags.questID, 1, 1, 1);
+
+          if (C_QuestLog.IsOnQuest(questFlags.questID)) then
+            GameTooltip:AddLine(" ");
+            local objectives = C_QuestLog.GetQuestObjectives(questFlags.questID);
+
+            if (objectives and #objectives > 0) then
+              GameTooltip:AddLine("Objectives:", 1, 0.82, 0);
+              for _, obj in ipairs(objectives) do
+                local r, g, b = 1, 1, 1;
+
+                if (obj.finished) then
+                  r, g, b = 0, 1, 0;
+                end
+
+                GameTooltip:AddLine(obj.text, r, g, b, true);
+              end
+            end
+          end
+
+          GameTooltip:Show();
+        end)
+
+        button:SetScript("OnLeave", function(self)
+          if (GameTooltip:IsOwned(self)) then
+            GameTooltip:Hide();
+          end
+        end);
 
         button.Timer:Update();
 
