@@ -306,7 +306,7 @@ local questDBTable = {
     -- Consortium
     {
       questID = 9884,
-      questName = "Membership Benefits",
+      questName = "Membership Benefits (Friendly)",
       type = UtilityHub.Enums.QuestType.CONSORTIUM,
       expansion = UtilityHub.Enums.Expansions.TBC,
       periodicity = UtilityHub.Enums.Periodicity.MONTHLY,
@@ -314,14 +314,14 @@ local questDBTable = {
         return {
           level = 63,
           factions = {
-            { factionID = 933, standingID = UtilityHub.Enums.ReputationStanding.FRIENDLY },
+            { factionID = 933, standingID = UtilityHub.Enums.ReputationStanding.FRIENDLY, operator = "equals" },
           },
         };
       end,
     },
     {
       questID = 9885,
-      questName = "Membership Benefits",
+      questName = "Membership Benefits (Honored)",
       type = UtilityHub.Enums.QuestType.CONSORTIUM,
       expansion = UtilityHub.Enums.Expansions.TBC,
       periodicity = UtilityHub.Enums.Periodicity.MONTHLY,
@@ -329,14 +329,14 @@ local questDBTable = {
         return {
           level = 63,
           factions = {
-            { factionID = 933, standingID = UtilityHub.Enums.ReputationStanding.HONORED },
+            { factionID = 933, standingID = UtilityHub.Enums.ReputationStanding.HONORED, operator = "equals" },
           },
         };
       end,
     },
     {
       questID = 9886,
-      questName = "Membership Benefits",
+      questName = "Membership Benefits (Revered)",
       type = UtilityHub.Enums.QuestType.CONSORTIUM,
       expansion = UtilityHub.Enums.Expansions.TBC,
       periodicity = UtilityHub.Enums.Periodicity.MONTHLY,
@@ -344,14 +344,14 @@ local questDBTable = {
         return {
           level = 63,
           factions = {
-            { factionID = 933, standingID = UtilityHub.Enums.ReputationStanding.REVERED },
+            { factionID = 933, standingID = UtilityHub.Enums.ReputationStanding.REVERED, operator = "equals" },
           },
         };
       end,
     },
     {
       questID = 9887,
-      questName = "Membership Benefits",
+      questName = "Membership Benefits (Exalted)",
       type = UtilityHub.Enums.QuestType.CONSORTIUM,
       expansion = UtilityHub.Enums.Expansions.TBC,
       periodicity = UtilityHub.Enums.Periodicity.MONTHLY,
@@ -359,7 +359,7 @@ local questDBTable = {
         return {
           level = 63,
           factions = {
-            { factionID = 933, standingID = UtilityHub.Enums.ReputationStanding.EXALTED },
+            { factionID = 933, standingID = UtilityHub.Enums.ReputationStanding.EXALTED, operator = "equals" },
           },
         };
       end,
@@ -1040,6 +1040,8 @@ function ValidateRequirements(requirements)
       return true;
     end,
     reputation = function(requirements)
+      ---@param factionID number
+      ---@return EReputationStanding|nil
       function GetFactionStandingID(factionID)
         for i = 1, GetNumFactions() do
           local _, _, standingID, _, _, _, _, _, _, _, _, _, _, factionIDLoop = GetFactionInfo(i);
@@ -1052,6 +1054,30 @@ function ValidateRequirements(requirements)
         return nil;
       end
 
+      ---@param val1 any
+      ---@param val2 any
+      ---@param operator "equals" | "greater" | "lower" | "greaterEqual" | "lowerEqual"
+      function RunOperator(val1, val2, operator)
+        if (operator == "equals") then
+          return val1 == val2;
+        end
+
+        if (operator == "greater") then
+          return val1 > val2;
+        end
+
+        if (operator == "lower") then
+          return val1 < val2;
+        end
+
+        if (operator == "greaterEqual") then
+          return val1 >= val2;
+        end
+
+        -- operator == "lowerEqual"
+        return val1 <= val2;
+      end
+
       if (not requirements.factions or #requirements.factions == 0) then
         return true;
       end
@@ -1062,7 +1088,7 @@ function ValidateRequirements(requirements)
         local standingID = GetFactionStandingID(faction.factionID);
 
         if (standingID) then
-          if (faction.standingID > standingID) then
+          if (not RunOperator(faction.standingID, standingID, faction.operator or "greater")) then
             tinsert(errors, {
               factionID = faction.factionID,
               standingID = faction.standingID,
@@ -1434,37 +1460,52 @@ function Module:CreateDailyQuestsFrame()
             end
           end
 
-          if (not questFlags.questID) then
-            return;
-          end
+          -- If there is an id, show it
+          if (questFlags.questID) then
+            local questTitle = C_QuestLog.GetQuestInfo(questFlags.questID);
 
-          local questTitle = C_QuestLog.GetQuestInfo(questFlags.questID);
+            if (not questTitle) then
+              return;
+            end
 
-          if (not questTitle) then
-            return;
-          end
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+            GameTooltip:ClearLines();
+            GameTooltip:AddLine(questTitle, 1, 1, 0);
+            GameTooltip:AddLine("Quest ID: " .. questFlags.questID, 1, 1, 1);
 
-          GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-          GameTooltip:ClearLines();
-          GameTooltip:AddLine(questTitle, 1, 1, 0);
-          GameTooltip:AddLine("Quest ID: " .. questFlags.questID, 1, 1, 1);
+            if (C_QuestLog.IsOnQuest(questFlags.questID)) then
+              GameTooltip:AddLine(" ");
+              local objectives = C_QuestLog.GetQuestObjectives(questFlags.questID);
 
-          if (C_QuestLog.IsOnQuest(questFlags.questID)) then
-            GameTooltip:AddLine(" ");
-            local objectives = C_QuestLog.GetQuestObjectives(questFlags.questID);
+              if (objectives and #objectives > 0) then
+                GameTooltip:AddLine("Objectives:", 1, 0.82, 0);
+                for _, obj in ipairs(objectives) do
+                  local r, g, b = 1, 1, 1;
 
-            if (objectives and #objectives > 0) then
-              GameTooltip:AddLine("Objectives:", 1, 0.82, 0);
-              for _, obj in ipairs(objectives) do
-                local r, g, b = 1, 1, 1;
+                  if (obj.finished) then
+                    r, g, b = 0, 1, 0;
+                  end
 
-                if (obj.finished) then
-                  r, g, b = 0, 1, 0;
+                  GameTooltip:AddLine(obj.text, r, g, b, true);
                 end
-
-                GameTooltip:AddLine(obj.text, r, g, b, true);
               end
             end
+            -- If there is no id but its a member of a group, show possible quests
+          elseif (row.group and row.quests and #row.quests > 0) then
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+            GameTooltip:ClearLines();
+            GameTooltip:AddLine("Possible quests for " .. row.group, 1, 1, 0);
+
+            for _, groupQuest in ipairs(row.quests) do
+              local questTitle = C_QuestLog.GetQuestInfo(groupQuest.questID);
+
+              if (questTitle) then
+                GameTooltip:AddLine(questTitle, 1, 1, 1);
+              end
+            end
+            -- If none of the other options, just return
+          else
+            return;
           end
 
           GameTooltip:Show();
@@ -1609,7 +1650,7 @@ function Module:UpdateDailyQuestsFrameList()
       isQuestVariationGroup = true;
     elseif (quest.type == UtilityHub.Enums.QuestType.CONSORTIUM) then
       sectionName = "Consortium";
-      questName = quest.questName .. " (monthly)";
+      questName = quest.questName;
       isQuestVariationGroup = true;
     elseif (quest.type == UtilityHub.Enums.QuestType.SHATARI_SKYGUARD) then
       sectionName = "Sha'tari Skyguard";
