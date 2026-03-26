@@ -220,6 +220,17 @@ local SPELL_CRITICAL                  = { -- Spell/Healing
   end
 };
 
+local SPELL_HASTE                     = {
+  pattern = {
+    "Increases your spell haste rating by (%d+)",
+    "Improves spell haste rating by (%d+)"
+  },
+  FormatText = function(self, text)
+    local crit = text:match("by (%d+)");
+    return string.format("+%s Spell Haste Rating", crit);
+  end
+};
+
 -- Healing
 local HEALING_CLASSIC                 = { -- + ATIESH AURA
   pattern = "Increases healing done by",
@@ -640,6 +651,7 @@ local function UpdatePatternConfig()
     tinsert(Module.patternConfigList, SPELL_HIT);
     tinsert(Module.patternConfigList, SPELL_DAMAGE);
     tinsert(Module.patternConfigList, SPELL_CRITICAL);
+    tinsert(Module.patternConfigList, SPELL_HASTE);
     tinsert(Module.patternConfigList, SPELL_PENETRATION);
 
     tinsert(Module.patternConfigList, HEALING);
