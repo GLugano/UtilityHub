@@ -1303,12 +1303,13 @@ end
 
 -- Frames
 function Module:CreateDailyQuestsFrame()
-  local MIN_WIDTH = 220;
-  local MIN_HEIGHT = 180;
+  local MIN_WIDTH = 250;
+  local MIN_HEIGHT = 200;
   local DEFAULT_WIDTH = 350;
   local DEFAULT_HEIGHT = 350;
 
-  local frame = CreateFrame("Frame", nil, UIParent, "SettingsFrameTemplate");
+  local frame = CreateFrame("Frame", "UHDailyQuests", UIParent, "SettingsFrameTemplate");
+  tinsert(UISpecialFrames, frame:GetName());
   Module.Frame = frame;
   frame:SetResizable(true);
   frame:SetResizeBounds(MIN_WIDTH, MIN_HEIGHT);

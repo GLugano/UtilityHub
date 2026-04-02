@@ -1,4 +1,4 @@
-local ADDON_NAME, addonTable = ...;
+local ADDON_NAME = ...;
 
 ---@class UtilityHub
 UtilityHub = {
@@ -173,6 +173,67 @@ UtilityHub = {
     },
   },
   Database = {},
+  DatabaseFunctions = {
+    ---@return Character, boolean recentlyCreated
+    CreateCurrentCharacter = function()
+      ---@type Character|nil
+      local character = UtilityHub.DatabaseFunctions.GetCharacterData(UnitName("player"));
+
+      if (character) then
+        return character, false;
+      end
+
+      ---@type Character
+      local character = {
+        name = UnitName("player"),
+        race = select(1, UnitRace("player")),
+        className = select(2, UnitClass("player")),
+        group = UtilityHub.Enums.CharacterGroup.UNGROUPED,
+        cooldownGroup = {},
+      };
+
+      tinsert(UtilityHub.Database.global.characters, character);
+
+      return character, true;
+    end,
+    UpdateCurrentCharacter = function()
+      ---@type Character|nil
+      local character = UtilityHub.DatabaseFunctions.GetCharacterData(UnitName("player"));
+
+      if (not character) then
+        return;
+      end
+
+      character.race = select(1, UnitRace("player"));
+      character.className = select(2, UnitClass("player"));
+    end,
+    ---@param playerName string
+    ---@return number|nil
+    GetCharacterIndex = function(playerName)
+      for index, value in ipairs(UtilityHub.Database.global.characters) do
+        if (value.name == playerName) then
+          return index;
+        end
+      end
+
+      return nil;
+    end,
+    ---@param playerName string
+    ---@return Character|nil
+    GetCharacterData = function(playerName)
+      local index = UtilityHub.DatabaseFunctions.GetCharacterIndex(playerName);
+
+      if (not index) then
+        return nil;
+      end
+
+      return UtilityHub.Database.global.characters[index];
+    end,
+    ---@return Character|nil
+    GetCurrentCharacterData = function()
+      return UtilityHub.DatabaseFunctions.GetCharacterData(UnitName("player"));
+    end
+  },
   Events = CreateFromMixins(CallbackRegistryMixin),
   ---@param version string|nil
   ---@param oldVersion string|nil

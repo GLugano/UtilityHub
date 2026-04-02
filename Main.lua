@@ -290,15 +290,6 @@ local function SetupSlashCommands()
   end
 end
 
-local function RegisterOptions()
-  print("|cffFFD700[UH Debug] RegisterOptions called|r");
-  UtilityHub.GameOptions.Register();
-  print("|cffFFD700[UH Debug] Register executed, category:|r", UtilityHub.GameOptions.category);
-  if (UtilityHub.GameOptions.category) then
-    print("|cffFFD700[UH Debug] Category has GetID:|r", type(UtilityHub.GameOptions.category.GetID));
-  end
-end
-
 local function CreateMinimapIcon()
   UtilityHub.Libs.LDB:NewDataObject(ADDON_NAME, {
     type = "data source",
@@ -348,7 +339,7 @@ local function CreateMinimapIcon()
         " " .. UtilityHub.Helpers.Color:AddColorToString("to open the options", "FFDDFF00"));
       self:AddLine(UtilityHub.Helpers.Color:AddColorToString("[Right Click]", "FF9CD6DE") ..
         " " .. UtilityHub.Helpers.Color:AddColorToString("to open/close cooldowns", "FFDDFF00"));
-      self:AddLine(UtilityHub.Helpers.Color:AddColorToString("[Shift + Right Click]", "FF9CD6DE") ..
+      self:AddLine(UtilityHub.Helpers.Color:AddColorToString("[Shift] + [Right Click]", "FF9CD6DE") ..
         " " .. UtilityHub.Helpers.Color:AddColorToString("to open/close daily quests", "FFDDFF00"));
     end
   });
@@ -365,49 +356,20 @@ local function CreateMinimapIcon()
 end
 
 local function UpdateCharacter()
-  local function GetPlayerIndex(name)
-    for index, value in ipairs(UtilityHub.Database.global.characters) do
-      if (value.name == name) then
-        return index;
-      end
-    end
-  end
-
   ---@type string
   local name = UnitName("player");
-  ---@type Cooldowns
-  local cooldownsModule = UtilityHub.Addon:GetModule("Cooldowns");
-  ---@type Character
-  local playerTable = {
-    name = name,
-    race = select(1, UnitRace("player")),
-    className = select(2, UnitClass("player")),
-    group = UtilityHub.Enums.CharacterGroup.UNGROUPED,
-    cooldownGroup = cooldownsModule:UpdateCurrentCharacterCooldowns(),
-  };
+  local characterIndex = UtilityHub.DatabaseFunctions.GetCharacterIndex(name);
 
-  local playerIndex = GetPlayerIndex(name);
-
-  if (playerIndex) then
-    playerTable.group = UtilityHub.Database.global.characters[playerIndex].group;
-    UtilityHub.Database.global.characters[playerIndex] = playerTable;
+  if (characterIndex) then
+    UtilityHub.DatabaseFunctions.UpdateCurrentCharacter();
+    UtilityHub.Events:TriggerEvent("CHARACTER_UPDATED");
 
     if (UtilityHub.Database.global.debugMode) then
       UtilityHub.Helpers.DebugLog:Add(
         string.format("|cffFFFF00[UH-LOCAL]|r |cff00FF00UPDATED|r local character '%s'", name)
       );
     end
-  else
-    tinsert(UtilityHub.Database.global.characters, playerTable);
-
-    if (UtilityHub.Database.global.debugMode) then
-      UtilityHub.Helpers.DebugLog:Add(
-        string.format("|cffFFFF00[UH-LOCAL]|r |cffFF00FF[NEW]|r Created new local character '%s'", name)
-      );
-    end
   end
-
-  UtilityHub.Events:TriggerEvent("CHARACTER_UPDATED");
 end
 
 local function UpdateMinimapIcon(hasNotification)
@@ -468,7 +430,6 @@ UtilityHub.Events:RegisterCallback("OPTIONS_CHANGED", function(_, name)
     end
   end
 
-
   if (name == "mouseRing") then
     if (UtilityHub.Addon:GetModule("MouseRing", true)) then
       local db = UtilityHub.Database.global.options.mouseRing;
@@ -490,6 +451,12 @@ end);
 EventRegistry:RegisterFrameEventAndCallback("LOADING_SCREEN_DISABLED", function()
   C_Timer.After(2, function()
     UtilityHub.Flags.addonReady = true;
+    local _, recentlyCreated = UtilityHub.DatabaseFunctions.CreateCurrentCharacter();
+
+    if (not recentlyCreated) then
+      UtilityHub.DatabaseFunctions.UpdateCurrentCharacter();
+    end
+
     UtilityHub.Events:TriggerEvent("CHARACTER_UPDATE_NEEDED");
   end);
 end);

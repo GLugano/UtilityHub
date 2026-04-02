@@ -22,6 +22,7 @@ end
 ---@field spellList? BasicCooldown[]
 
 ---@class CurrentCooldown
+---@field source "TRADE_SKILL_FRAME"|"SPELL_API"|nil
 ---@field name string
 ---@field start number | nil
 ---@field maxCooldown number
@@ -90,21 +91,30 @@ elseif (UtilityHub.Constants.IsTBC) then
   end
 end
 
---- @param cooldowns table<string, CurrentCooldown[]>
---- @param group string
---- @param value CurrentCooldown
-local function InsertInCooldownTable(cooldowns, group, value)
-  local cooldownGroup = cooldowns[group];
+---@param remaining number
+---@return string
+local function FormatRemainingTimestamp(remaining)
+  local days = math.floor(remaining / (24 * 60 * 60));
+  local hours = math.floor((remaining % (24 * 60 * 60)) / (60 * 60));
+  local minutes = math.floor((remaining % (60 * 60)) / 60);
+  local seconds = math.floor(remaining % 60);
+  local resultStr;
 
-  if (not cooldownGroup) then
-    cooldownGroup = {};
-    cooldowns[group] = cooldownGroup;
+  if (days > 0) then
+    resultStr = string.format(
+      "%d %s %02d:%02d:%02d",
+      days,
+      days == 1 and "day" or "days",
+      hours,
+      minutes,
+      seconds
+    );
+  else
+    resultStr = string.format("%02d:%02d:%02d", hours, minutes, seconds);
   end
 
-  tinsert(cooldowns[group], value);
+  return resultStr;
 end
-
-local DAY_IN_MS = 24 * 60 * 60;
 
 ---@param str string
 ---@param numChars number
@@ -134,11 +144,10 @@ local function Utf8Sub(str, numChars)
   return string.sub(str, 1, bytePos - 1);
 end
 
----@param remaining number
+---@param readyTimestamp number
 ---@return string
-local function FormatReadyDate(remaining)
-  local readyTime = time() + remaining;
-  local t = date("*t", readyTime);
+local function FormatReadyDate(readyTimestamp)
+  local t = date("*t", readyTimestamp);
 
   local dayName = CALENDAR_WEEKDAY_NAMES[t.wday];
   local monthName = CALENDAR_FULLDATE_MONTH_NAMES[t.month];
@@ -173,11 +182,10 @@ local function FormatDateGroupLabel(timestamp)
   return string.format("%s, %d %s", shortDay, t.day, shortMonth);
 end
 
----@param remaining number
+---@param readyTimestamp number
 ---@return string
-local function FormatReadyTime(remaining)
-  local readyTime = time() + remaining;
-  local t = date("*t", readyTime);
+local function FormatReadyTime(readyTimestamp)
+  local t = date("*t", readyTimestamp);
   return string.format("%02d:%02d", t.hour, t.min);
 end
 
@@ -189,8 +197,15 @@ end
 ---@return string|nil "Ready time (HH:MM)"
 local function CooldownToRemainingTime(cooldown)
   if (cooldown.start and cooldown.maxCooldown and cooldown.maxCooldown > 0) then
-    local endTime = cooldown.start + cooldown.maxCooldown;
-    local remaining = endTime - GetTime();
+    local finish = cooldown.start + cooldown.maxCooldown;
+    ---@type number
+    local remaining = 0;
+
+    if (cooldown.source == "TRADE_SKILL_FRAME") then
+      remaining = finish - GetServerTime();
+    else
+      remaining = finish - GetTime();
+    end
 
     if (remaining > 0) then
       local progress = math.max(0, math.min(1, remaining / cooldown.maxCooldown));
@@ -205,23 +220,52 @@ local function CooldownToRemainingTime(cooldown)
       end
 
       local rgb = { r = r, g = g, b = 0 };
-      local readyDate = FormatReadyDate(remaining);
-      local readyTime = FormatReadyTime(remaining);
+      local readyDate = FormatReadyDate(finish);
+      local readyTime = FormatReadyTime(finish);
+      local resultStr = FormatRemainingTimestamp(remaining);
 
-      if (remaining >= DAY_IN_MS) then
-        local days = math.floor(remaining / DAY_IN_MS);
-        return days .. (days == 1 and " day" or " days"), false, rgb, readyDate, readyTime;
-      end
-
-      local hours = math.floor(remaining / 3600);
-      local minutes = math.floor((remaining % 3600) / 60);
-      local seconds = remaining % 60;
-
-      return string.format("%02d:%02d:%02d", hours, minutes, seconds), false, rgb, readyDate, readyTime;
+      return resultStr, false, rgb, readyDate, readyTime;
     end
   end
 
   return "Ready", true, { r = 16 / 255, g = 179 / 255, b = 16 / 255 }, nil, nil;
+end
+
+---@param start number|nil
+---@param duration number|nil
+---@return NormalizedCooldown
+local function GetNormalizedCooldownValues(start, duration)
+  -- Source: https://wago.io/ku2ECkSTv/3
+  -- The good function doesnt exist in classic
+  local normalizedData = {};
+  local now = GetTime();
+
+  if (not start) then
+    start = 0;
+  end
+
+  if (not duration) then
+    duration = 0;
+  end
+
+  if (duration > 604800) then
+    start = 0;
+    duration = 0;
+  end
+
+  if (start > now + 2147483.648) then
+    start = start - 4294967.296;
+  end
+
+  local dt = now - start;
+  local serverStart = GetServerTime() - dt;
+  local serverExpiration = serverStart + duration;
+
+  normalizedData.start = start;
+  normalizedData.duration = duration;
+  normalizedData.expiration = serverExpiration;
+
+  return normalizedData;
 end
 
 Module.Ticker = C_Timer.NewTicker(1, function()
@@ -250,115 +294,6 @@ Module.CollapsedGroups = {};
 Module.NotifiedCooldowns = {};
 Module.CountReadyGraceTicks = 5;
 
----@return table<string, CurrentCooldown[]>
-function Module:UpdateCurrentCharacterCooldowns()
-  ---@param cooldown BasicCooldown|GroupedCooldown
-  ---@return number|nil
-  function GetSpellIDFromCooldown(cooldown)
-    if (cooldown.spellList and #cooldown.spellList > 0) then
-      for _, spell in pairs(cooldown.spellList) do
-        if (C_SpellBook.IsSpellKnown(spell.spellID)) then
-          return spell.spellID;
-        end
-      end
-    else
-      if (C_SpellBook.IsSpellKnown(cooldown.spellID)) then
-        return cooldown.spellID;
-      end
-    end
-
-    return nil;
-  end
-
-  ---@param start number|nil
-  ---@param duration number|nil
-  ---@return NormalizedCooldown
-  function GetNormalizedCooldownValues(start, duration)
-    -- Source: https://wago.io/ku2ECkSTv/3
-    -- The good function doesnt exist in classic
-    local normalizedData = {};
-    local now = GetTime();
-
-    if (not start) then
-      start = 0;
-    end
-
-    if (not duration) then
-      duration = 0;
-    end
-
-    if (duration > 604800) then
-      start = 0;
-      duration = 0;
-    end
-
-    if (start > now + 2147483.648) then
-      start = start - 4294967.296;
-    end
-
-    local dt = now - start;
-    local serverStart = GetServerTime() - dt;
-    local serverExpiration = serverStart + duration;
-
-    normalizedData.start = start;
-    normalizedData.duration = duration;
-    normalizedData.expiration = serverExpiration;
-
-    return normalizedData;
-  end
-
-  ---@type table<string, CurrentCooldown[]>
-  local newCooldowns = {};
-
-  for i = 1, GetNumSkillLines() do
-    local skillName = GetSkillLineInfo(i);
-    ---@type GroupedCooldown|BasicCooldown|nil
-    local cdGroup = baseCooldowns[skillName];
-
-    if (cdGroup) then
-      for _, cooldown in pairs(cdGroup) do
-        if (cooldown.spellID or (cooldown.spellList and #cooldown.spellList > 0)) then
-          ---@type number|nil
-          local spellID = GetSpellIDFromCooldown(cooldown);
-
-          if (spellID) then
-            local spi = C_Spell.GetSpellCooldown(spellID);
-            local normalized = GetNormalizedCooldownValues(spi.startTime, spi.duration);
-
-            if (spi) then
-              InsertInCooldownTable(
-                newCooldowns,
-                skillName,
-                {
-                  name = cooldown.name,
-                  maxCooldown = normalized.duration,
-                  start = normalized.start,
-                }
-              );
-            end
-          end
-        elseif (cooldown.itemID) then
-          if (C_Item.GetItemCount(cooldown.itemID, true) > 0) then
-            local start, duration = C_Container.GetItemCooldown(cooldown.itemID);
-            local normalized = GetNormalizedCooldownValues(start, duration);
-            InsertInCooldownTable(
-              newCooldowns,
-              skillName,
-              {
-                name = cooldown.name,
-                maxCooldown = normalized.duration,
-                start = normalized.start,
-              }
-            );
-          end
-        end
-      end
-    end
-  end
-
-  return newCooldowns;
-end
-
 function Module:UpdateCountReadyCooldowns()
   local currentCount = 0;
   local currentReadySet = {};
@@ -366,8 +301,15 @@ function Module:UpdateCountReadyCooldowns()
   for _, character in ipairs(UtilityHub.Database.global.characters) do
     for _, cooldownGroup in pairs(character.cooldownGroup or {}) do
       for _, cooldown in ipairs(cooldownGroup) do
-        local endTime = cooldown.start + cooldown.maxCooldown;
-        local remaining = endTime - GetTime();
+        local finish = cooldown.start + cooldown.maxCooldown;
+        ---@type number|nil
+        local remaining = nil;
+
+        if (cooldown.source == "TRADE_SKILL_FRAME") then
+          remaining = finish - GetServerTime();
+        else
+          remaining = finish - GetTime();
+        end
 
         if (cooldown.start == 0 or remaining < 0) then
           currentCount = currentCount + 1;
@@ -437,12 +379,13 @@ end
 
 -- Frame
 function Module:CreateCooldownsFrame()
-  local MIN_WIDTH = 250;
-  local MIN_HEIGHT = 180;
+  local MIN_WIDTH = 320;
+  local MIN_HEIGHT = 200;
   local DEFAULT_WIDTH = 400;
   local DEFAULT_HEIGHT = 450;
 
-  local frame = CreateFrame("Frame", nil, UIParent, "SettingsFrameTemplate");
+  local frame = CreateFrame("Frame", "UHCooldowns", UIParent, "SettingsFrameTemplate");
+  tinsert(UISpecialFrames, frame:GetName());
   Module.Frame = frame;
   frame:SetResizable(true);
   frame:SetResizeBounds(MIN_WIDTH, MIN_HEIGHT);
@@ -617,22 +560,17 @@ function Module:CreateCooldownsFrame()
         if (elementData.nearestEndTime) then
           button.Timer = {
             Update = function()
-              local remaining = elementData.nearestEndTime - GetTime();
+              local remaining = 0;
+
+              if (elementData.source == "TRADE_SKILL_FRAME") then
+                remaining = elementData.nearestEndTime - GetServerTime();
+              else
+                remaining = elementData.nearestEndTime - GetTime();
+              end
 
               if (remaining > 0) then
-                local timeText;
-
-                if (remaining >= DAY_IN_MS) then
-                  local days = math.floor(remaining / DAY_IN_MS);
-                  timeText = days .. (days == 1 and " day" or " days");
-                else
-                  local hours = math.floor(remaining / 3600);
-                  local minutes = math.floor((remaining % 3600) / 60);
-                  local seconds = remaining % 60;
-                  timeText = string.format("%02d:%02d:%02d", hours, minutes, seconds);
-                end
-
-                button.LabelRight:SetText(timeText .. " - " .. readySuffix);
+                local resultStr = FormatRemainingTimestamp(remaining);
+                button.LabelRight:SetText(resultStr .. " - " .. readySuffix);
               else
                 button.LabelRight:SetText(readySuffix);
               end
@@ -655,7 +593,7 @@ function Module:CreateCooldownsFrame()
     elseif (elementData.cooldown) then
       local function Initializer(button, node)
         local width = button:GetWidth();
-        local timerWidth = width * 0.3;
+        local timerWidth = 110;
 
         button:SetPushedTextOffset(0, 0);
         button:SetHighlightAtlas("search-highlight");
@@ -748,15 +686,22 @@ function Module:UpdateCooldownsFrameList()
 
   -- Collect all cooldown entries across all characters
   local allEntries = {};
+  ---@type Character[]
+  local characters = UtilityHub.Database.global.characters;
 
-  for _, character in ipairs(UtilityHub.Database.global.characters) do
+  for _, character in ipairs(characters) do
     for profName, cooldownGroup in pairs(character.cooldownGroup or {}) do
       for _, cooldown in ipairs(cooldownGroup) do
         local _, isReady = CooldownToRemainingTime(cooldown);
+        ---@type number
         local remaining = 0;
 
         if (cooldown.start and cooldown.maxCooldown and cooldown.maxCooldown > 0) then
-          remaining = (cooldown.start + cooldown.maxCooldown) - GetTime();
+          if (cooldown.source) then
+            remaining = (cooldown.start + cooldown.maxCooldown) - GetServerTime();
+          else
+            remaining = (cooldown.start + cooldown.maxCooldown) - GetTime();
+          end
 
           if (remaining < 0) then
             remaining = 0;
@@ -772,6 +717,7 @@ function Module:UpdateCooldownsFrameList()
           maxCooldown = cooldown.maxCooldown,
           isReady = isReady,
           remaining = remaining,
+          source = cooldown.source,
         });
       end
     end
@@ -813,6 +759,7 @@ function Module:UpdateCooldownsFrameList()
       start = entry.start,
       maxCooldown = entry.maxCooldown,
       hideCountdown = (groupBy == groupByEnum.READY_DATE or groupBy == groupByEnum.READY_DATE_PROFESSION),
+      source = entry.source,
     };
   end
 
@@ -853,6 +800,7 @@ function Module:UpdateCooldownsFrameList()
           readyCount = g.readyCount,
           totalCount = #g.entries,
           nearestEndTime = g.nearestEndTime,
+          source = g.source,
         });
 
         for _, entry in ipairs(g.entries) do
@@ -870,7 +818,6 @@ function Module:UpdateCooldownsFrameList()
       AddToGroup({ entry }, entry.characterName, { className = entry.className }, groups, order);
     end
 
-    table.sort(order);
     InsertGroupsIntoProvider(groups, order);
   elseif (groupBy == groupByEnum.TYPE) then
     local groups = {};
@@ -906,6 +853,7 @@ function Module:UpdateCooldownsFrameList()
 
         if (not g.nearestEndTime or endTime < g.nearestEndTime) then
           g.nearestEndTime = endTime;
+          g.source = entry.source;
         end
       end
     end
@@ -1035,6 +983,7 @@ function Module:UpdateCooldownsFrameList()
           local endTime = entry.start + entry.maxCooldown;
           if (not tempGroups[currentDateKey].nearestEndTime or endTime < tempGroups[currentDateKey].nearestEndTime) then
             tempGroups[currentDateKey].nearestEndTime = endTime;
+            tempGroups[currentDateKey].source = entry.source;
           end
         end
       end
@@ -1050,12 +999,15 @@ function Module:UpdateCooldownsFrameList()
         entries = {},
         readyCount = 0,
         nearestEndTime = tempGroup.nearestEndTime,
+        source = tempGroup.source,
       };
 
       local charNames = {};
+
       for charName, _ in pairs(tempGroup.characters) do
         tinsert(charNames, charName);
       end
+
       table.sort(charNames);
 
       for _, charName in ipairs(charNames) do
@@ -1071,6 +1023,7 @@ function Module:UpdateCooldownsFrameList()
           maxCooldown = firstEntry.maxCooldown,
           isReady = firstEntry.isReady,
           remaining = firstEntry.remaining,
+          source = firstEntry.source,
         });
 
         if (firstEntry.isReady) then
@@ -1156,16 +1109,276 @@ function Module:TestNotification()
   UtilityHub.Helpers.Notification:ShowNotification("Triggered cooldown notification test");
 end
 
--- Events
-local function skillUpdated(...)
-  if (UtilityHub.Flags.addonReady and GetNumSkillLines() > 0) then
-    UtilityHub.Events:TriggerEvent("CHARACTER_UPDATE_NEEDED");
+---@param spellID number
+---@return boolean exist, string|nil groupOrCd, string|nil professionName
+function Module:IsSpellInTheCooldownsList(spellID)
+  for profession, data in pairs(baseCooldowns) do
+    for _, cdOrGroup in pairs(data) do
+      if (cdOrGroup.spellList and #cdOrGroup.spellList > 0) then
+        for _, cd in ipairs(cdOrGroup.spellList) do
+          if (cd.spellID == spellID) then
+            return true, cdOrGroup.name, profession;
+          end
+        end
+      elseif (cdOrGroup.spellID == spellID) then
+        return true, cdOrGroup.name, profession;
+      end
+    end
+  end
+
+  return false, nil;
+end
+
+--- It will only update the cooldowns of the current selected profession
+function Module:UpdateCooldownsFromTradeSkill()
+  local currentCharacter = UtilityHub.DatabaseFunctions.GetCurrentCharacterData();
+
+  if (not currentCharacter) then
+    return;
+  end
+
+  for i = 1, GetNumTradeSkills() do
+    local skillName, skillType = GetTradeSkillInfo(i);
+
+    -- Skip headers/subheaders, they have no recipe link
+    if (skillType ~= "header" and skillType ~= "subheader") then
+      local link = GetTradeSkillRecipeLink(i);
+
+      if (link) then
+        local spellID = tonumber(link:match("|H%w+:(%d+)"));
+
+        if (spellID) then
+          local exist, groupName, profession = Module:IsSpellInTheCooldownsList(spellID);
+
+          if (exist) then
+            local now = GetServerTime();
+            local cd = GetTradeSkillCooldown(i) or 0;
+            local spi = C_Spell.GetSpellCooldown(spellID);
+            local start = now + cd - spi.duration;
+
+            if (not currentCharacter.cooldownGroup[profession]) then
+              currentCharacter.cooldownGroup[profession] = {};
+            end
+
+            ---@type CurrentCooldown|nil
+            local group = nil;
+
+            for index, loopGroup in ipairs(currentCharacter.cooldownGroup[profession]) do
+              if (loopGroup.name == groupName) then
+                group = currentCharacter.cooldownGroup[profession][index];
+                break;
+              end
+            end
+
+            if (group) then
+              group.source = "TRADE_SKILL_FRAME";
+              group.start = start;
+              group.maxCooldown = spi.duration;
+            else
+              tinsert(currentCharacter.cooldownGroup[profession], {
+                source = "TRADE_SKILL_FRAME",
+                name = groupName,
+                start = start,
+                maxCooldown = spi.duration,
+              });
+            end
+          end
+        end
+      end
+    end
+  end
+
+  UtilityHub.Events:TriggerEvent("CHARACTER_UPDATED");
+end
+
+function Module:UpdateCooldownsFromOtherSources()
+  local currentCharacter = UtilityHub.DatabaseFunctions.GetCurrentCharacterData();
+
+  if (not currentCharacter) then
+    return;
+  end
+
+  ---@param cooldown BasicCooldown|GroupedCooldown
+  ---@return number|nil
+  function GetSpellIDFromCooldown(cooldown)
+    if (cooldown.spellList and #cooldown.spellList > 0) then
+      for _, spell in pairs(cooldown.spellList) do
+        if (C_SpellBook.IsSpellKnown(spell.spellID)) then
+          return spell.spellID;
+        end
+      end
+    else
+      if (C_SpellBook.IsSpellKnown(cooldown.spellID)) then
+        return cooldown.spellID;
+      end
+    end
+
+    return nil;
+  end
+
+  ---@param start number|nil
+  ---@param duration number|nil
+  ---@return NormalizedCooldown
+  function GetNormalizedCooldownValues(start, duration)
+    -- Source: https://wago.io/ku2ECkSTv/3
+    -- The good function doesnt exist in classic
+    local normalizedData = {};
+    local now = GetTime();
+
+    if (not start) then
+      start = 0;
+    end
+
+    if (not duration) then
+      duration = 0;
+    end
+
+    if (duration > 604800) then
+      start = 0;
+      duration = 0;
+    end
+
+    if (start > now + 2147483.648) then
+      start = start - 4294967.296;
+    end
+
+    local dt = now - start;
+    local serverStart = GetServerTime() - dt;
+    local serverExpiration = serverStart + duration;
+
+    normalizedData.start = start;
+    normalizedData.duration = duration;
+    normalizedData.expiration = serverExpiration;
+
+    return normalizedData;
+  end
+
+  ---@param professionName string
+  ---@return CurrentCooldown[]
+  function GetOrCreateCooldownGroup(professionName)
+    local cooldownGroup = currentCharacter.cooldownGroup[professionName];
+
+    if (not cooldownGroup) then
+      cooldownGroup = {};
+      currentCharacter.cooldownGroup[professionName] = cooldownGroup;
+    end
+
+    return cooldownGroup;
+  end
+
+  ---@param list CurrentCooldown[]
+  ---@param cooldownName string
+  ---@return number|nil
+  function GetCurrentCooldownIndex(list, cooldownName)
+    for index, loopCooldown in ipairs(list) do
+      if (loopCooldown.name == cooldownName) then
+        return index;
+      end
+    end
+
+    return nil;
+  end
+
+  ---@param cooldown BasicCooldown
+  ---@param professionName string
+  function UpdateItemCD(cooldown, professionName)
+    if (C_Item.GetItemCount(cooldown.itemID, true) == 0) then
+      return;
+    end
+
+    local start, duration = C_Container.GetItemCooldown(cooldown.itemID);
+    local normalized = GetNormalizedCooldownValues(start, duration);
+    local cooldownGroup = GetOrCreateCooldownGroup(professionName);
+    local index = GetCurrentCooldownIndex(cooldownGroup, cooldown.name);
+
+    -- Dont need to care about overriding the CD here because its an item, so there is no problem
+    if (index and cooldownGroup[index]) then
+      cooldownGroup[index].start = normalized.start;
+      cooldownGroup[index].maxCooldown = normalized.duration;
+    else
+      tinsert(
+        cooldownGroup,
+        {
+          name = cooldown.name,
+          maxCooldown = normalized.duration,
+          start = normalized.start,
+        }
+      );
+    end
+  end
+
+  ---@param cooldownOrGroup BasicCooldown|GroupedCooldown
+  ---@param professionName string
+  function UpdateSpellCD(cooldownOrGroup, professionName)
+    ---@type number|nil
+    local spellID = GetSpellIDFromCooldown(cooldownOrGroup);
+
+    if (not spellID) then
+      return;
+    end
+
+    local spi = C_Spell.GetSpellCooldown(spellID);
+    local normalized = GetNormalizedCooldownValues(spi.startTime, spi.duration);
+    local cooldownGroup = GetOrCreateCooldownGroup(professionName);
+    local index = GetCurrentCooldownIndex(cooldownGroup, cooldownOrGroup.name);
+
+    -- If not exists, just insert
+    if (not index or not cooldownGroup[index]) then
+      tinsert(
+        cooldownGroup,
+        {
+          name = cooldownOrGroup.name,
+          maxCooldown = normalized.duration,
+          start = normalized.start,
+        }
+      );
+      return;
+    end
+
+    ---@type CurrentCooldown
+    local cooldown = cooldownGroup[index];
+
+    -- If a CD already exists and its source is from the tradeSkillFrame, it should verify the timers before trying to override the data
+    if (cooldown.source == "TRADE_SKILL_FRAME" and cooldown.start) then
+      local remaining = (cooldown.start + cooldown.maxCooldown) - GetServerTime();
+
+      -- If there is still a cooldown remaining, follow the trusted source, otherwise it can be overridden
+      if (remaining > 0) then
+        return;
+      end
+    end
+
+    cooldown.source = "SPELL_API";
+    cooldown.maxCooldown = normalized.duration;
+    cooldown.start = normalized.start;
+  end
+
+  for profession, professionCdsList in pairs(baseCooldowns) do
+    for _, cdOrGroupList in ipairs(professionCdsList) do
+      if (cdOrGroupList.itemID) then
+        UpdateItemCD(cdOrGroupList, profession);
+      else
+        UpdateSpellCD(cdOrGroupList, profession);
+      end
+    end
   end
 end
 
-EventRegistry:RegisterFrameEventAndCallback("SKILL_LINES_CHANGED", skillUpdated);
-EventRegistry:RegisterFrameEventAndCallback("TRADE_SKILL_LIST_UPDATE", skillUpdated);
-EventRegistry:RegisterFrameEventAndCallback("TRADE_SKILL_UPDATE", skillUpdated);
+-- Events
+local function UpdateCooldowns()
+  if (not UtilityHub.Flags.addonReady) then
+    return;
+  end
+
+  if (GetNumSkillLines() > 0 and GetNumTradeSkills() > 0) then
+    Module:UpdateCooldownsFromTradeSkill();
+  end
+
+  Module:UpdateCooldownsFromOtherSources();
+end
+
+EventRegistry:RegisterFrameEventAndCallback("TRADE_SKILL_LIST_UPDATE", UpdateCooldowns);
+EventRegistry:RegisterFrameEventAndCallback("TRADE_SKILL_UPDATE", UpdateCooldowns);
 
 EventRegistry:RegisterFrameEventAndCallback("LOADING_SCREEN_DISABLED", function()
   Module.NotifiedCooldowns = {};
@@ -1186,4 +1399,8 @@ end);
 
 UtilityHub.Events:RegisterCallback("TOGGLE_COOLDOWNS_FRAME", function(_, name)
   Module:ToggleFrame();
+end);
+
+UtilityHub.Events:RegisterCallback("CHARACTER_UPDATE_NEEDED", function(_, name)
+  UpdateCooldowns();
 end);
