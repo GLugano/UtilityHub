@@ -50,3 +50,4 @@ Modules/Professions/Enchanting.lua
 Modules/NPCs/NPCs.lua
 Modules/Loot/Loot.lua
 Modules/GroupFinderAlert/GroupFinderAlert.lua
+Modules/Fix/Fix.lua
