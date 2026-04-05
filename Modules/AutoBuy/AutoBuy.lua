@@ -12,7 +12,6 @@ function Module:SearchAndBuyItems()
     return;
   end
 
-  local freeBagSlots = UtilityHub.Helpers.Item:GetFreeBagSlots();
   local purchasedItems = {};
   local playerName = UnitName("player");
   local playerClass = UnitClassBase("player");
@@ -30,7 +29,7 @@ function Module:SearchAndBuyItems()
 
     if (inScope) then
       local boughtItems;
-      boughtItems, freeBagSlots = Module:FindAndBuyItem(itemData, freeBagSlots);
+      boughtItems = Module:FindAndBuyItem(itemData);
       tAppendAll(purchasedItems, boughtItems);
     end
   end
@@ -59,19 +58,24 @@ function Module:BuyItemByStack(
     freeBagSlots,
     isPartial
 )
-  local itemName = GetMerchantItemInfo(itemMerchantIndex);
+  local itemName, _, _, _, availableCount = GetMerchantItemInfo(itemMerchantIndex);
   local maxStack = GetMerchantItemMaxStack(itemMerchantIndex);
   ---@type number
   local totalBought = 0;
   local remainingToBuy = quantityToBuy;
   local purchasedItems = {};
 
-  while (remainingToBuy > 0 and freeBagSlots > 0) do
-    local buyAmount = math.min(remainingToBuy, maxStack);
+  while (remainingToBuy > 0 and freeBagSlots > 0 and (availableCount > 0 or availableCount == -1)) do
+    if (availableCount == -1) then
+      availableCount = maxStack;
+    end
+
+    local buyAmount = math.min(remainingToBuy, maxStack, availableCount);
     BuyMerchantItem(itemMerchantIndex, buyAmount);
     totalBought = totalBought + buyAmount;
     remainingToBuy = remainingToBuy - buyAmount;
     freeBagSlots = freeBagSlots - 1;
+    availableCount = select(5, GetMerchantItemInfo(itemMerchantIndex));
   end
 
   local pattern = "%s x%d";
@@ -88,9 +92,8 @@ function Module:BuyItemByStack(
 end
 
 ---@param itemData AutoBuyItem
----@param freeBagSlots number
 ---@return string[], number
-function Module:FindAndBuyItem(itemData, freeBagSlots)
+function Module:FindAndBuyItem(itemData)
   ---@param itemID any
   ---@return number?
   local function FindMerchantIndex(itemID)
@@ -119,10 +122,13 @@ function Module:FindAndBuyItem(itemData, freeBagSlots)
   end
 
   local _, _, price, stackCount = GetMerchantItemInfo(i);
+  local maxStackSize = GetMerchantItemMaxStack(i);
   local unitPrice = price / stackCount;
 
   ---@type number
   local quantityToBuy = 0;
+  ---@type number
+  local freeBagSlots = UtilityHub.Helpers.Item:GetFreeBagSlots();
 
   if (itemData.quantity == 1) then
     -- Buy once mode: just buy 1
@@ -140,7 +146,7 @@ function Module:FindAndBuyItem(itemData, freeBagSlots)
   -- If we need to buy something
   if (quantityToBuy > 0) then
     local totalCost = unitPrice * quantityToBuy;
-    local slotsNeeded = math.ceil(quantityToBuy / stackCount);
+    local slotsNeeded = math.ceil(quantityToBuy / maxStackSize);
 
     local canAfford = (GetMoney() >= totalCost);
     local priceTooHigh = unitPrice >= MERCHANT_HIGH_PRICE_COST;
