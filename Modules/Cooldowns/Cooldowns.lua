@@ -292,6 +292,7 @@ end);
 
 Module.CollapsedGroups = {};
 Module.NotifiedCooldowns = {};
+---@type number
 Module.CountReadyGraceTicks = 5;
 
 function Module:UpdateCountReadyCooldowns()
@@ -345,11 +346,9 @@ function Module:UpdateCountReadyCooldowns()
 
   local isInitializing = Module.CountReadyGraceTicks > 0;
 
-  if (Module.CountReadyGraceTicks > 0) then
+  if (isInitializing) then
     Module.CountReadyGraceTicks = Module.CountReadyGraceTicks - 1;
-  end
-
-  if (not isInitializing) then
+  else
     local hasNewReady = false;
 
     for key, label in pairs(currentReadySet) do

@@ -1,8 +1,8 @@
-local moduleName                      = 'Tooltip';
+local moduleName                  = 'Tooltip';
 ---@class Tooltip
-local Module                          = UtilityHub.Addon:NewModule(moduleName);
+local Module                      = UtilityHub.Addon:NewModule(moduleName);
 
-local skills                          = {
+local skills                      = {
   -- Professions
   "Fishing",
   "Mining",
@@ -38,7 +38,7 @@ local skills                          = {
 ---@field FormatText fun(self: PatternConfig, text: string, prefix?: string): (string, PrefixConfig?)
 
 -- Physical
-local ATTACK_POWER_CLASSIC            = {
+local ATTACK_POWER_CLASSIC        = {
   pattern = "+(%d+) Attack Power.$",
   FormatText = function(self, text)
     local ap = text:match("(%d+) Attack Power");
@@ -46,7 +46,7 @@ local ATTACK_POWER_CLASSIC            = {
   end
 };
 
-local ATTACK_POWER                    = {
+local ATTACK_POWER                = {
   pattern = "Increases attack power by (%d+).$",
   FormatText = function(self, text)
     local ap = text:match("Increases attack power by (%d+)");
@@ -54,7 +54,7 @@ local ATTACK_POWER                    = {
   end
 };
 
-local RANGED_ATTACK_POWER_CLASSIC     = {
+local RANGED_ATTACK_POWER_CLASSIC = {
   pattern = "+(%d+) ranged Attack Power.$",
   FormatText = function(self, text)
     local ap = text:match("(%d+)");
@@ -62,7 +62,7 @@ local RANGED_ATTACK_POWER_CLASSIC     = {
   end
 };
 
-local RANGED_ATTACK_POWER                    = {
+local RANGED_ATTACK_POWER         = {
   pattern = "Increases ranged attack power by (%d+).$",
   FormatText = function(self, text)
     local ap = text:match("Increases ranged attack power by (%d+)");
@@ -70,7 +70,7 @@ local RANGED_ATTACK_POWER                    = {
   end
 };
 
-local PHYSICAL_CRITICAL_CLASSIC       = {
+local PHYSICAL_CRITICAL_CLASSIC   = {
   pattern = "(critical strike by (%d+))",
   FormatText = function(self, text)
     local crit = text:match("(%d+)");
@@ -78,7 +78,7 @@ local PHYSICAL_CRITICAL_CLASSIC       = {
   end
 };
 
-local PHYSICAL_CRITICAL               = {
+local PHYSICAL_CRITICAL           = {
   pattern = {
     "Increases your critical strike rating by (%d+)",
     "Improves critical strike rating by (%d+)"
@@ -89,7 +89,7 @@ local PHYSICAL_CRITICAL               = {
   end
 };
 
-local PHYSICAL_HIT_CLASSIC            = {
+local PHYSICAL_HIT_CLASSIC        = {
   pattern = "(%Improves your chance to hit by)",
   FormatText = function(self, text)
     local hit = text:match("(%d+)");
@@ -97,7 +97,7 @@ local PHYSICAL_HIT_CLASSIC            = {
   end
 };
 
-local PHYSICAL_HIT                    = {
+local PHYSICAL_HIT                = {
   pattern = {
     "Increases your hit rating by (%d+)",
     "Improves hit rating by (%d+)"
@@ -108,7 +108,7 @@ local PHYSICAL_HIT                    = {
   end
 };
 
-local PHYSICAL_EXPERTISE              = {
+local PHYSICAL_EXPERTISE          = {
   pattern = "Increases your expertise rating by (%d+).$",
   FormatText = function(self, text)
     local ap = text:match("(%d+)");
@@ -116,7 +116,7 @@ local PHYSICAL_EXPERTISE              = {
   end
 };
 
-local DRUID_ATTACK_POWER_CLASSIC      = {
+local DRUID_ATTACK_POWER_CLASSIC  = {
   pattern = "Attack Power in Cat, Bear, and Dire Bear forms only",
   FormatText = function(self, text)
     local ap = text:match("%+(%d+)");
@@ -124,7 +124,7 @@ local DRUID_ATTACK_POWER_CLASSIC      = {
   end
 };
 
-local DRUID_ATTACK_POWER              = {
+local DRUID_ATTACK_POWER          = {
   pattern = "Increases attack power by (%d+) in Cat, Bear, Dire Bear, and Moonkin forms only.",
   FormatText = function(self, text)
     local ap = text:match("(%d+)");
@@ -132,13 +132,22 @@ local DRUID_ATTACK_POWER              = {
   end
 };
 
-local PHYSICAL_ARMOR_PENETRATION      = {
+local PHYSICAL_ARMOR_PENETRATION  = {
   pattern = "Your attacks ignore (%d+) of your opponent's armor.",
   FormatText = function(self, text)
     local ap = text:match("(%d+)");
     return string.format("+%s Armor Penetration", ap);
   end
 };
+
+local PHYSICAL_HASTE              = {
+  pattern = "Improves haste rating by (%d+).",
+  FormatText = function(self, text)
+    local ap = text:match("(%d+)");
+    return string.format("+%s Haste Rating", ap);
+  end
+};
+
 
 -- Spell
 local SPELL_PENETRATION_CLASSIC       = {
@@ -664,6 +673,7 @@ local function UpdatePatternConfig()
     tinsert(Module.patternConfigList, PHYSICAL_CRITICAL);
     tinsert(Module.patternConfigList, PHYSICAL_EXPERTISE);
     tinsert(Module.patternConfigList, PHYSICAL_ARMOR_PENETRATION);
+    tinsert(Module.patternConfigList, PHYSICAL_HASTE);
     tinsert(Module.patternConfigList, RANGED_ATTACK_POWER);
 
     tinsert(Module.patternConfigList, SPELL_HIT);
