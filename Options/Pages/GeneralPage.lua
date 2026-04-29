@@ -62,7 +62,7 @@ function GeneralPage:Create(parent)
 
   -- Scroll child (content lives here)
   local content = CreateFrame("Frame", nil, scrollFrame);
-  content:SetHeight(790);
+  content:SetHeight(805);
   content:SetWidth(scrollFrame:GetWidth());
   content:SetClipsChildren(true);
   scrollFrame:SetScrollChild(content);
@@ -156,6 +156,14 @@ function GeneralPage:Create(parent)
     "askBeforeFlyingFromTBtoORGFromOption",
     "When active, the option that enables you to fly from Thunder Bluff to Orgrimmar will ask first before flying",
     cbAutoOpenMerchantFrameLHCBlacksmith
+  );
+
+  local cbPopupFlyTBtoOrg = self:CreateCheckbox(
+    content,
+    "Ask before flying from Grom'gol to Stonard (option)",
+    "askBeforeFlyingFromGromgolToStonardFromOption",
+    "When active, the option that enables you to fly from Grom'gol to Stonard will ask first before flying",
+    cbPopupFlyTBtoOrg
   );
 
   -- Section: Cooldowns

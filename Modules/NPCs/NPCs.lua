@@ -45,6 +45,15 @@ EventRegistry:RegisterFrameEventAndCallback("GOSSIP_SHOW", function()
         "You really want to go to Orgrimmar?"
       );
     elseif (
+          npcName == "Thysta"
+          and elementData.info.name == "Can you take me to Stonard?"
+          and UtilityHub.Database.global.options.askBeforeFlyingFromGromgolToStonardFromOption
+        ) then
+      SetConfirmPopupToButton(
+        frame,
+        "You really want to go to Stonard?"
+      );
+    elseif (
           npcName == "Craftsman Wilhelm"
           and elementData.info.gossipOptionID == 117482
           and #C_GossipInfo.GetOptions() == 1

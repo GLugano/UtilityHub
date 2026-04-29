@@ -90,7 +90,7 @@ end;
 
 ---@param classID number
 ---@param subclassID? number
----@return AuctionHouseItemClassStructureClass
+---@return AuctionHouseItemClassStructureClass?
 ---@return AuctionHouseItemClassStructureSubClass?
 function UtilityHub.Helpers.Item:GetClassAndSubclass(classID, subclassID)
   ---@type AuctionHouseItemClassStructureClass|nil
@@ -113,6 +113,8 @@ function UtilityHub.Helpers.Item:GetClassAndSubclass(classID, subclassID)
       end
     end
   end
+
+  return nil, nil;
 end;
 
 -- Color
