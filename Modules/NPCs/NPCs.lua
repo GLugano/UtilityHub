@@ -1,5 +1,81 @@
-local changedFrames = {};
+---@enum DialogActionType
+local DIALOG_ACTION_TYPE = {
+  CONFIRM = 1,
+  AUTO_INTERACT = 2,
+};
 
+---@class NpcGossipConfig
+---@field npcName string
+---@field dialogText? string
+---@field action DialogActionType
+---@field addonConfigOption string
+---@field confirmText string?
+---@field gossipOptionID number?
+---@field ExtraChecks? fun(npcName: string, gossipConfig: NpcGossipConfig, elementData: table): boolean
+
+local changedFrames = {};
+---@type NpcGossipConfig[]
+local dialogActionConfigs = {
+  {
+    npcName = "Tal",
+    dialogText = "Can you take me to Orgrimmar?",
+    action = DIALOG_ACTION_TYPE.CONFIRM,
+    addonConfigOption = "askBeforeFlyingFromTBtoORGFromOption",
+    confirmText = "You really want to go to Orgrimmar?",
+  },
+  {
+    npcName = "Thysta",
+    dialogText = "Can you take me to Stonard?",
+    action = DIALOG_ACTION_TYPE.CONFIRM,
+    addonConfigOption = "askBeforeFlyingFromGromgolToStonardFromOption",
+    confirmText = "You really want to go to Stonard?",
+  },
+  {
+    npcName = "Craftsman Wilhelm",
+    addonConfigOption = "automaticOpenMerchantFrameLHCBlacksmith",
+    action = DIALOG_ACTION_TYPE.AUTO_INTERACT,
+    gossipOptionID = 117482,
+    ExtraChecks = function()
+      return #C_GossipInfo.GetOptions() == 1;
+    end
+  }
+};
+
+---@param npcName string
+---@param gossipConfig NpcGossipConfig
+---@param elementData table
+---@return boolean
+local function CheckOption(npcName, gossipConfig, elementData)
+  if (not elementData or not elementData.info) then
+    return false;
+  end
+
+  if (npcName ~= gossipConfig.npcName) then
+    return false;
+  end
+
+  if (not UtilityHub.Database.global.options[gossipConfig.addonConfigOption]) then
+    return false;
+  end
+
+  if (gossipConfig.ExtraChecks and not gossipConfig.ExtraChecks(npcName, gossipConfig, elementData)) then
+    return false;
+  end
+
+  -- Final checks if the dialog is the right one, first for ID, second for text
+  if (gossipConfig.gossipOptionID == elementData.info.gossipOptionID) then
+    return true;
+  end
+
+  if (elementData.info.name == gossipConfig.dialogText) then
+    return true;
+  end
+
+  return false;
+end
+
+---@param frame SimpleFrame
+---@param text string
 local function SetConfirmPopupToButton(frame, text)
   frame.OldOnClick = frame:GetScript("OnClick");
   frame:SetScript("OnClick", function(self, mouseButton)
@@ -35,31 +111,15 @@ EventRegistry:RegisterFrameEventAndCallback("GOSSIP_SHOW", function()
 
     local npcName = UnitName("npc");
 
-    if (
-          npcName == "Tal"
-          and elementData.info.name == "Can you take me to Orgrimmar?"
-          and UtilityHub.Database.global.options.askBeforeFlyingFromTBtoORGFromOption
-        ) then
-      SetConfirmPopupToButton(
-        frame,
-        "You really want to go to Orgrimmar?"
-      );
-    elseif (
-          npcName == "Thysta"
-          and elementData.info.name == "Can you take me to Stonard?"
-          and UtilityHub.Database.global.options.askBeforeFlyingFromGromgolToStonardFromOption
-        ) then
-      SetConfirmPopupToButton(
-        frame,
-        "You really want to go to Stonard?"
-      );
-    elseif (
-          npcName == "Craftsman Wilhelm"
-          and elementData.info.gossipOptionID == 117482
-          and #C_GossipInfo.GetOptions() == 1
-          and UtilityHub.Database.global.options.automaticOpenMerchantFrameLHCBlacksmith
-        ) then
-      C_GossipInfo.SelectOptionByIndex(elementData.info.orderIndex);
+    for _, gossipConfig in ipairs(dialogActionConfigs) do
+      if (CheckOption(npcName, gossipConfig, elementData)) then
+        if (gossipConfig.action == DIALOG_ACTION_TYPE.CONFIRM and gossipConfig.confirmText) then
+          SetConfirmPopupToButton(frame, gossipConfig.confirmText);
+        else
+          C_GossipInfo.SelectOptionByIndex(elementData.info.orderIndex);
+        end
+        return;
+      end
     end
   end);
 end);
