@@ -153,7 +153,6 @@ local function FormatReadyDate(readyTimestamp)
   local monthName = CALENDAR_FULLDATE_MONTH_NAMES[t.month];
   local shortDay = Utf8Sub(dayName, 3);
   local shortMonth = Utf8Sub(monthName, 3);
-
   local locale = GetLocale();
 
   if (locale == "enUS" or locale == "enGB") then
@@ -266,6 +265,18 @@ local function GetNormalizedCooldownValues(start, duration)
   normalizedData.expiration = serverExpiration;
 
   return normalizedData;
+end
+
+local function KnowsProfession(professionName)
+  for i = 1, GetNumSkillLines() do
+    local name = GetSkillLineInfo(i);
+
+    if (name == professionName) then
+      return true;
+    end
+  end
+
+  return false;
 end
 
 Module.Ticker = C_Timer.NewTicker(1, function()
@@ -592,7 +603,7 @@ function Module:CreateCooldownsFrame()
     elseif (elementData.cooldown) then
       local function Initializer(button, node)
         local width = button:GetWidth();
-        local timerWidth = 110;
+        local timerWidth = 130;
 
         button:SetPushedTextOffset(0, 0);
         button:SetHighlightAtlas("search-highlight");
@@ -612,7 +623,7 @@ function Module:CreateCooldownsFrame()
           button.Timer:SetJustifyH("RIGHT");
         end
         button.Timer:ClearAllPoints();
-        button.Timer:SetPoint("TOPRIGHT", -6, -2);
+        button.Timer:SetPoint("TOPRIGHT", -6, -10);
         button.Timer:SetPoint("LEFT", width - timerWidth - 6, 0);
 
         if (not button.ReadyDate) then
@@ -643,12 +654,12 @@ function Module:CreateCooldownsFrame()
             self:SetText(text);
             self:SetTextColor(rgb.r, rgb.g, rgb.b);
 
-            if (readyDate) then
-              parent.ReadyDate:SetText(readyDate);
-              parent.ReadyDate:Show();
-            else
-              parent.ReadyDate:Hide();
-            end
+            -- if (readyDate) then
+            --   parent.ReadyDate:SetText(readyDate);
+            --   parent.ReadyDate:Show();
+            -- else
+            --   parent.ReadyDate:Hide();
+            -- end
           end
         end
 
@@ -1199,7 +1210,7 @@ function Module:UpdateCooldownsFromOtherSources()
 
   ---@param cooldown BasicCooldown|GroupedCooldown
   ---@return number|nil
-  function GetSpellIDFromCooldown(cooldown)
+  local function GetSpellIDFromCooldown(cooldown)
     if (cooldown.spellList and #cooldown.spellList > 0) then
       for _, spell in pairs(cooldown.spellList) do
         if (C_SpellBook.IsSpellKnown(spell.spellID)) then
@@ -1218,7 +1229,7 @@ function Module:UpdateCooldownsFromOtherSources()
   ---@param start number|nil
   ---@param duration number|nil
   ---@return NormalizedCooldown
-  function GetNormalizedCooldownValues(start, duration)
+  local function GetNormalizedCooldownValues(start, duration)
     -- Source: https://wago.io/ku2ECkSTv/3
     -- The good function doesnt exist in classic
     local normalizedData = {};
@@ -1254,7 +1265,7 @@ function Module:UpdateCooldownsFromOtherSources()
 
   ---@param professionName string
   ---@return CurrentCooldown[]
-  function GetOrCreateCooldownGroup(professionName)
+  local function GetOrCreateCooldownGroup(professionName)
     local cooldownGroup = currentCharacter.cooldownGroup[professionName];
 
     if (not cooldownGroup) then
@@ -1268,7 +1279,7 @@ function Module:UpdateCooldownsFromOtherSources()
   ---@param list CurrentCooldown[]
   ---@param cooldownName string
   ---@return number|nil
-  function GetCurrentCooldownIndex(list, cooldownName)
+  local function GetCurrentCooldownIndex(list, cooldownName)
     for index, loopCooldown in ipairs(list) do
       if (loopCooldown.name == cooldownName) then
         return index;
@@ -1280,7 +1291,7 @@ function Module:UpdateCooldownsFromOtherSources()
 
   ---@param cooldown BasicCooldown
   ---@param professionName string
-  function UpdateItemCD(cooldown, professionName)
+  local function UpdateItemCD(cooldown, professionName)
     if (C_Item.GetItemCount(cooldown.itemID, true) == 0) then
       return;
     end
@@ -1308,12 +1319,13 @@ function Module:UpdateCooldownsFromOtherSources()
 
   ---@param cooldownOrGroup BasicCooldown|GroupedCooldown
   ---@param professionName string
-  function UpdateSpellCD(cooldownOrGroup, professionName)
+  ---@return boolean exist
+  local function UpdateSpellCD(cooldownOrGroup, professionName)
     ---@type number|nil
     local spellID = GetSpellIDFromCooldown(cooldownOrGroup);
 
     if (not spellID) then
-      return;
+      return false;
     end
 
     local spi = C_Spell.GetSpellCooldown(spellID);
@@ -1331,7 +1343,7 @@ function Module:UpdateCooldownsFromOtherSources()
           start = normalized.start,
         }
       );
-      return;
+      return true;
     end
 
     ---@type CurrentCooldown
@@ -1343,22 +1355,45 @@ function Module:UpdateCooldownsFromOtherSources()
 
       -- If there is still a cooldown remaining, follow the trusted source, otherwise it can be overridden
       if (remaining > 0) then
-        return;
+        return true;
       end
     end
 
     cooldown.source = "SPELL_API";
     cooldown.maxCooldown = normalized.duration;
     cooldown.start = normalized.start;
+
+    return true;
   end
 
   for profession, professionCdsList in pairs(baseCooldowns) do
-    for _, cdOrGroupList in ipairs(professionCdsList) do
-      if (cdOrGroupList.itemID) then
-        UpdateItemCD(cdOrGroupList, profession);
-      else
-        UpdateSpellCD(cdOrGroupList, profession);
+    local groupsToRemove = {};
+
+    if (KnowsProfession(profession)) then
+      for _, cdOrGroupList in ipairs(professionCdsList) do
+        if (cdOrGroupList.itemID) then
+          UpdateItemCD(cdOrGroupList, profession);
+        else
+          local exists = UpdateSpellCD(cdOrGroupList, profession);
+
+          if (not exists) then
+            tinsert(groupsToRemove, i);
+          end
+        end
       end
+
+      if (#groupsToRemove > 0) then
+        for _, value in ipairs(groupsToRemove) do
+          table.remove(professionCdsList, value);
+        end
+
+        if (#professionCdsList == 0) then
+          currentCharacter.cooldownGroup[profession] = nil;
+        end
+      end
+    else
+      --- Profession doesnt exist
+      currentCharacter.cooldownGroup[profession] = nil;
     end
   end
 end

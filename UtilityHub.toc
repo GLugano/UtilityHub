@@ -19,6 +19,7 @@ Options/OptionList.lua
 Options/OptionList.xml
 Options/OptionsCanvas.lua
 Options/Pages/GeneralPage.lua
+Options/Pages/CharactersPage.lua
 Options/Pages/AutoBuyPage.lua
 Options/Pages/MailPage.lua
 Options/Pages/MouseRingPage.lua

@@ -106,12 +106,18 @@ function OptionsCanvas:Create()
   local mainFrame = self:CreateMainFrame();
 
   -- Register pages (order matters for navigation)
-  self.pageOrder = { "general", "autoBuy", "mail", "graphicsSettings", "mouseRing" };
+  self.pageOrder = { "general", "characters", "autoBuy", "mail", "graphicsSettings", "mouseRing" };
   self.pages = {
     general = {
       label = "General",
       CreateFrame = function(parent)
         return UtilityHub.OptionsPages.General:Create(parent);
+      end
+    },
+    characters = {
+      label = "Characters",
+      CreateFrame = function(parent)
+        return UtilityHub.OptionsPages.Characters:Create(parent);
       end
     },
     autoBuy = {

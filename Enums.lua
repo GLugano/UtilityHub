@@ -17,8 +17,8 @@ local CHARACTER_GROUP = {
 local COOLDOWN_GROUP_BY = {
   CHARACTER = 1,
   TYPE = 2,
-  READY_DATE = 3,
-  READY_DATE_PROFESSION = 4,
+  -- READY_DATE = 3,
+  -- READY_DATE_PROFESSION = 4,
 };
 
 ---@class Enums
@@ -84,7 +84,7 @@ UtilityHub.Enums = {
   CooldownGroupByText = {
     [COOLDOWN_GROUP_BY.CHARACTER] = "By Character",
     [COOLDOWN_GROUP_BY.TYPE] = "By Type",
-    [COOLDOWN_GROUP_BY.READY_DATE] = "By Ready Date",
-    [COOLDOWN_GROUP_BY.READY_DATE_PROFESSION] = "By Ready Date + Profession",
+    -- [COOLDOWN_GROUP_BY.READY_DATE] = "By Ready Date",
+    -- [COOLDOWN_GROUP_BY.READY_DATE_PROFESSION] = "By Ready Date + Profession",
   },
 };

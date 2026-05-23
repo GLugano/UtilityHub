@@ -12,7 +12,7 @@
 ---@field name string
 ---@field race number
 ---@field className number
----@field group number
+---@field group EnumCharacterGroup
 ---@field cooldownGroup table<string, CurrentCooldown[]>
 
 ---@class Option

@@ -191,13 +191,13 @@ local function CreateShapeSelector(parent, anchor)
   end
 
   local valueLabel = container:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
-  valueLabel:SetPoint("LEFT", label, "RIGHT", 8, 0);
+  valueLabel:SetPoint("LEFT", label, "RIGHT", 32, 0);
   valueLabel:SetText(SHAPE_OPTIONS[GetCurrentIndex()].label);
 
   local btnPrev = CreateFrame("Button", nil, container, "UIPanelButtonTemplate");
   btnPrev:SetSize(24, 22);
   btnPrev:SetText("<");
-  btnPrev:SetPoint("RIGHT", valueLabel, "LEFT", -6, 0);
+  btnPrev:SetPoint("RIGHT", valueLabel, "LEFT", -2, 0);
 
   local btnNext = CreateFrame("Button", nil, container, "UIPanelButtonTemplate");
   btnNext:SetSize(24, 22);

@@ -36,8 +36,9 @@ local dialogActionConfigs = {
     action = DIALOG_ACTION_TYPE.AUTO_INTERACT,
     gossipOptionID = 117482,
     ExtraChecks = function()
+      --- Should only activate if its the only option, because one of the naxx quests require talking to him
       return #C_GossipInfo.GetOptions() == 1;
-    end
+    end,
   }
 };
 
