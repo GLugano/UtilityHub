@@ -3,7 +3,7 @@
 ## Title: UtilityHub
 ## IconTexture: Interface\Addons\UtilityHub\Assets\Icons\addon
 ## Author: Cacetinho-Nightslayer 
-## Version: 0.34
+## Version: 0.35
 ## SavedVariables: UHdatabase, MDHdatabase
 
 # XMLs
@@ -15,6 +15,9 @@ Constants.lua
 Enums.lua
 Helpers.lua
 Main.lua
+Layout/TreeGroup/TreeGroup.lua
+Layout/TreeGroup/TreeGroup.xml
+Layout/BasicDialog.lua
 Options/OptionList.lua
 Options/OptionList.xml
 Options/OptionsCanvas.lua
@@ -22,10 +25,9 @@ Options/Pages/GeneralPage.lua
 Options/Pages/CharactersPage.lua
 Options/Pages/AutoBuyPage.lua
 Options/Pages/MailPage.lua
+Options/Pages/CooldownsPage.lua
 Options/Pages/MouseRingPage.lua
 Options/Options.lua
-Layout/TreeGroup/TreeGroup.lua
-Layout/TreeGroup/TreeGroup.xml
 Modules/Mail/PresetItemsDB.lua
 Modules/Mail/Characters.lua
 Modules/Mail/Preset.lua
@@ -40,7 +42,9 @@ Modules/Integration/Auctionator.lua
 Modules/Integration/TSM.lua
 Modules/Integration/DragonflightUI.lua
 Modules/Tooltip/Tooltip.lua
-Modules/Cooldowns/Cooldowns.lua
+# Modules/Cooldowns/Cooldowns.lua
+Modules/Cooldowns/CooldownsAPI.lua
+Modules/Cooldowns/Cooldowns2.lua
 Modules/Cooldowns/Sync.lua
 Modules/DailyQuests/DailyQuests.lua
 Modules/MouseRing/MouseRing.lua

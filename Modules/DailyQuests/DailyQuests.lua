@@ -866,12 +866,6 @@ Module.QuestDB = setmetatable(
 
 Module.CollapsedGroups = {};
 
----@param rgb BasicRGB
----@return BasicRGB
-local function NormalizeRGB(rgb)
-  return { r = rgb.r / 255, g = rgb.g / 255, b = rgb.b / 255 };
-end
-
 ---@class QuestFlags
 ---@field questID number|nil
 ---@field type EQuestType|nil
@@ -919,12 +913,12 @@ local function GetQuestFlags(questOrGroup)
   end
 end
 
-local QUEST_READY_TO_TURNIN_COLOR = NormalizeRGB({ r = 16, g = 179, b = 16 });
-local QUEST_IN_QUESTLOG_COLOR = NormalizeRGB({ r = 3, g = 165, b = 252 });
-local QUEST_READY_COLOR = NormalizeRGB({ r = 245, g = 230, b = 66 });
-local QUEST_CD_MORE_THAN_DAY_COLOR = NormalizeRGB({ r = 255, g = 255, b = 255 });
-local QUEST_CD_LAST_THAN_HALF_DAY_COLOR = NormalizeRGB({ r = 255, g = 71, b = 71 });
-local QUEST_CD_BASE_COLOR = NormalizeRGB({ r = 252, g = 186, b = 3 });
+local QUEST_READY_TO_TURNIN_COLOR = UtilityHub.Helpers.Color:NormalizeRGB({ r = 16, g = 179, b = 16 });
+local QUEST_IN_QUESTLOG_COLOR = UtilityHub.Helpers.Color:NormalizeRGB({ r = 3, g = 165, b = 252 });
+local QUEST_READY_COLOR = UtilityHub.Helpers.Color:NormalizeRGB({ r = 245, g = 230, b = 66 });
+local QUEST_CD_MORE_THAN_DAY_COLOR = UtilityHub.Helpers.Color:NormalizeRGB({ r = 255, g = 255, b = 255 });
+local QUEST_CD_LAST_THAN_HALF_DAY_COLOR = UtilityHub.Helpers.Color:NormalizeRGB({ r = 255, g = 71, b = 71 });
+local QUEST_CD_BASE_COLOR = UtilityHub.Helpers.Color:NormalizeRGB({ r = 252, g = 186, b = 3 });
 
 local DAY_IN_SECONDS = 24 * 60 * 60;
 local WEEK_IN_SECONDS = 24 * 60 * 60 * 7;

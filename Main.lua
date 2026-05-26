@@ -17,23 +17,28 @@ local function InitVariables()
     oldVersion = UHdatabase.global.oldVersion;
   end
 
-  UtilityHub.Database = LibStub("AceDB-3.0"):New("UHdatabase", {
-    global = {
-      version = version,
-      debugMode = false,
-      minimapIcon = {
-        hide = false,
-      },
-      options = UtilityHub.GameOptions.defaults,
-      presets = {},
-      whispers = {},
-      ---@type Character[]
-      characters = {},
-      ---@type string[]
-      mailHistory = {},
-    },
-    char = {},
-  }, "Default");
+  UtilityHub.Database = LibStub("AceDB-3.0")
+      :New(
+        "UHdatabase",
+        {
+          global = {
+            version = version,
+            debugMode = false,
+            minimapIcon = {
+              hide = false,
+            },
+            options = UtilityHub.GameOptions.defaults,
+            presets = {},
+            whispers = {},
+            ---@type Character[]
+            characters = {},
+            ---@type string[]
+            mailHistory = {},
+          },
+          char = {},
+        },
+        "Default"
+      );
   UtilityHub.Database.global.oldVersion = version;
 
   if (oldVersion and oldVersion ~= version) then
@@ -320,12 +325,16 @@ local function CreateMinimapIcon()
 
       if (UtilityHub.Database.global.options.cooldowns) then
         local textCount;
+        local sessionData = UtilityHub.DatabaseFunctions.GetSessionData();
+        local count = sessionData.lastCooldownReadyCount or 0;
 
-        if (lastCountReadyCooldowns and lastCountReadyCooldowns > 0) then
-          textCount = UtilityHub.Helpers.Color:AddColorToString(
-            lastCountReadyCooldowns ..
-            " cooldown" .. (lastCountReadyCooldowns > 1 and "s" or "") .. " READY",
-            "FF27BD34");
+        if (count > 0) then
+          local textWithoutColor = string.format(
+            "%s cooldown%s READY",
+            count,
+            (count > 1 and "s" or "")
+          );
+          textCount = UtilityHub.Helpers.Color:AddColorToString(textWithoutColor, "FF27BD34");
         else
           textCount = "No cooldowns ready";
         end
@@ -391,6 +400,7 @@ UtilityHub.Events:GenerateCallbackEvents({
   "TOGGLE_DAILY_FRAME",
   "FORCE_DAILY_QUESTS_FLAG_UPDATE",
   "WHISPER_LIST_UPDATED",
+  "COOLDOWNS_UPDATED",
 });
 
 UtilityHub.Events:RegisterCallback("CHARACTER_UPDATE_NEEDED", function(_, name)
@@ -443,15 +453,17 @@ UtilityHub.Events:RegisterCallback("OPTIONS_CHANGED", function(_, name)
   end
 end);
 
-UtilityHub.Events:RegisterCallback("COUNT_READY_COOLDOWNS_CHANGED", function(_, count, first)
-  UpdateMinimapIcon(count > 0);
-  lastCountReadyCooldowns = count;
+UtilityHub.Events:RegisterCallback("COUNT_READY_COOLDOWNS_CHANGED", function(_, count, changed)
+  if (changed) then
+    UpdateMinimapIcon(count > 0);
+  end
 end);
 
 EventRegistry:RegisterFrameEventAndCallback("LOADING_SCREEN_DISABLED", function()
   C_Timer.After(2, function()
     UtilityHub.Flags.addonReady = true;
     local _, recentlyCreated = UtilityHub.DatabaseFunctions.CreateCurrentCharacter();
+    UtilityHub.DatabaseFunctions.UpdateCurrentCooldownOptions();
 
     if (not recentlyCreated) then
       UtilityHub.DatabaseFunctions.UpdateCurrentCharacter();
@@ -464,6 +476,10 @@ end);
 EventRegistry:RegisterFrameEventAndCallback("CHAT_MSG_WHISPER", function(_, text, name)
   UtilityHub.Database.global.whispers[name] = text;
   UtilityHub.Events:TriggerEvent("WHISPER_LIST_UPDATED", name, text);
+end);
+
+EventRegistry:RegisterFrameEventAndCallback("PLAYER_LOGIN", function()
+  UtilityHub.DatabaseFunctions.StartSessionData();
 end);
 
 function UtilityHub.Addon:OnInitialize()

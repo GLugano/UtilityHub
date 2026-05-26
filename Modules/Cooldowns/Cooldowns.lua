@@ -13,83 +13,11 @@ end
 ---@field expiration number
 ---@field start number
 
----@class BasicCooldown
----@field name string
----@field spellID? number
----@field itemID? number
-
----@class GroupedCooldown : BasicCooldown
----@field spellList? BasicCooldown[]
-
 ---@class CurrentCooldown
 ---@field source "TRADE_SKILL_FRAME"|"SPELL_API"|nil
 ---@field name string
 ---@field start number | nil
 ---@field maxCooldown number
-
----@class CooldownList
-local baseCooldowns = {
-  ---@type BasicCooldown[]
-  Tailoring      = {},
-  ---@type GroupedCooldown[]
-  Alchemy        = {
-    { name = "Transmutes", spellList = {} },
-  },
-  ---@type BasicCooldown[]
-  Leatherworking = {},
-};
-
--- Still a cooldown in the tbc pre patch
-tinsert(baseCooldowns.Leatherworking, { name = "Refined Deeprock Salt", itemID = 15846 });
-
-if (UtilityHub.Constants.IsClassic) then
-  tinsert(baseCooldowns.Tailoring, { name = "Mooncloth", spellID = 18560 });
-
-  local transmutes = baseCooldowns.Alchemy[1];
-
-  if (transmutes) then
-    tinsert(transmutes.spellList, { name = "Arcanite Bar", spellID = 17187 });
-    tinsert(transmutes.spellList, { name = "Water to Air", spellID = 17562 });
-    tinsert(transmutes.spellList, { name = "Water to Undeath", spellID = 17564 });
-    tinsert(transmutes.spellList, { name = "Earth to Life", spellID = 17566 });
-    tinsert(transmutes.spellList, { name = "Earth to Water", spellID = 17561 });
-    tinsert(transmutes.spellList, { name = "Air to Fire", spellID = 17559 });
-    tinsert(transmutes.spellList, { name = "Life to Earth", spellID = 17565 });
-    tinsert(transmutes.spellList, { name = "Undeath to Water", spellID = 17563 });
-    tinsert(transmutes.spellList, { name = "Elemental Fire", spellID = 20761 });
-    tinsert(transmutes.spellList, { name = "Mithril to Truesilver", spellID = 11480 });
-    tinsert(transmutes.spellList, { name = "Iron to Gold", spellID = 11479 });
-  end
-elseif (UtilityHub.Constants.IsTBC) then
-  tinsert(baseCooldowns.Tailoring, { name = "Shadowcloth", spellID = 36686 });
-  tinsert(baseCooldowns.Tailoring, { name = "Spellcloth", spellID = 31373 });
-  tinsert(baseCooldowns.Tailoring, { name = "Primal Mooncloth", spellID = 26751 });
-
-  local transmutes = baseCooldowns.Alchemy[1];
-
-  if (transmutes) then
-    tinsert(transmutes.spellList, { name = "Transmute: Primal Might", spellID = 29688 });
-    tinsert(transmutes.spellList, { name = "Transmute: Earthstorm Diamond", spellID = 32765 });
-    tinsert(transmutes.spellList, { name = "Transmute: Skyfire Diamond", spellID = 32766 });
-    -- Air to
-    tinsert(transmutes.spellList, { name = "Transmute: Primal Air to Fire", spellID = 28566 });
-    -- Earth to
-    tinsert(transmutes.spellList, { name = "Transmute: Primal Earth to Water", spellID = 28567 });
-    tinsert(transmutes.spellList, { name = "Transmute: Primal Earth to Life", spellID = 28585 });
-    -- Fire to
-    tinsert(transmutes.spellList, { name = "Transmute: Primal Fire to Mana", spellID = 28583 });
-    tinsert(transmutes.spellList, { name = "Transmute: Primal Fire to Earth", spellID = 28568 });
-    -- Life to
-    tinsert(transmutes.spellList, { name = "Transmute: Primal Life to Earth", spellID = 28584 });
-    -- Mana to
-    tinsert(transmutes.spellList, { name = "Transmute: Primal Mana to Fire", spellID = 28582 });
-    -- Shadow to
-    tinsert(transmutes.spellList, { name = "Transmute: Primal Shadow to Water", spellID = 28580 });
-    -- Water to
-    tinsert(transmutes.spellList, { name = "Transmute: Primal Water to Air", spellID = 28569 });
-    tinsert(transmutes.spellList, { name = "Transmute: Primal Water to Shadow", spellID = 28581 });
-  end
-end
 
 ---@param remaining number
 ---@return string
@@ -267,11 +195,19 @@ local function GetNormalizedCooldownValues(start, duration)
   return normalizedData;
 end
 
-local function KnowsProfession(professionName)
+---@param profession Profession
+local function KnowsProfession(profession)
+  for _, spellID, value in ipairs(profession.spellIDs) do
+    if (C_SpellBook.IsSpellKnown(spellID)) then
+      return true;
+    end
+  end
+
+  --- Fallback to skill lines
   for i = 1, GetNumSkillLines() do
     local name = GetSkillLineInfo(i);
 
-    if (name == professionName) then
+    if (name == profession.name) then
       return true;
     end
   end
@@ -1122,8 +1058,10 @@ end
 ---@param spellID number
 ---@return boolean exist, string|nil groupOrCd, string|nil professionName
 function Module:IsSpellInTheCooldownsList(spellID)
-  for profession, data in pairs(baseCooldowns) do
-    for _, cdOrGroup in pairs(data) do
+  for _, data in pairs(UtilityHub.Constants.Cooldowns) do
+    local profession = data.name;
+
+    for _, cdOrGroup in pairs(data.cooldowns) do
       if (cdOrGroup.spellList and #cdOrGroup.spellList > 0) then
         for _, cd in ipairs(cdOrGroup.spellList) do
           if (cd.spellID == spellID) then
@@ -1224,43 +1162,6 @@ function Module:UpdateCooldownsFromOtherSources()
     end
 
     return nil;
-  end
-
-  ---@param start number|nil
-  ---@param duration number|nil
-  ---@return NormalizedCooldown
-  local function GetNormalizedCooldownValues(start, duration)
-    -- Source: https://wago.io/ku2ECkSTv/3
-    -- The good function doesnt exist in classic
-    local normalizedData = {};
-    local now = GetTime();
-
-    if (not start) then
-      start = 0;
-    end
-
-    if (not duration) then
-      duration = 0;
-    end
-
-    if (duration > 604800) then
-      start = 0;
-      duration = 0;
-    end
-
-    if (start > now + 2147483.648) then
-      start = start - 4294967.296;
-    end
-
-    local dt = now - start;
-    local serverStart = GetServerTime() - dt;
-    local serverExpiration = serverStart + duration;
-
-    normalizedData.start = start;
-    normalizedData.duration = duration;
-    normalizedData.expiration = serverExpiration;
-
-    return normalizedData;
   end
 
   ---@param professionName string
@@ -1366,11 +1267,12 @@ function Module:UpdateCooldownsFromOtherSources()
     return true;
   end
 
-  for profession, professionCdsList in pairs(baseCooldowns) do
+  for _, professionData in pairs(UtilityHub.Constants.Cooldowns) do
+    local profession = professionData.name;
     local groupsToRemove = {};
 
-    if (KnowsProfession(profession)) then
-      for _, cdOrGroupList in ipairs(professionCdsList) do
+    if (KnowsProfession(professionData)) then
+      for _, cdOrGroupList in ipairs(professionData.cooldowns) do
         if (cdOrGroupList.itemID) then
           UpdateItemCD(cdOrGroupList, profession);
         else

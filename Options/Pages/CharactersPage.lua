@@ -4,25 +4,7 @@ local ADDON_NAME = ...;
 local CharactersPage = {};
 
 ---@type Frame|nil
-local autoBuyListFrame = nil;
-
--- Returns display name and icon for an itemLink (both may be nil if not cached)
----@param itemLink ItemLink
----@return string|nil, number|string|nil
-local function GetItemDisplay(itemLink)
-  local name, _, _, _, _, _, _, _, _, icon = C_Item.GetItemInfo(itemLink);
-  return name, icon;
-end
-
--- Builds the inline-icon prefix string for a given icon (or empty string)
----@param icon number|string|nil
----@return string
-local function IconStr(icon)
-  if (not icon) then
-    return "";
-  end
-  return "|T" .. icon .. ":14:14:0:0|t ";
-end
+local listFrame = nil;
 
 ---@return Frame
 local function GetOrCreateEditDialog()
@@ -140,7 +122,7 @@ function CharactersPage:Create(parent)
   -- Forward-declare so closures defined before the function bodies can capture them
   local RefreshList;
 
-  autoBuyListFrame   = framesHelper:CreateCustomList(
+  listFrame          = framesHelper:CreateCustomList(
     "AutoBuyList",
     frame,
     nil,
@@ -158,6 +140,7 @@ function CharactersPage:Create(parent)
         return rowData.name .. groupText;
       end,
       OnRemove = function(rowData, configuration)
+        ---@type Character[]
         local list = UtilityHub.Database.global.characters or {};
         local removeName = rowData.name;
 
@@ -169,7 +152,7 @@ function CharactersPage:Create(parent)
         end
 
         UtilityHub.Database.global.characters = list;
-        UtilityHub.Events:TriggerEvent("OPTIONS_CHANGED", "characters", list);
+        UtilityHub.Events:TriggerEvent("CHARACTER_UPDATE_NEEDED");
         RefreshList();
       end,
       CustomizeRow = function(listFrame, helpers)
@@ -225,7 +208,7 @@ function CharactersPage:Create(parent)
               end
             end
 
-            UtilityHub.Events:TriggerEvent("OPTIONS_CHANGED", "characters", characters);
+            UtilityHub.Events:TriggerEvent("CHARACTER_UPDATE_NEEDED");
             RefreshList();
           end);
         end);
@@ -236,11 +219,11 @@ function CharactersPage:Create(parent)
     "InsetFrameTemplate"
   );
 
-  autoBuyListFrame:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6);
-  autoBuyListFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -20, 20);
+  listFrame:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6);
+  listFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -20, 20);
 
   RefreshList = function()
-    autoBuyListFrame:ReplaceData(UtilityHub.Database.global.characters);
+    listFrame:ReplaceData(UtilityHub.Database.global.characters);
   end;
 
   -- Load initial data

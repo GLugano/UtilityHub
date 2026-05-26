@@ -120,25 +120,23 @@ end;
 -- Color
 
 ---@param className string|nil
----@return BasicRGB
+---@return colorRGB|nil
 function UtilityHub.Helpers.Color:GetRGBFromClassName(className)
-  ---@type BasicRGB
-  local color = { r = 1, g = 1, b = 1 };
-
   if (className) then
-    color = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[className];
+    return (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[className];
   end
 
-  return color;
+  return nil;
 end
-
----@class BasicRGB
----@field r number
----@field g number
----@field b number
 
 function UtilityHub.Helpers.Color:AddColorToString(str, color)
   return string.format("|c%s%s|r", color, str);
+end
+
+---@param rgb BasicRGB
+---@return BasicRGB
+function UtilityHub.Helpers.Color:NormalizeRGB(rgb)
+  return { r = rgb.r / 255, g = rgb.g / 255, b = rgb.b / 255 };
 end
 
 -- Mail

@@ -1,6 +1,11 @@
 -------- Generic
 ---@alias ItemLink string
 
+---@class BasicRGB
+---@field r number
+---@field g number
+---@field b number
+
 --------- Texture
 ---@class TextureData
 ---@field texture string
@@ -10,10 +15,11 @@
 --------- Database
 ---@class Character
 ---@field name string
----@field race number
----@field className number
+---@field race string
+---@field className string
 ---@field group EnumCharacterGroup
 ---@field cooldownGroup table<string, CurrentCooldown[]>
+---@field professionsData ProfessionsCooldownList
 
 ---@class Option
 ---@field categoryID number
@@ -89,3 +95,34 @@
 ---@field trailB? number
 ---@field trailUseClassColor boolean
 ---@field trailDuration number
+
+--- Cooldowns
+---@class CooldownConfig
+---@field internalID number
+---@field enabled boolean
+---@field showNotification boolean
+
+---@class BasicCooldown
+---@field internalID number
+---@field name string
+---@field spellID? number
+---@field itemID? number
+
+---@class GroupedCooldown : BasicCooldown
+---@field spellList? BasicCooldown[]
+
+---@class Profession
+---@field id number
+---@field name string
+---@field spellIDs number[]
+---@field cooldowns (BasicCooldown|GroupedCooldown)[]
+
+---@class ProfessionCooldownData
+---@field name string
+---@field internalID number
+---@field source "SPELL_API"|"TRADE_SKILL_FRAME"
+---@field endTime number
+---@field invalid? boolean
+---@field startTimeSpellAPI? number
+
+---@alias ProfessionsCooldownList table<number, table<number, ProfessionCooldownData>>

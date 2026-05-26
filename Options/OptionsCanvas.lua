@@ -106,7 +106,7 @@ function OptionsCanvas:Create()
   local mainFrame = self:CreateMainFrame();
 
   -- Register pages (order matters for navigation)
-  self.pageOrder = { "general", "characters", "autoBuy", "mail", "graphicsSettings", "mouseRing" };
+  self.pageOrder = { "general", "characters", "autoBuy", "mail", "cooldowns", "graphicsSettings", "mouseRing" };
   self.pages = {
     general = {
       label = "General",
@@ -130,6 +130,12 @@ function OptionsCanvas:Create()
       label = "Mail",
       CreateFrame = function(parent)
         return UtilityHub.OptionsPages.Mail:Create(parent);
+      end
+    },
+    cooldowns = {
+      label = "Cooldowns",
+      CreateFrame = function(parent)
+        return UtilityHub.OptionsPages.Cooldowns:Create(parent);
       end
     },
     graphicsSettings = {
