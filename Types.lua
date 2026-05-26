@@ -20,6 +20,8 @@
 ---@field group EnumCharacterGroup
 ---@field cooldownGroup table<string, CurrentCooldown[]>
 ---@field professionsData ProfessionsCooldownList
+---@field importTimestamp number
+---@field importedCharacter boolean
 
 ---@class Option
 ---@field categoryID number

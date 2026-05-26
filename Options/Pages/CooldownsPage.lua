@@ -20,7 +20,10 @@ local function GetOrCreateEditDialog()
     return basicDialog;
   end
 
-  basicDialog = UtilityHub.Components.BasicDialog
+  ---@type BasicDialogGenerator
+  local generator = UtilityHub.Components.BasicDialog;
+
+  basicDialog = generator
       :New({ name = "CooldownsEditDialog" })
       :AddCancelButton()
       :AddSaveButton()

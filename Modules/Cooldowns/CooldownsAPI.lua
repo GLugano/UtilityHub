@@ -396,3 +396,4 @@ end
 EventRegistry:RegisterFrameEventAndCallback("TRADE_SKILL_LIST_UPDATE", UpdateCooldowns);
 EventRegistry:RegisterFrameEventAndCallback("TRADE_SKILL_UPDATE", UpdateCooldowns);
 UtilityHub.Events:RegisterCallback("CHARACTER_UPDATE_NEEDED", UpdateCooldowns);
+UtilityHub.Events:RegisterCallback("CHARACTERS_IMPORT_COMPLETED", UpdateCooldowns);

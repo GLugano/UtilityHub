@@ -1,3 +1,7 @@
+---@class SyncDataTable
+---@field version string
+---@field character Character
+
 local SYNC_PREFIX = "UHCDSync";
 local CHANNEL_PREFIX = "uhsync";
 local FAKE_SYNC_FLAG = "_isFakeSync";
@@ -12,6 +16,15 @@ local CooldownsModule = UtilityHub.Addon:GetModule("Cooldowns");
 local function IsSyncEnabled()
   local opts = UtilityHub.Database.global.options;
   return opts.cooldowns and opts.cooldownSync;
+end
+
+---@param character Character
+---@return string
+local function GenerateExportTable(character)
+  return C_EncodingUtil.SerializeJSON({
+    version = UtilityHub.Constants.AddonVersion,
+    character = character,
+  });
 end
 
 ---@return boolean
@@ -61,54 +74,6 @@ local function DebugFormatCooldownCategory(categoryName, cooldowns)
   return table.concat(lines, "\n");
 end
 
---- Check if new cooldown data is older/stale compared to existing data
----@param oldCd CurrentCooldown
----@param newCd CurrentCooldown
----@return boolean isStale
----@return string reason
-local function IsNewDataOlder(oldCd, newCd)
-  local now = GetTime();
-  local TOLERANCE_THRESHOLD = 5; -- Allow up to 5 seconds difference due to network latency
-
-  -- Old was in CD, new is ready
-  if (oldCd.start > 0 and oldCd.maxCooldown > 0) then
-    local oldEnd = oldCd.start + oldCd.maxCooldown;
-    local oldRemaining = oldEnd - now;
-
-    -- Old still has time left, but new says it's ready
-    if (oldRemaining > TOLERANCE_THRESHOLD and (newCd.start == 0 or newCd.maxCooldown == 0)) then
-      return true, string.format("STALE: old had %.0fs left, new is ready", oldRemaining);
-    end
-
-    -- Both in CD, but new ends before old (inconsistent)
-    if (newCd.start > 0 and newCd.maxCooldown > 0) then
-      local newEnd = newCd.start + newCd.maxCooldown;
-      local timeDifference = oldEnd - newEnd;
-
-      -- Only reject if difference is significant (> threshold)
-      if (timeDifference > TOLERANCE_THRESHOLD and oldRemaining > TOLERANCE_THRESHOLD) then
-        local newRemaining = newEnd - now;
-        return true, string.format("STALE: old ends in %.0fs, new ends in %.0fs (diff: %.1fs)", oldRemaining, newRemaining, timeDifference);
-      end
-    end
-  end
-
-  return false, "looks current";
-end
-
----@return Character|nil
-local function GetCurrentCharacterData()
-  local playerName = UnitName("player");
-
-  for _, character in ipairs(UtilityHub.Database.global.characters) do
-    if (character.name == playerName) then
-      return character;
-    end
-  end
-
-  return nil;
-end
-
 --- Get all known peers
 ---@return string[]
 local function GetChannelMembers()
@@ -124,7 +89,7 @@ end
 --- Send a single character's data to all channel members via WHISPER
 ---@param charData Character
 local function SendCharacterData(charData)
-  local json = C_EncodingUtil.SerializeJSON(charData);
+  local json = GenerateExportTable(charData);
 
   if (not json) then
     return;
@@ -143,7 +108,7 @@ local function BroadcastSyncData()
     return;
   end
 
-  local charData = GetCurrentCharacterData();
+  local charData = UtilityHub.DatabaseFunctions.GetCurrentCharacterData();
 
   if (not charData) then
     return;
@@ -162,7 +127,9 @@ local function BroadcastSyncData()
       end
     end
 
-    UtilityHub.Helpers.DebugLog:Add(string.format("|cffFFFF00[UH-SYNC]|r |cff00BFFFSEND|r char=%s to [%s]: %d categories, %d cooldowns", charData.name, table.concat(members, ", "), categoryCount, cooldownCount));
+    UtilityHub.Helpers.DebugLog:Add(string.format(
+      "|cffFFFF00[UH-SYNC]|r |cff00BFFFSEND|r char=%s to [%s]: %d categories, %d cooldowns", charData.name,
+      table.concat(members, ", "), categoryCount, cooldownCount));
   end
 
   SendCharacterData(charData);
@@ -193,14 +160,14 @@ local function JoinSyncChannel(channelName)
   end
 
   -- Join, then leave and rejoin to force CHAT_MSG_CHANNEL_JOIN on other clients
-  JoinChannelByName(fullName);
+  JoinChannelByName(fullName, nil, nil, false);
   currentChannel = fullName;
 
   C_Timer.After(1, function()
     LeaveChannelByName(fullName);
 
     C_Timer.After(1, function()
-      JoinChannelByName(fullName);
+      JoinChannelByName(fullName, nil, nil, false);
 
       C_Timer.After(0.5, function()
         local id = GetChannelName(fullName);
@@ -252,29 +219,34 @@ local function OnSyncDataReceived(prefix, data, distribution, sender)
     return;
   end
 
-  local charData = C_EncodingUtil.DeserializeJSON(data);
+  ---@type SyncDataTable
+  local syncData = C_EncodingUtil.DeserializeJSON(data);
 
-  if (not charData) then
+  if (not syncData or not syncData.character) then
     return;
   end
 
   -- Log Point 1: Recepção de Mensagem
-  if (IsDebugMode() and charData.name and charData.cooldownGroup) then
+  if (IsDebugMode() and syncData.character.name and syncData.character.cooldownGroup) then
     local categoryCount = 0;
-    for _ in pairs(charData.cooldownGroup) do
+
+    for _ in pairs(syncData.character.cooldownGroup) do
       categoryCount = categoryCount + 1;
     end
-    UtilityHub.Helpers.DebugLog:Add(string.format("|cffFFFF00[UH-SYNC]|r |cff00FF00RECV|r from %s: char=%s, categories=%d", sender, charData.name, categoryCount));
+
+    UtilityHub.Helpers.DebugLog:Add(string.format(
+      "|cffFFFF00[UH-SYNC]|r |cff00FF00RECV|r from %s: char=%s, categories=%d", sender, syncData.character.name,
+      categoryCount));
   end
 
   -- Handle clear command
-  if (charData.action == "clearFakeSync") then
+  if (syncData.character.action == "clearFakeSync") then
     local removed = ClearFakeCharactersFromDB();
     CooldownsModule:UpdateCooldownsFrameList();
     return;
   end
 
-  if (not charData.name) then
+  if (not syncData.character.name) then
     return;
   end
 
@@ -285,142 +257,45 @@ local function OnSyncDataReceived(prefix, data, distribution, sender)
     knownPeers[sender] = true;
   end
 
-  local found = false;
+  ---@type Character|nil
+  local characterFound = nil;
+  local characterIndex = nil;
 
   for index, character in ipairs(UtilityHub.Database.global.characters) do
-    if (character.name == charData.name) then
-      -- Log Point 2: Antes de Atualizar (CRÍTICO - detecta dados desatualizados)
-      local hasStaleData = false;
-      local staleCount = 0;
-
-      if (IsDebugMode()) then
-        UtilityHub.Helpers.DebugLog:Add(string.format("|cffFFFF00[UH-SYNC]|r |cffFF0000UPDATE|r char=%s from %s", charData.name, sender));
-      end
-
-      -- Compare cooldown data to detect stale updates
-      local oldCooldownGroup = character.cooldownGroup or {};
-      local newCooldownGroup = charData.cooldownGroup or {};
-
-      for categoryName, newCooldowns in pairs(newCooldownGroup) do
-        local oldCooldowns = oldCooldownGroup[categoryName];
-
-        if (oldCooldowns) then
-          if (IsDebugMode()) then
-            UtilityHub.Helpers.DebugLog:Add(string.format("|cffFFFF00[UH-SYNC]|r   Category: %s", categoryName));
-          end
-
-          -- Build lookup map for old cooldowns
-          local oldMap = {};
-          for _, oldCd in ipairs(oldCooldowns) do
-            oldMap[oldCd.name] = oldCd;
-          end
-
-          -- Check each new cooldown against old
-          for _, newCd in ipairs(newCooldowns) do
-            local oldCd = oldMap[newCd.name];
-
-            if (oldCd) then
-              local isStale, reason = IsNewDataOlder(oldCd, newCd);
-
-              if (isStale) then
-                hasStaleData = true;
-                staleCount = staleCount + 1;
-
-                if (IsDebugMode()) then
-                  UtilityHub.Helpers.DebugLog:Add(string.format("|cffFFFF00[UH-SYNC]|r     |cffFF0000[!!!STALE!!!]|r %s: %s", newCd.name, reason));
-                  UtilityHub.Helpers.DebugLog:Add(string.format("|cffFFFF00[UH-SYNC]|r       OLD: start=%.2f max=%d end=%.2f", oldCd.start, oldCd.maxCooldown, oldCd.start + oldCd.maxCooldown));
-                  UtilityHub.Helpers.DebugLog:Add(string.format("|cffFFFF00[UH-SYNC]|r       NEW: start=%.2f max=%d end=%.2f", newCd.start, newCd.maxCooldown, newCd.start + newCd.maxCooldown));
-                end
-              else
-                if (IsDebugMode()) then
-                  UtilityHub.Helpers.DebugLog:Add(string.format("|cffFFFF00[UH-SYNC]|r     |cff00FF00[ok]|r %s: %s", newCd.name, reason));
-                  UtilityHub.Helpers.DebugLog:Add(string.format("|cffFFFF00[UH-SYNC]|r       OLD: start=%.2f max=%d end=%.2f", oldCd.start, oldCd.maxCooldown, oldCd.start + oldCd.maxCooldown));
-                  UtilityHub.Helpers.DebugLog:Add(string.format("|cffFFFF00[UH-SYNC]|r       NEW: start=%.2f max=%d end=%.2f", newCd.start, newCd.maxCooldown, newCd.start + newCd.maxCooldown));
-                end
-              end
-            else
-              if (IsDebugMode()) then
-                UtilityHub.Helpers.DebugLog:Add(string.format("|cffFFFF00[UH-SYNC]|r     |cff00FF00[new]|r %s", newCd.name));
-              end
-            end
-          end
-
-          -- Check for removed cooldowns
-          if (IsDebugMode()) then
-            for _, oldCd in ipairs(oldCooldowns) do
-              local foundInNew = false;
-
-              for _, newCd in ipairs(newCooldowns) do
-                if (newCd.name == oldCd.name) then
-                  foundInNew = true;
-                  break;
-                end
-              end
-
-              if (not foundInNew) then
-                UtilityHub.Helpers.DebugLog:Add(string.format("|cffFFFF00[UH-SYNC]|r     |cffFF6B6B[removed]|r %s", oldCd.name));
-              end
-            end
-          end
-        else
-          if (IsDebugMode()) then
-            UtilityHub.Helpers.DebugLog:Add(string.format("|cffFFFF00[UH-SYNC]|r   Category: %s |cff00FF00[new category]|r", categoryName));
-          end
-        end
-      end
-
-      -- REJECT stale data instead of accepting it
-      if (hasStaleData) then
-        if (IsDebugMode()) then
-          UtilityHub.Helpers.DebugLog:Add(string.format("|cffFFFF00[UH-SYNC]|r |cffFF0000REJECTED|r Update rejected for %s (%d stale cooldowns detected)", charData.name, staleCount));
-        end
-
-        found = true;
-        break;
-      end
-
-      -- Only update if data is not stale
-      UtilityHub.Database.global.characters[index].cooldownGroup = charData.cooldownGroup;
-      UtilityHub.Database.global.characters[index].race = charData.race;
-      UtilityHub.Database.global.characters[index].className = charData.className;
-
-      if (charData.group) then
-        UtilityHub.Database.global.characters[index].group = charData.group;
-      end
-
-      -- Log Point 3: Confirmação de Atualização
-      if (IsDebugMode()) then
-        UtilityHub.Helpers.DebugLog:Add(string.format("|cffFFFF00[UH-SYNC]|r |cff00FF00UPDATE COMPLETE|r for %s", charData.name));
-      end
-
-      found = true;
+    if (character.name == syncData.character.name) then
+      characterFound = character;
+      characterIndex = index;
       break;
     end
   end
 
-  if (not found) then
-    if (IsDebugMode()) then
-      UtilityHub.Helpers.DebugLog:Add(string.format("|cffFFFF00[UH-SYNC]|r |cffFF00FF[NEW CHAR]|r Creating new character '%s' from sender '%s'", charData.name, sender));
-    end
-    tinsert(UtilityHub.Database.global.characters, charData);
+  syncData.character.importedCharacter = true;
+  syncData.character.importTimestamp = GetServerTime();
+
+  if (characterFound == nil) then
+    tinsert(UtilityHub.Database.global.characters, syncData.character);
+  else
+    UtilityHub.Database.global.characters[characterIndex] = syncData.character;
   end
 
-  -- Refresh UI directly — do NOT fire CHARACTER_UPDATED to avoid sync loops
-  CooldownsModule:UpdateCooldownsFrameList();
+  UtilityHub.Events:TriggerEvent("CHARACTERS_IMPORT_COMPLETED");
 
   -- If this is a new peer, reply with all our local characters
   if (isNewPeer) then
-    -- Log Point 5: Novo Peer (Trigger do Bug)
     if (IsDebugMode()) then
       local charCount = #UtilityHub.Database.global.characters;
-      UtilityHub.Helpers.DebugLog:Add(string.format("|cffFFFF00[UH-SYNC]|r |cffFF6B6BNEW PEER|r %s joined, sending %d characters", sender, charCount));
+      UtilityHub.Helpers.DebugLog:Add(string.format(
+        "|cffFFFF00[UH-SYNC]|r |cffFF6B6BNEW PEER|r %s joined, sending %d characters", sender, charCount));
     end
 
     for _, character in ipairs(UtilityHub.Database.global.characters) do
-      local json = C_EncodingUtil.SerializeJSON(character);
+      -- Send only non-imported characters
+      if (character.importedCharacter ~= true) then
+        local json = GenerateExportTable(character);
 
-      if (json) then
-        UtilityHub.Addon:SendCommMessage(SYNC_PREFIX, json, "WHISPER", sender, "BULK");
+        if (json) then
+          UtilityHub.Addon:SendCommMessage(SYNC_PREFIX, json, "WHISPER", sender, "BULK");
+        end
       end
     end
   end
@@ -437,48 +312,50 @@ UtilityHub.Events:RegisterCallback("CHARACTER_UPDATED", function()
 end);
 
 -- Detect when someone joins the sync channel and send them our data
-EventRegistry:RegisterFrameEventAndCallback("CHAT_MSG_CHANNEL_JOIN", function(_, _, sender, _, _, _, _, _, _, channelBaseName)
-  if (not currentChannel) then
-    return;
-  end
-
-  local myName = UnitName("player");
-  sender = Ambiguate(sender, "none");
-
-  if (sender == myName) then
-    return;
-  end
-
-  if (not channelBaseName or channelBaseName ~= currentChannel) then
-    return;
-  end
-
-  knownPeers[sender] = true;
-
-  C_Timer.After(1, function()
-    for _, character in ipairs(UtilityHub.Database.global.characters) do
-      local json = C_EncodingUtil.SerializeJSON(character);
-
-      if (json) then
-        UtilityHub.Addon:SendCommMessage(SYNC_PREFIX, json, "WHISPER", sender, "BULK");
-      end
+EventRegistry:RegisterFrameEventAndCallback("CHAT_MSG_CHANNEL_JOIN",
+  function(_, _, sender, _, _, _, _, _, _, channelBaseName)
+    if (not currentChannel) then
+      return;
     end
+
+    local myName = UnitName("player");
+    sender = Ambiguate(sender, "none");
+
+    if (sender == myName) then
+      return;
+    end
+
+    if (not channelBaseName or channelBaseName ~= currentChannel) then
+      return;
+    end
+
+    knownPeers[sender] = true;
+
+    C_Timer.After(1, function()
+      for _, character in ipairs(UtilityHub.Database.global.characters) do
+        local json = GenerateExportTable(character);
+
+        if (json) then
+          UtilityHub.Addon:SendCommMessage(SYNC_PREFIX, json, "WHISPER", sender, "BULK");
+        end
+      end
+    end);
   end);
-end);
 
 -- Remove peers when they leave the sync channel
-EventRegistry:RegisterFrameEventAndCallback("CHAT_MSG_CHANNEL_LEAVE", function(_, _, sender, _, _, _, _, _, _, channelBaseName)
-  if (not currentChannel) then
-    return;
-  end
+EventRegistry:RegisterFrameEventAndCallback("CHAT_MSG_CHANNEL_LEAVE",
+function(_, _, sender, _, _, _, _, _, _, channelBaseName)
+    if (not currentChannel) then
+      return;
+    end
 
-  if (not channelBaseName or channelBaseName ~= currentChannel) then
-    return;
-  end
+    if (not channelBaseName or channelBaseName ~= currentChannel) then
+      return;
+    end
 
-  sender = Ambiguate(sender, "none");
-  knownPeers[sender] = nil;
-end);
+    sender = Ambiguate(sender, "none");
+    knownPeers[sender] = nil;
+  end);
 
 ---@return boolean "true if joined, false otherwise"
 local function TryJoinSyncChannel()
@@ -513,7 +390,6 @@ UtilityHub.Events:RegisterCallback("OPTIONS_CHANGED", function(_, name)
 end);
 
 -- Debug: fake sync data
-
 local function GenerateFakeCharacters()
   local now = GetTime();
 
@@ -544,7 +420,7 @@ local function GenerateFakeCharacters()
           { name = "Mooncloth", start = now - 86400, maxCooldown = 259200 },
         },
         Alchemy = {
-          { name = "Arcanite Bar", start = 0, maxCooldown = 0 },
+          { name = "Arcanite Bar", start = 0,          maxCooldown = 0 },
           { name = "Water to Air", start = now - 3600, maxCooldown = 172800 },
         },
       },

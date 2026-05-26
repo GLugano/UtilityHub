@@ -401,6 +401,7 @@ UtilityHub.Events:GenerateCallbackEvents({
   "FORCE_DAILY_QUESTS_FLAG_UPDATE",
   "WHISPER_LIST_UPDATED",
   "COOLDOWNS_UPDATED",
+  "CHARACTERS_IMPORT_COMPLETED"
 });
 
 UtilityHub.Events:RegisterCallback("CHARACTER_UPDATE_NEEDED", function(_, name)
@@ -462,7 +463,11 @@ end);
 EventRegistry:RegisterFrameEventAndCallback("LOADING_SCREEN_DISABLED", function()
   C_Timer.After(2, function()
     UtilityHub.Flags.addonReady = true;
-    local _, recentlyCreated = UtilityHub.DatabaseFunctions.CreateCurrentCharacter();
+    local character, recentlyCreated = UtilityHub.DatabaseFunctions.CreateCurrentCharacter();
+    -- Update current character to remove import tags
+    character.importedCharacter = false;
+    character.importTimestamp = nil;
+
     UtilityHub.DatabaseFunctions.UpdateCurrentCooldownOptions();
 
     if (not recentlyCreated) then
