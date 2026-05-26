@@ -84,6 +84,161 @@ function CooldownsPage:Create(parent)
   title:SetPoint("TOPLEFT", 20, -20);
   title:SetText("Cooldowns");
 
+  local previous = title;
+
+  do -- Enable
+    local checkbox = CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate");
+    checkbox:SetSize(24, 24);
+    checkbox:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -20);
+    checkbox:SetChecked(UtilityHub.Database.global.options.cooldowns);
+
+    local label = checkbox:CreateFontString(nil, "OVERLAY", "GameFontNormal");
+    label:SetPoint("LEFT", checkbox, "RIGHT", 5, 0);
+    label:SetText("Enabled");
+
+    checkbox:SetScript("OnClick", function(self)
+      local checked = self:GetChecked();
+      UtilityHub.Database.global.options.cooldowns = checked;
+      UtilityHub.Events:TriggerEvent("OPTIONS_CHANGED", "cooldowns", checked);
+    end);
+
+    previous = checkbox;
+  end
+
+  do -- Play sound when ready
+    local checkbox = CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate");
+    checkbox:SetSize(24, 24);
+    checkbox:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -5);
+    checkbox:SetChecked(UtilityHub.Database.global.options.cooldownPlaySound);
+
+    local label = checkbox:CreateFontString(nil, "OVERLAY", "GameFontNormal");
+    label:SetPoint("LEFT", checkbox, "RIGHT", 5, 0);
+    label:SetText("Play sound when ready");
+
+    checkbox:SetScript("OnClick", function(self)
+      local checked = self:GetChecked();
+      UtilityHub.Database.global.options.cooldownPlaySound = checked;
+      UtilityHub.Events:TriggerEvent("OPTIONS_CHANGED", "cooldownPlaySound", checked);
+    end);
+
+    previous = checkbox;
+  end
+
+  do -- Start collapsed
+    local checkbox = CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate");
+    checkbox:SetSize(24, 24);
+    checkbox:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -5);
+    checkbox:SetChecked(UtilityHub.Database.global.options.cooldownStartCollapsed);
+
+    local label = checkbox:CreateFontString(nil, "OVERLAY", "GameFontNormal");
+    label:SetPoint("LEFT", checkbox, "RIGHT", 5, 0);
+    label:SetText("Start collapsed");
+
+    checkbox:SetScript("OnClick", function(self)
+      local checked = self:GetChecked();
+      UtilityHub.Database.global.options.cooldownStartCollapsed = checked;
+      UtilityHub.Events:TriggerEvent("OPTIONS_CHANGED", "cooldownStartCollapsed", checked);
+    end);
+
+    previous = checkbox;
+  end
+
+  do -- Enable cross-account sync
+    local checkbox = CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate");
+    checkbox:SetSize(24, 24);
+    checkbox:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -5);
+    checkbox:SetChecked(UtilityHub.Database.global.options.cooldownSync);
+
+    local label = checkbox:CreateFontString(nil, "OVERLAY", "GameFontNormal");
+    label:SetPoint("LEFT", checkbox, "RIGHT", 5, 0);
+    label:SetText("Enable cross-account sync");
+
+    checkbox:SetScript("OnClick", function(self)
+      local checked = self:GetChecked();
+      UtilityHub.Database.global.options.cooldownSync = checked;
+      UtilityHub.Events:TriggerEvent("OPTIONS_CHANGED", "cooldownSync", checked);
+    end);
+
+    previous = checkbox;
+  end
+
+  do -- Sync channel
+    local syncChannelContainer = CreateFrame("Frame", nil, frame);
+    syncChannelContainer:SetSize(400, 30);
+    syncChannelContainer:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -10);
+
+    local syncChannelLabel = syncChannelContainer:CreateFontString(nil, "OVERLAY", "GameFontNormal");
+    syncChannelLabel:SetPoint("LEFT", 30, 0);
+    syncChannelLabel:SetText("Sync channel:");
+
+    local syncChannelInput = CreateFrame("EditBox", nil, syncChannelContainer, "InputBoxTemplate");
+    syncChannelInput:SetSize(200, 30);
+    syncChannelInput:SetPoint("LEFT", syncChannelLabel, "RIGHT", 10, 0);
+    syncChannelInput:SetAutoFocus(false);
+    syncChannelInput:SetMaxLetters(50);
+
+    -- Force text to be visible
+    syncChannelInput:SetTextColor(1, 1, 1, 1);
+    syncChannelInput:SetFontObject("ChatFontNormal");
+    syncChannelInput:SetJustifyH("LEFT");
+
+    -- Function to save the channel
+    local function SaveChannel()
+      local text = syncChannelInput:GetText();
+      UtilityHub.Database.global.options.cooldownSyncChannel = text;
+      UtilityHub.Events:TriggerEvent("OPTIONS_CHANGED", "cooldownSyncChannel", text);
+    end
+
+    -- Save when pressing Enter
+    syncChannelInput:SetScript("OnEnterPressed", function(self)
+      SaveChannel();
+      self:ClearFocus();
+    end);
+
+    -- Save when losing focus
+    syncChannelInput:SetScript("OnEditFocusLost", function(self)
+      SaveChannel();
+    end);
+
+    -- Cancel on Escape
+    syncChannelInput:SetScript("OnEscapePressed", function(self)
+      -- Restore original value
+      self:SetText(UtilityHub.Database.global.options.cooldownSyncChannel or "");
+      self:ClearFocus();
+    end);
+
+    -- Tooltip
+    syncChannelInput:SetScript("OnEnter", function(self)
+      GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+      GameTooltip:SetText("Sync Channel", 1, 1, 1);
+      GameTooltip:AddLine("Enter the name of a custom chat channel (e.g., 'MyCooldowns')", nil, nil, nil, true);
+      GameTooltip:AddLine("All accounts must use the same channel name to sync", nil, nil, nil, true);
+      GameTooltip:Show();
+    end);
+
+    syncChannelInput:SetScript("OnLeave", function(self)
+      if (GameTooltip:IsOwned(self)) then
+        GameTooltip:Hide();
+      end
+    end);
+
+    -- Update field value when page is shown
+    frame:SetScript("OnShow", function(self)
+      local currentValue = UtilityHub.Database.global.options.cooldownSyncChannel or "";
+      syncChannelInput:SetText(currentValue);
+      syncChannelInput:SetCursorPosition(0);
+      syncChannelInput:ClearFocus();
+    end);
+
+    -- Load initial value immediately (in case frame is already shown)
+    local initialValue = UtilityHub.Database.global.options.cooldownSyncChannel or "";
+    syncChannelInput:SetText(initialValue);
+    syncChannelInput:SetCursorPosition(0);
+    syncChannelInput:ClearFocus();
+
+    previous = syncChannelContainer;
+  end
+
   local framesHelper = UtilityHub.GameOptions.framesHelper;
 
   -- Forward-declare so closures defined before the function bodies can capture them
@@ -168,7 +323,7 @@ function CooldownsPage:Create(parent)
     "InsetFrameTemplate"
   );
 
-  listFrame:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6);
+  listFrame:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -6);
   listFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -20, 20);
 
   RefreshList = function()

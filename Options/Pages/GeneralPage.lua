@@ -62,7 +62,7 @@ function GeneralPage:Create(parent)
 
   -- Scroll child (content lives here)
   local content = CreateFrame("Frame", nil, scrollFrame);
-  content:SetHeight(805);
+  content:SetHeight(750);
   content:SetWidth(scrollFrame:GetWidth());
   content:SetClipsChildren(true);
   scrollFrame:SetScrollChild(content);
@@ -158,7 +158,7 @@ function GeneralPage:Create(parent)
     cbAutoOpenMerchantFrameLHCBlacksmith
   );
 
-  local cbPopupFlyTBtoOrg = self:CreateCheckbox(
+  local cbPopupFlyGromgolToStonard = self:CreateCheckbox(
     content,
     "Ask before flying from Grom'gol to Stonard (option)",
     "askBeforeFlyingFromGromgolToStonardFromOption",
@@ -166,121 +166,121 @@ function GeneralPage:Create(parent)
     cbPopupFlyTBtoOrg
   );
 
-  -- Section: Cooldowns
-  local sectionCooldowns = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
-  sectionCooldowns:SetPoint("TOPLEFT", cbPopupFlyTBtoOrg, "BOTTOMLEFT", 0, -20);
-  sectionCooldowns:SetText("Cooldowns");
+  -- -- Section: Cooldowns
+  -- local sectionCooldowns = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+  -- sectionCooldowns:SetPoint("TOPLEFT", cbPopupFlyTBtoOrg, "BOTTOMLEFT", 0, -20);
+  -- sectionCooldowns:SetText("Cooldowns");
 
-  local cbCooldowns = self:CreateCheckbox(
-    content,
-    "Enable tracking",
-    "cooldowns",
-    "Enable tracking and listing of all character cooldowns",
-    cbPopupFlyTBtoOrg
-  );
-  cbCooldowns:SetPoint("TOPLEFT", sectionCooldowns, "BOTTOMLEFT", 0, -10);
+  -- local cbCooldowns = self:CreateCheckbox(
+  --   content,
+  --   "Enable tracking",
+  --   "cooldowns",
+  --   "Enable tracking and listing of all character cooldowns",
+  --   cbPopupFlyTBtoOrg
+  -- );
+  -- cbCooldowns:SetPoint("TOPLEFT", sectionCooldowns, "BOTTOMLEFT", 0, -10);
 
-  local cbCooldownSound = self:CreateCheckbox(
-    content,
-    "Play sound when ready",
-    "cooldownPlaySound",
-    "Play sound when a cooldown is ready",
-    cbCooldowns
-  );
+  -- local cbCooldownSound = self:CreateCheckbox(
+  --   content,
+  --   "Play sound when ready",
+  --   "cooldownPlaySound",
+  --   "Play sound when a cooldown is ready",
+  --   cbCooldowns
+  -- );
 
-  local cbCooldownCollapsed = self:CreateCheckbox(
-    content,
-    "Start collapsed",
-    "cooldownStartCollapsed",
-    "When opening the cooldowns content, all groups will start minimized",
-    cbCooldownSound
-  );
+  -- local cbCooldownCollapsed = self:CreateCheckbox(
+  --   content,
+  --   "Start collapsed",
+  --   "cooldownStartCollapsed",
+  --   "When opening the cooldowns content, all groups will start minimized",
+  --   cbCooldownSound
+  -- );
 
-  local cbCooldownSync = self:CreateCheckbox(
-    content,
-    "Enable cross-account sync",
-    "cooldownSync",
-    "Sync cooldown data between multiple WoW accounts via a shared chat channel",
-    cbCooldownCollapsed
-  );
+  -- local cbCooldownSync = self:CreateCheckbox(
+  --   content,
+  --   "Enable cross-account sync",
+  --   "cooldownSync",
+  --   "Sync cooldown data between multiple WoW accounts via a shared chat channel",
+  --   cbCooldownCollapsed
+  -- );
 
-  -- Sync channel input
-  local syncChannelContainer = CreateFrame("Frame", nil, content);
-  syncChannelContainer:SetSize(400, 30);
-  syncChannelContainer:SetPoint("TOPLEFT", cbCooldownSync, "BOTTOMLEFT", 0, -10);
+  -- -- Sync channel input
+  -- local syncChannelContainer = CreateFrame("Frame", nil, content);
+  -- syncChannelContainer:SetSize(400, 30);
+  -- syncChannelContainer:SetPoint("TOPLEFT", cbCooldownSync, "BOTTOMLEFT", 0, -10);
 
-  local syncChannelLabel = syncChannelContainer:CreateFontString(nil, "OVERLAY", "GameFontNormal");
-  syncChannelLabel:SetPoint("LEFT", 30, 0);
-  syncChannelLabel:SetText("Sync channel:");
+  -- local syncChannelLabel = syncChannelContainer:CreateFontString(nil, "OVERLAY", "GameFontNormal");
+  -- syncChannelLabel:SetPoint("LEFT", 30, 0);
+  -- syncChannelLabel:SetText("Sync channel:");
 
-  local syncChannelInput = CreateFrame("EditBox", nil, syncChannelContainer, "InputBoxTemplate");
-  syncChannelInput:SetSize(200, 30);
-  syncChannelInput:SetPoint("LEFT", syncChannelLabel, "RIGHT", 10, 0);
-  syncChannelInput:SetAutoFocus(false);
-  syncChannelInput:SetMaxLetters(50);
+  -- local syncChannelInput = CreateFrame("EditBox", nil, syncChannelContainer, "InputBoxTemplate");
+  -- syncChannelInput:SetSize(200, 30);
+  -- syncChannelInput:SetPoint("LEFT", syncChannelLabel, "RIGHT", 10, 0);
+  -- syncChannelInput:SetAutoFocus(false);
+  -- syncChannelInput:SetMaxLetters(50);
 
-  -- Force text to be visible
-  syncChannelInput:SetTextColor(1, 1, 1, 1);
-  syncChannelInput:SetFontObject("ChatFontNormal");
-  syncChannelInput:SetJustifyH("LEFT");
+  -- -- Force text to be visible
+  -- syncChannelInput:SetTextColor(1, 1, 1, 1);
+  -- syncChannelInput:SetFontObject("ChatFontNormal");
+  -- syncChannelInput:SetJustifyH("LEFT");
 
-  -- Function to save the channel
-  local function SaveChannel()
-    local text = syncChannelInput:GetText();
-    UtilityHub.Database.global.options.cooldownSyncChannel = text;
-    UtilityHub.Events:TriggerEvent("OPTIONS_CHANGED", "cooldownSyncChannel", text);
-  end
+  -- -- Function to save the channel
+  -- local function SaveChannel()
+  --   local text = syncChannelInput:GetText();
+  --   UtilityHub.Database.global.options.cooldownSyncChannel = text;
+  --   UtilityHub.Events:TriggerEvent("OPTIONS_CHANGED", "cooldownSyncChannel", text);
+  -- end
 
-  -- Save when pressing Enter
-  syncChannelInput:SetScript("OnEnterPressed", function(self)
-    SaveChannel();
-    self:ClearFocus();
-  end);
+  -- -- Save when pressing Enter
+  -- syncChannelInput:SetScript("OnEnterPressed", function(self)
+  --   SaveChannel();
+  --   self:ClearFocus();
+  -- end);
 
-  -- Save when losing focus
-  syncChannelInput:SetScript("OnEditFocusLost", function(self)
-    SaveChannel();
-  end);
+  -- -- Save when losing focus
+  -- syncChannelInput:SetScript("OnEditFocusLost", function(self)
+  --   SaveChannel();
+  -- end);
 
-  -- Cancel on Escape
-  syncChannelInput:SetScript("OnEscapePressed", function(self)
-    -- Restore original value
-    self:SetText(UtilityHub.Database.global.options.cooldownSyncChannel or "");
-    self:ClearFocus();
-  end);
+  -- -- Cancel on Escape
+  -- syncChannelInput:SetScript("OnEscapePressed", function(self)
+  --   -- Restore original value
+  --   self:SetText(UtilityHub.Database.global.options.cooldownSyncChannel or "");
+  --   self:ClearFocus();
+  -- end);
 
-  -- Tooltip
-  syncChannelInput:SetScript("OnEnter", function(self)
-    GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-    GameTooltip:SetText("Sync Channel", 1, 1, 1);
-    GameTooltip:AddLine("Enter the name of a custom chat channel (e.g., 'MyCooldowns')", nil, nil, nil, true);
-    GameTooltip:AddLine("All accounts must use the same channel name to sync", nil, nil, nil, true);
-    GameTooltip:Show();
-  end);
+  -- -- Tooltip
+  -- syncChannelInput:SetScript("OnEnter", function(self)
+  --   GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+  --   GameTooltip:SetText("Sync Channel", 1, 1, 1);
+  --   GameTooltip:AddLine("Enter the name of a custom chat channel (e.g., 'MyCooldowns')", nil, nil, nil, true);
+  --   GameTooltip:AddLine("All accounts must use the same channel name to sync", nil, nil, nil, true);
+  --   GameTooltip:Show();
+  -- end);
 
-  syncChannelInput:SetScript("OnLeave", function(self)
-    if (GameTooltip:IsOwned(self)) then
-      GameTooltip:Hide();
-    end
-  end);
+  -- syncChannelInput:SetScript("OnLeave", function(self)
+  --   if (GameTooltip:IsOwned(self)) then
+  --     GameTooltip:Hide();
+  --   end
+  -- end);
 
-  -- Update field value when page is shown
-  frame:SetScript("OnShow", function(self)
-    local currentValue = UtilityHub.Database.global.options.cooldownSyncChannel or "";
-    syncChannelInput:SetText(currentValue);
-    syncChannelInput:SetCursorPosition(0);
-    syncChannelInput:ClearFocus();
-  end);
+  -- -- Update field value when page is shown
+  -- frame:SetScript("OnShow", function(self)
+  --   local currentValue = UtilityHub.Database.global.options.cooldownSyncChannel or "";
+  --   syncChannelInput:SetText(currentValue);
+  --   syncChannelInput:SetCursorPosition(0);
+  --   syncChannelInput:ClearFocus();
+  -- end);
 
-  -- Load initial value immediately (in case frame is already shown)
-  local initialValue = UtilityHub.Database.global.options.cooldownSyncChannel or "";
-  syncChannelInput:SetText(initialValue);
-  syncChannelInput:SetCursorPosition(0);
-  syncChannelInput:ClearFocus();
+  -- -- Load initial value immediately (in case frame is already shown)
+  -- local initialValue = UtilityHub.Database.global.options.cooldownSyncChannel or "";
+  -- syncChannelInput:SetText(initialValue);
+  -- syncChannelInput:SetCursorPosition(0);
+  -- syncChannelInput:ClearFocus();
 
   -- Section: Loot
   local sectionLoot = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
-  sectionLoot:SetPoint("TOPLEFT", syncChannelContainer, "BOTTOMLEFT", 0, -20);
+  sectionLoot:SetPoint("TOPLEFT", cbPopupFlyGromgolToStonard, "BOTTOMLEFT", 0, -20);
   sectionLoot:SetText("Loot");
 
   local cbLootConfirmStrat = self:CreateCheckbox(
