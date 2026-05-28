@@ -812,14 +812,12 @@ function Module:OnEnable()
     Module.shopping2TooltipHooked = ShoppingTooltip2:HookScript("OnTooltipSetItem", OnTooltipSetItemEvent);
   end
 
-  Module.originalItemSocketingFrame_LoadUI = ItemSocketingFrame_LoadUI;
-  ItemSocketingFrame_LoadUI = function()
-    Module.originalItemSocketingFrame_LoadUI();
-
+  hooksecurefunc("ItemSocketingFrame_LoadUI", function()
     if (not Module.itemSocketingDescriptionHooked) then
-      Module.itemSocketingDescriptionHooked = ItemSocketingDescription:HookScript("OnTooltipSetItem", OnTooltipSetItemEvent);
+      Module.itemSocketingDescriptionHooked = ItemSocketingDescription:HookScript("OnTooltipSetItem",
+        OnTooltipSetItemEvent);
     end
-  end
+  end);
 end
 
 -- Events
