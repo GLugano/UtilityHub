@@ -457,6 +457,10 @@ end);
 UtilityHub.Events:RegisterCallback("COUNT_READY_COOLDOWNS_CHANGED", function(_, count, changed)
   if (changed) then
     UpdateMinimapIcon(count > 0);
+
+    if (UtilityHub.Database.global.options.cooldownPlaySound) then
+      PlaySoundFile("Interface\\AddOns\\UtilityHub\\Assets\\Sounds\\Cooldown_Ready.ogg", "Master");
+    end
   end
 end);
 
