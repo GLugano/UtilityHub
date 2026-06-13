@@ -123,37 +123,63 @@ function CharactersPage:Create(parent)
   local RefreshList;
 
   listFrame          = framesHelper:CreateCustomList(
-    "AutoBuyList",
+    "CharactersList",
     frame,
     nil,
     {
       SortComparator = function(a, b)
+        if (a.name == b.name) then
+          return a.realm < b.name;
+        end
+
         return a.name < b.name;
       end,
       Predicate = function(rowData)
-        return rowData.name;
+        return string.format("%s-%s", rowData.name, rowData.realm);
       end,
       GetText = function(rowData)
+        local realmColor = "FFB68655";
+
+        if (GetRealmName() == rowData.realm) then
+          realmColor = "FFCA4F4B";
+        end
+
         local group = rowData.group or UtilityHub.Enums.CharacterGroup.UNGROUPED;
         local groupText = UtilityHub.Helpers.Color:AddColorToString(
           " (" .. UtilityHub.Enums.CharacterGroupText[group] .. ")", "FF949392");
-        return rowData.name .. groupText;
+        local realmText = UtilityHub.Helpers.Color:AddColorToString(
+          " [" .. rowData.realm .. "]", realmColor);
+        return string.format("%s %s %s", rowData.name, realmText, groupText);
       end,
       OnRemove = function(rowData, configuration)
-        ---@type Character[]
-        local list = UtilityHub.Database.global.characters or {};
-        local removeName = rowData.name;
+        StaticPopupDialogs["UTILITY_HUB_ON_REMOVE_CHARACTER"] = {
+          text = string.format("You really want to remove %s-%s?", rowData.name, rowData.realm),
+          button1 = "Yes",
+          button2 = "No",
+          OnAccept = function()
+            ---@type Character[]
+            local list = UtilityHub.Database.global.characters or {};
+            local removeName = rowData.name;
+            local removeRealm = rowData.realm;
 
-        for i = #list, 1, -1 do
-          if (list[i] ~= nil and list[i].name == removeName) then
-            tremove(list, i);
-            break;
-          end
-        end
+            for i = #list, 1, -1 do
+              if (list[i] ~= nil and list[i].name == removeName and list[i].realm == removeRealm) then
+                tremove(list, i);
+                break;
+              end
+            end
 
-        UtilityHub.Database.global.characters = list;
-        UtilityHub.Events:TriggerEvent("CHARACTER_UPDATE_NEEDED");
-        RefreshList();
+            UtilityHub.Database.global.characters = list;
+            UtilityHub.Events:TriggerEvent("CHARACTER_UPDATE_NEEDED");
+            RefreshList();
+          end,
+          OnCancel = function() end,
+          timeout = 0,
+          whileDead = true,
+          hideOnEscape = true,
+        };
+
+        StaticPopup_Show("UTILITY_HUB_ON_REMOVE_CHARACTER");
       end,
       CustomizeRow = function(listFrame, helpers)
         if (not listFrame.customElements) then
@@ -184,7 +210,9 @@ function CharactersPage:Create(parent)
         local currentCharacterData = UtilityHub.DatabaseFunctions.GetCurrentCharacterData();
 
         if (listFrame.customElements.DeleteIconButton) then
-          if (currentCharacterData and listFrame.rowData.name == currentCharacterData.name) then
+          local rowData = listFrame.rowData;
+
+          if (currentCharacterData and rowData.name == currentCharacterData.name and rowData.realm == currentCharacterData.realm) then
             listFrame.customElements.DeleteIconButton:Hide();
           else
             listFrame.customElements.DeleteIconButton:Show();
@@ -200,9 +228,10 @@ function CharactersPage:Create(parent)
             ---@type Character[]
             local characters = UtilityHub.Database.global.characters or {};
             local characterName = rowData.name;
+            local characterRealm = rowData.realm;
 
             for _, character in ipairs(characters) do
-              if (character.name == characterName) then
+              if (character.name == characterName == character.realm == characterRealm) then
                 character.group = group;
                 break;
               end

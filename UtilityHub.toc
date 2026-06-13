@@ -3,7 +3,7 @@
 ## Title: UtilityHub
 ## IconTexture: Interface\Addons\UtilityHub\Assets\Icons\addon
 ## Author: Cacetinho-Nightslayer 
-## Version: 0.36
+## Version: 0.37
 ## SavedVariables: UHdatabase, MDHdatabase
 
 # XMLs
@@ -41,6 +41,7 @@ Modules/Integration/Baganator.lua
 Modules/Integration/Auctionator.lua
 Modules/Integration/TSM.lua
 Modules/Integration/DragonflightUI.lua
+Modules/Integration/AtlasLootClassic.lua
 Modules/Tooltip/Tooltip.lua
 # Modules/Cooldowns/Cooldowns.lua
 Modules/Cooldowns/CooldownsAPI.lua

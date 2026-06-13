@@ -196,8 +196,9 @@ _G.UtilityHub = {
       end
 
       ---@type Character
-      local character = {
+      character = {
         name = UnitName("player"),
+        realm = GetRealmName(),
         race = select(1, UnitRace("player")),
         className = select(2, UnitClass("player")),
         group = UtilityHub.Enums.CharacterGroup.UNGROUPED,
@@ -223,10 +224,15 @@ _G.UtilityHub = {
       character.className = select(2, UnitClass("player"));
     end,
     ---@param playerName string
+    ---@param realm string|nil
     ---@return number|nil
-    GetCharacterIndex = function(playerName)
+    GetCharacterIndex = function(playerName, realm)
+      if (realm == nil) then
+        realm = GetRealmName();
+      end
+
       for index, value in ipairs(UtilityHub.Database.global.characters) do
-        if (value.name == playerName) then
+        if (value.name == playerName and value.realm == realm) then
           return index;
         end
       end
@@ -234,9 +240,10 @@ _G.UtilityHub = {
       return nil;
     end,
     ---@param playerName string
+    ---@param realm string|nil
     ---@return Character|nil
-    GetCharacterData = function(playerName)
-      local index = UtilityHub.DatabaseFunctions.GetCharacterIndex(playerName);
+    GetCharacterData = function(playerName, realm)
+      local index = UtilityHub.DatabaseFunctions.GetCharacterIndex(playerName, realm);
 
       if (not index) then
         return nil;
@@ -246,7 +253,7 @@ _G.UtilityHub = {
     end,
     ---@return Character|nil
     GetCurrentCharacterData = function()
-      return UtilityHub.DatabaseFunctions.GetCharacterData(UnitName("player"));
+      return UtilityHub.DatabaseFunctions.GetCharacterData(UnitName("player"), GetRealmName());
     end,
     ---Update the current options based on the Constant about cooldowns
     UpdateCurrentCooldownOptions = function()
@@ -485,6 +492,10 @@ _G.UtilityHub = {
           -- If there is no tag for the character and the character is not the one that is logged in, consider the worst (imported)
           if (type(value.importedCharacter) ~= "boolean") then
             value.importedCharacter = value.name ~= UnitName("player");
+          end
+
+          if (type(value.realm) ~= "string") then
+            value.realm = GetRealmName();
           end
         end
       end

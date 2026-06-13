@@ -211,11 +211,12 @@ end
 ---@param data string
 ---@param distribution string
 ---@param sender string
-local function OnSyncDataReceived(prefix, data, distribution, sender)
-  sender = Ambiguate(sender, "none");
-  local myName = UnitName("player");
+local function OnSyncDataReceived(prefix, data, distribution, senderFullname)
+  local sender, senderRealm = strsplit("-", senderFullname, 2);
+  local player = UnitName("player");
+  local playerRealm = GetRealmName();
 
-  if (sender == myName) then
+  if (sender == player and senderRealm == playerRealm) then
     return;
   end
 
@@ -262,7 +263,7 @@ local function OnSyncDataReceived(prefix, data, distribution, sender)
   local characterIndex = nil;
 
   for index, character in ipairs(UtilityHub.Database.global.characters) do
-    if (character.name == syncData.character.name) then
+    if (character.name == syncData.character.name and character.realm == syncData.character.realm) then
       characterFound = character;
       characterIndex = index;
       break;
@@ -344,7 +345,7 @@ EventRegistry:RegisterFrameEventAndCallback("CHAT_MSG_CHANNEL_JOIN",
 
 -- Remove peers when they leave the sync channel
 EventRegistry:RegisterFrameEventAndCallback("CHAT_MSG_CHANNEL_LEAVE",
-function(_, _, sender, _, _, _, _, _, _, channelBaseName)
+  function(_, _, sender, _, _, _, _, _, _, channelBaseName)
     if (not currentChannel) then
       return;
     end

@@ -113,7 +113,8 @@ end
 ---@alias CharType "Normal"|"Special"
 
 ---@param name string|nil
----@return CharType|nil, string|nil
+---@return CharType|nil charType
+---@return string|nil character
 local function CheckFirstLetter(name)
   local code = GetFirstCharCodepoint(name);
 

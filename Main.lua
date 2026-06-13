@@ -455,12 +455,10 @@ UtilityHub.Events:RegisterCallback("OPTIONS_CHANGED", function(_, name)
 end);
 
 UtilityHub.Events:RegisterCallback("COUNT_READY_COOLDOWNS_CHANGED", function(_, count, changed)
-  if (changed) then
-    UpdateMinimapIcon(count > 0);
+  UpdateMinimapIcon(changed);
 
-    if (UtilityHub.Database.global.options.cooldownPlaySound) then
-      PlaySoundFile("Interface\\AddOns\\UtilityHub\\Assets\\Sounds\\Cooldown_Ready.ogg", "Master");
-    end
+  if (changed and UtilityHub.Database.global.options.cooldownPlaySound) then
+    PlaySoundFile("Interface\\AddOns\\UtilityHub\\Assets\\Sounds\\Cooldown_Ready.ogg", "Master");
   end
 end);
 
@@ -501,6 +499,7 @@ function UtilityHub.Addon:OnInitialize()
   -- UtilityHub.Integration.Auctionator();
   UtilityHub.Integration.TSM:Init();
   UtilityHub.Integration.DragonflightUI:Init();
+  UtilityHub.Integration.AtlasLootClassic:Init();
 
   if (UtilityHub.Database.global.options.simpleStatsTooltip) then
     UtilityHub.Addon:EnableModule("Tooltip");

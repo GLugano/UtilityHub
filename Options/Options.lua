@@ -363,7 +363,8 @@ local framesHelper = {
   end,
   ---@param text string
   ---@param parent Frame
-  ---@return Frame, FontString
+  ---@return Frame
+  ---@return FontString
   CreateCustomTitle = function(self, text, parent)
     local header = CreateFrame("Frame", "UtilityHubCustomSettingHeader", parent);
     header:SetHeight(50);
@@ -416,53 +417,53 @@ local framesHelper = {
     frame:SetHeight(height);
 
     do -- Borders
-      local topLeftTexture = frame:CreateTexture("TOPLEFT");
-      frame.TOPLEFT = topLeftTexture;
+      local topLeftTexture = frame:CreateTexture(UtilityHub.Helpers.String:ApplyPrefix("TOPLEFT"));
+      frame.TopLeftBorderTexture = topLeftTexture;
       topLeftTexture:SetAtlas("Options_Tab_Left", TextureKitConstants.UseAtlasSize);
       topLeftTexture:SetPoint("TOPLEFT", 0, -31);
 
-      local topRightTexture = frame:CreateTexture("TOPRIGHT");
-      frame.TOPRIGHT = topRightTexture;
+      local topRightTexture = frame:CreateTexture(UtilityHub.Helpers.String:ApplyPrefix("TOPRIGHT"));
+      frame.TopRightBorderTexture = topRightTexture;
       topRightTexture:SetAtlas("Options_Tab_Right", TextureKitConstants.UseAtlasSize);
       topRightTexture:SetPoint("TOPRIGHT", 0, -31);
 
-      local bottomLeftTexture = frame:CreateTexture("BOTTOMLEFT");
-      frame.BOTTOMLEFT = bottomLeftTexture;
+      local bottomLeftTexture = frame:CreateTexture(UtilityHub.Helpers.String:ApplyPrefix("BOTTOMLEFT"));
+      frame.BottomLeftBorderTexture = bottomLeftTexture;
       bottomLeftTexture:SetAtlas("Options_Tab_Left", TextureKitConstants.UseAtlasSize);
       bottomLeftTexture:SetPoint("BOTTOMLEFT", 8, -15);
       bottomLeftTexture:SetRotation(math.rad(90));
 
-      local bottomRightTexture = frame:CreateTexture("BOTTOMRIGHT");
-      frame.BOTTOMRIGHT = bottomRightTexture;
+      local bottomRightTexture = frame:CreateTexture(UtilityHub.Helpers.String:ApplyPrefix("BOTTOMRIGHT"));
+      frame.BottomRightBorderTexture = bottomRightTexture;
       bottomRightTexture:SetTexture("Interface/OptionsFrame/Options");
       bottomRightTexture:SetSize(7, 23);
       bottomRightTexture:SetTexCoord(0.5966796875, 0.58984375, 0.0751953125, 0.09765625);
       bottomRightTexture:SetPoint("BOTTOMRIGHT", 0, -7);
       bottomRightTexture:SetRotation(math.rad(180));
 
-      local topTexture = frame:CreateTexture("TOP");
-      frame.TOP = topTexture;
+      local topTexture = frame:CreateTexture(UtilityHub.Helpers.String:ApplyPrefix("TOP"));
+      frame.TopBorderTexture = topTexture;
       topTexture:SetAtlas("Options_Tab_Middle", TextureKitConstants.UseAtlasSize);
       topTexture:SetPoint("TOPLEFT", topLeftTexture, "TOPRIGHT");
       topTexture:SetPoint("TOPRIGHT", topRightTexture, "TOPLEFT");
 
-      local bottomTexture = frame:CreateTexture("BOTTOM");
-      frame.BOTTOM = bottomTexture;
+      local bottomTexture = frame:CreateTexture(UtilityHub.Helpers.String:ApplyPrefix("BOTTOM"));
+      frame.BottomBorderTexture = bottomTexture;
       bottomTexture:SetAtlas("Options_Tab_Middle", TextureKitConstants.UseAtlasSize);
       bottomTexture:SetPoint("BOTTOMLEFT", bottomLeftTexture, "BOTTOMRIGHT", 8, 8);
       bottomTexture:SetPoint("BOTTOMRIGHT", bottomRightTexture, "BOTTOMLEFT", 0, 8);
       bottomTexture:SetRotation(math.rad(180));
 
-      local leftTexture = frame:CreateTexture("LEFT");
-      frame.LEFT = leftTexture;
+      local leftTexture = frame:CreateTexture(UtilityHub.Helpers.String:ApplyPrefix("LEFT"));
+      frame.LeftBorderTexture = leftTexture;
       leftTexture:SetTexture("Interface/OptionsFrame/Options");
       leftTexture:SetSize(2, 15);
       leftTexture:SetTexCoord(0.589844, 0.591, 0.028, 0.04);
       leftTexture:SetPoint("TOPLEFT", topLeftTexture, "BOTTOMLEFT");
       leftTexture:SetPoint("BOTTOMLEFT");
 
-      local rightTexture = frame:CreateTexture("RIGHT");
-      frame.RIGHT = rightTexture;
+      local rightTexture = frame:CreateTexture(UtilityHub.Helpers.String:ApplyPrefix("RIGHT"));
+      frame.RightBorderTexture = rightTexture;
       rightTexture:SetTexture("Interface/OptionsFrame/Options");
       rightTexture:SetSize(3, 15);
       rightTexture:SetTexCoord(0.594, 0.597, 0.094, 0.09765625);

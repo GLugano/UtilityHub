@@ -108,19 +108,32 @@ function MailPage:Create(parent)
         return rowData.name;
       end,
       OnRemove = function(rowData, configuration)
-        local presets = UtilityHub.Database.global.presets or {};
+        StaticPopupDialogs["UTILITY_HUB_ON_REMOVE_PRESET"] = {
+          text = string.format("You really want to remove the preset %s?", rowData.name),
+          button1 = "Yes",
+          button2 = "No",
+          OnAccept = function()
+            local presets = UtilityHub.Database.global.presets or {};
 
-        for i = #presets, 1, -1 do
-          if (presets[i].id == rowData.id) then
-            tremove(presets, i);
-            break;
-          end
-        end
+            for i = #presets, 1, -1 do
+              if (presets[i].id == rowData.id) then
+                tremove(presets, i);
+                break;
+              end
+            end
 
-        UtilityHub.Database.global.presets = presets;
+            UtilityHub.Database.global.presets = presets;
 
-        -- Refresh list
-        self:RefreshList();
+            -- Refresh list
+            self:RefreshList();
+          end,
+          OnCancel = function() end,
+          timeout = 0,
+          whileDead = true,
+          hideOnEscape = true,
+        };
+
+        StaticPopup_Show("UTILITY_HUB_ON_REMOVE_PRESET");
       end,
       showRemoveIcon = true,
     },

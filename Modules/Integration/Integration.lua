@@ -12,7 +12,8 @@ function UtilityHub.Integration:ResolveWhenAddonIsLoaded(addon, func)
     end
   end
 
-  function AllAddonsLoaded()
+  ---@return boolean
+  local function AllAddonsLoaded()
     for _, loaded in pairs(addons) do
       if (not loaded) then
         return false;

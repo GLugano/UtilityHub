@@ -2,7 +2,15 @@ local hooked = false;
 
 ---@param query any
 ---@param page any
----@return string text, number? minLevel, number? maxLevel, number? page, boolean usable, Enum.ItemQuality? rarity, boolean getAll, boolean exactMatch, table? filterData
+---@return string text
+---@return number? minLevel
+---@return number? maxLevel
+---@return number? page
+---@return boolean usable
+---@return Enum.ItemQuality? rarity
+---@return boolean getAll
+---@return boolean exactMatch
+---@return table? filterData
 local function ParamsForBlizzardAPI(query, page)
   return query.searchString,
       query.minLevel,

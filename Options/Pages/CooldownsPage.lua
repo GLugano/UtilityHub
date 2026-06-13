@@ -260,7 +260,9 @@ function CooldownsPage:Create(parent)
       end,
       ---@param rowData ProfessionCooldownRow
       GetText = function(rowData)
-        return rowData.formattedName;
+        local professionName = UtilityHub.Helpers.Color:AddColorToString(
+          " [" .. rowData.profession .. "]", "FFB68655");
+        return string.format("%s %s", professionName, rowData.name);
       end,
       CustomizeRow = function(listFrame, helpers)
         if (not listFrame.customElements) then

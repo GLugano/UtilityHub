@@ -441,11 +441,7 @@ function Module:CreateCooldownsFrame()
     ---@type CooldownRowNode|CooldownHeaderNode
     local elementData = node:GetData();
 
-    if (elementData.rowName) then
-      return 30;
-    end
-
-    if (elementData.groupName) then
+    if (elementData.rowName or elementData.groupName) then
       return 30;
     end
 
@@ -459,7 +455,7 @@ end
 function Module:UpdateCooldownsFrameList()
   local groupByEnum = UtilityHub.Enums.CooldownGroupBy;
   local groupBy = UtilityHub.Database.global.cooldownGroupBy or groupByEnum.CHARACTER;
-  ---@type LinearizedTreeDataProviderMixin
+  ---@type LinearizedTreeDataProviderMixin|nil
   local dataProvider = Module.Frame.ScrollBox:GetDataProvider();
   Module.Frame.ScrollBox:RemoveDataProvider();
   Module.AllCollapsedOverride = nil;
@@ -467,7 +463,6 @@ function Module:UpdateCooldownsFrameList()
   if (dataProvider) then
     dataProvider:Flush();
   else
-    ---@type LinearizedTreeDataProviderMixin
     dataProvider = CreateTreeDataProvider();
     Module.Frame.ScrollBox:SetDataProvider(dataProvider);
   end
@@ -618,12 +613,14 @@ function Module:UpdateCooldownsFrameList()
   for _, node in dataProvider:EnumerateEntireRange() do
     local elementData = node:GetData();
 
-    if (elementData.group) then
+    if (elementData.groupName) then
       if (Module.AllCollapsedOverride) then
-        Module.CollapsedGroups[elementData.group] = true;
+        Module.CollapsedGroups[elementData.groupName] = true;
         node:SetCollapsed(true);
-      elseif (Module.CollapsedGroups[elementData.group]) then
+      elseif (Module.CollapsedGroups[elementData.groupName]) then
         node:SetCollapsed(true);
+      else
+        node:SetCollapsed(false);
       end
     end
   end

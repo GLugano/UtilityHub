@@ -29,7 +29,8 @@ end
 -- Time
 
 ---@param seconds number
----@return string, boolean
+---@return string
+---@return boolean
 function UtilityHub.Helpers.Time:FormatDuration(seconds)
   local hours = math.floor(seconds / 3600);
   local minutes = math.floor((seconds % 3600) / 60);
@@ -55,7 +56,7 @@ end
 -- Item
 
 ---@param item number | string
----@param cb fun(itemLink) | nil
+---@param cb? fun(itemLink)
 function UtilityHub.Helpers.Item:AsyncGetItemLink(item, cb)
   local function tryCB(value)
     if (cb) then
@@ -189,6 +190,9 @@ function UtilityHub.Helpers.Mail:RemoveFromHistory(index)
   UtilityHub.Database.global.mailHistory = history;
 end
 
+---@param bag number
+---@param slot number
+---@return boolean
 function UtilityHub.Helpers.Mail:AddItemToNextEmptyMailSlot(bag, slot)
   for mailSlot = 1, ATTACHMENTS_MAX_SEND do
     if (not HasSendMailItem(mailSlot)) then

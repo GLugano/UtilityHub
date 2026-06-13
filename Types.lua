@@ -15,6 +15,7 @@
 --------- Database
 ---@class Character
 ---@field name string
+---@field realm string
 ---@field race string
 ---@field className string
 ---@field group EnumCharacterGroup

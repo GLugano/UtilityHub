@@ -51,7 +51,8 @@ end
 ---@param quantityToBuy number
 ---@param freeBagSlots number
 ---@param isPartial? boolean
----@return string[], number
+---@return string[] purchasedItems
+---@return number freeBagSlots
 function Module:BuyItemByStack(
     itemMerchantIndex,
     quantityToBuy,
@@ -92,7 +93,8 @@ function Module:BuyItemByStack(
 end
 
 ---@param itemData AutoBuyItem
----@return string[], number
+---@return string[]
+---@return number
 function Module:FindAndBuyItem(itemData)
   ---@param itemID any
   ---@return number?

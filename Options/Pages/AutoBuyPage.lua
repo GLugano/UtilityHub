@@ -8,7 +8,8 @@ local autoBuyListFrame = nil;
 
 -- Returns display name and icon for an itemLink (both may be nil if not cached)
 ---@param itemLink ItemLink
----@return string|nil, number|string|nil
+---@return string|nil name
+---@return number|string|nil icon
 local function GetItemDisplay(itemLink)
   local name, _, _, _, _, _, _, _, _, icon = C_Item.GetItemInfo(itemLink);
   return name, icon;

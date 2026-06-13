@@ -86,7 +86,9 @@ local function GetShapeFile()
   return (db and db.shape) or "ring.tga";
 end
 
----@return number, number, number
+---@return number r
+---@return number g
+---@return number b
 local function GetClassColor()
   local _, className = UnitClass("player");
   local classColors = CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS;
@@ -108,7 +110,9 @@ local function GetClassColor()
   return 1, 1, 1;
 end
 
----@return number, number, number
+---@return number r
+---@return number g
+---@return number b
 local function GetRingColor()
   local db = GetDB();
 
