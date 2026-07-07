@@ -160,8 +160,6 @@ local function CreateObject()
           self:Show("LEAVING");
         elseif (not self.wasInGroup and nowInGroup and not UnitIsGroupLeader("player") and UtilityHub.Database.global.options.showWarningEnteringListedGroupInLFG) then
           self:Show("ENTERING");
-        else
-          self:Hide();
         end
       else
         self:Hide();
