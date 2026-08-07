@@ -1,9 +1,9 @@
-## Interface: 11508, 20505, 20506
+## Interface: 11509, 20505, 20506
 ## Notes: Add some functionalities to the game, like mail buttons and trade info window.
 ## Title: UtilityHub
 ## IconTexture: Interface\Addons\UtilityHub\Assets\Icons\addon
 ## Author: Cacetinho-Nightslayer 
-## Version: 0.38
+## Version: 0.39
 ## SavedVariables: UHdatabase, MDHdatabase
 
 # XMLs
