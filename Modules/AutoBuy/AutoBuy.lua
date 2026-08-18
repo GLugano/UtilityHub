@@ -48,53 +48,117 @@ end
 
 ---comment
 ---@param itemMerchantIndex number
----@param quantityToBuy number
----@param freeBagSlots number
----@param isPartial? boolean
+---@param itemQuantityList number[]
 ---@return string[] purchasedItems
----@return number freeBagSlots
-function Module:BuyItemByStack(
-    itemMerchantIndex,
-    quantityToBuy,
-    freeBagSlots,
-    isPartial
-)
+function Module:BuyItemQuantityListByStack(itemMerchantIndex, itemQuantityList)
   local itemName, _, _, _, availableCount = GetMerchantItemInfo(itemMerchantIndex);
-  local maxStack = GetMerchantItemMaxStack(itemMerchantIndex);
   ---@type number
   local totalBought = 0;
-  local remainingToBuy = quantityToBuy;
   local purchasedItems = {};
+  local maxStack = GetMerchantItemMaxStack(itemMerchantIndex);
 
-  while (remainingToBuy > 0 and freeBagSlots > 0 and (availableCount > 0 or availableCount == -1)) do
+  for i, itemQuantity in ipairs(itemQuantityList) do
     if (availableCount == -1) then
       availableCount = maxStack;
     end
 
-    local buyAmount = math.min(remainingToBuy, maxStack, availableCount);
-    BuyMerchantItem(itemMerchantIndex, buyAmount);
-    totalBought = totalBought + buyAmount;
-    remainingToBuy = remainingToBuy - buyAmount;
-    freeBagSlots = freeBagSlots - 1;
+    BuyMerchantItem(itemMerchantIndex, itemQuantity);
+    totalBought = totalBought + itemQuantity;
     availableCount = select(5, GetMerchantItemInfo(itemMerchantIndex));
   end
 
   local pattern = "%s x%d";
 
-  if (isPartial) then
-    pattern = pattern .. " (partial)";
-  end
-
   if (totalBought > 0) then
     tinsert(purchasedItems, string.format(pattern, itemName, totalBought));
   end
 
-  return purchasedItems, freeBagSlots;
+  return purchasedItems;
+end
+
+---@param itemID number
+---@param quantityToBuy number
+---@param maxStackSize number
+---@param unitPrice number
+---@return number remaning
+---@return integer[]
+function Module:CanBuyItem(itemID, quantityToBuy, maxStackSize, unitPrice, freeBagSlots)
+  local existingStacks = UtilityHub.Helpers.Item:GetItemBagSlots(itemID);
+  ---@type number[]
+  local buyList = {};
+  local fullStacksCount = math.floor(quantityToBuy / maxStackSize);
+  local remaining = quantityToBuy;
+  local bagSlotsRemaining = freeBagSlots;
+  local currentMoney = GetMoney();
+
+  local function UpdateBagAndMoney(amount)
+    tinsert(buyList, amount);
+    remaining = remaining - amount;
+    currentMoney = currentMoney - (unitPrice * amount);
+  end
+
+  -- Loop full stacks until there is no more bag slots empty or all full stacks are inserted
+  for i = 1, fullStacksCount do
+    -- Break if there is no more bags or cant buy a single unit
+    if (bagSlotsRemaining == 0 or unitPrice > currentMoney) then
+      break;
+    end
+
+    local amountPrice = unitPrice * maxStackSize;
+
+    -- If the current stack price is higher than expected current money in the loop
+    if (amountPrice > currentMoney) then
+      -- In this situation, the maxAffordable is always smaller than maxStackSize
+      local maxAffordable = math.floor(GetMoney() / unitPrice);
+
+      if (maxAffordable > 1) then
+        UpdateBagAndMoney(maxAffordable);
+      end
+
+      break; -- Always break as there is no more money
+    else
+      bagSlotsRemaining = bagSlotsRemaining - 1;
+      UpdateBagAndMoney(maxStackSize);
+    end
+  end
+
+  -- Then loop the existing stacks until there is no more items remaining to buy, adding only when the stacks are incomplete
+  for _, stack in ipairs(existingStacks) do
+    if (remaining == 0 or unitPrice > currentMoney) then
+      break;
+    end
+
+    if (stack.count < maxStackSize) then
+      -- Calc the amount to complete the stack size
+      local newStackAmount = maxStackSize - stack.count;
+
+      if (newStackAmount > remaining) then
+        newStackAmount = remaining;
+      end
+
+      local amountPrice = unitPrice * newStackAmount;
+
+      -- If the current stack price is higher than expected current money in the loop
+      if (amountPrice > currentMoney) then
+        -- In this situation, the? maxAffordable is always smaller than maxStackSize
+        local maxAffordable = math.floor(GetMoney() / unitPrice);
+
+        if (maxAffordable > 1) then
+          UpdateBagAndMoney(maxAffordable);
+        end
+
+        break; -- Always break as there is no more money
+      else
+        UpdateBagAndMoney(newStackAmount);
+      end
+    end
+  end
+
+  return remaining, buyList;
 end
 
 ---@param itemData AutoBuyItem
 ---@return string[]
----@return number
 function Module:FindAndBuyItem(itemData)
   ---@param itemID any
   ---@return number?
@@ -113,14 +177,14 @@ function Module:FindAndBuyItem(itemData)
   local purchasedItems = {};
 
   if (not itemID) then
-    return purchasedItems, freeBagSlots;
+    return purchasedItems;
   end
 
   local i = FindMerchantIndex(itemID);
 
   -- Item doesn't exist in the current merchant
   if (i == nil) then
-    return purchasedItems, freeBagSlots;
+    return purchasedItems;
   end
 
   local _, _, price, stackCount = GetMerchantItemInfo(i);
@@ -148,14 +212,11 @@ function Module:FindAndBuyItem(itemData)
   -- If we need to buy something
   if (quantityToBuy > 0) then
     local totalCost = unitPrice * quantityToBuy;
-    local slotsNeeded = math.ceil(quantityToBuy / maxStackSize);
-
-    local canAfford = (GetMoney() >= totalCost);
     local priceTooHigh = unitPrice >= MERCHANT_HIGH_PRICE_COST;
-    local hasSpace = freeBagSlots >= slotsNeeded;
     local itemName = C_Item.GetItemInfo(itemData.itemLink) or itemData.itemLink;
+    local remaning, buyList = Module:CanBuyItem(itemID, quantityToBuy, maxStackSize, unitPrice, freeBagSlots);
 
-    if (not hasSpace) then
+    if (remaning == quantityToBuy) then
       UtilityHub.Helpers.Notification:ShowNotification(
         string.format("Insufficient bag space for %s", itemName)
       );
@@ -163,40 +224,14 @@ function Module:FindAndBuyItem(itemData)
       UtilityHub.Helpers.Notification:ShowNotification(
         string.format("Price of %s is too high", itemName)
       );
-    elseif (not canAfford) then
-      -- Partial buy: buy maximum possible (only for restock mode)
-      if (itemData.quantity > 1) then
-        local maxAffordable = math.floor(GetMoney() / unitPrice);
-
-        if (maxAffordable > 0 and maxAffordable < quantityToBuy) then
-          local boughtItems;
-          boughtItems, freeBagSlots = Module:BuyItemByStack(
-            i,
-            maxAffordable,
-            freeBagSlots,
-            true
-          );
-
-          tAppendAll(purchasedItems, boughtItems);
-        else
-          UtilityHub.Helpers.Notification:ShowNotification(
-            string.format("Insufficient gold for %s", itemName)
-          );
-        end
-      else
-        UtilityHub.Helpers.Notification:ShowNotification(
-          string.format("Insufficient gold for %s", itemName)
-        );
-      end
     else
-      local boughtItems;
-      boughtItems, freeBagSlots = Module:BuyItemByStack(i, quantityToBuy, freeBagSlots);
+      local boughtItems = Module:BuyItemQuantityListByStack(i, buyList);
 
       tAppendAll(purchasedItems, boughtItems);
     end
   end
 
-  return purchasedItems, freeBagSlots;
+  return purchasedItems;
 end
 
 function Module:OnEnable()

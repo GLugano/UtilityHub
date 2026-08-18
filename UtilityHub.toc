@@ -3,8 +3,8 @@
 ## Title: UtilityHub
 ## IconTexture: Interface\Addons\UtilityHub\Assets\Icons\addon
 ## Author: Cacetinho-Nightslayer 
-## Version: 0.39
-## SavedVariables: UHdatabase, MDHdatabase
+## Version: 0.40
+## SavedVariables: UHdatabase
 
 # XMLs
 embeds.xml

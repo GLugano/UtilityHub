@@ -257,6 +257,7 @@ function UtilityHub.Helpers.Item:GetFreeBagSlots()
 
   for i = 0, NUM_BAG_SLOTS do
     local containerInfo = C_Container.GetContainerNumSlots(i);
+
     if (containerInfo and containerInfo > 0) then
       local freeSlots = C_Container.GetContainerNumFreeSlots(i);
       totalFree = totalFree + freeSlots;
@@ -264,6 +265,40 @@ function UtilityHub.Helpers.Item:GetFreeBagSlots()
   end
 
   return totalFree;
+end
+
+---@class BagItemData
+---@field bag number
+---@field slot number
+---@field count number
+
+---@param itemID number
+---@return BagItemData[]
+function UtilityHub.Helpers.Item:GetItemBagSlots(itemID)
+  ---@type BagItemData[]
+  local results = {};
+
+  for bag = 0, NUM_BAG_SLOTS do -- 0 to 4
+    local numSlots = C_Container.GetContainerNumSlots(bag);
+
+    if numSlots and numSlots > 0 then
+      for slot = 1, numSlots do
+        local slotItemID = C_Container.GetContainerItemID(bag, slot);
+
+        if (slotItemID == itemID) then
+          local containerInfo = C_Container.GetContainerItemInfo(bag, slot);
+
+          table.insert(results, {
+            bag = bag,
+            slot = slot,
+            count = containerInfo.stackCount or 0
+          });
+        end
+      end
+    end
+  end
+
+  return results;
 end
 
 -- Debug Log

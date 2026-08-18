@@ -105,12 +105,16 @@ EventRegistry:RegisterFrameEventAndCallback("GOSSIP_SHOW", function()
     return;
   end
 
+  local npcName = UnitName("npc");
+
+  if (not npcName) then
+    return;
+  end
+
   GossipFrame.GreetingPanel.ScrollBox:ForEachFrame(function(frame, elementData)
     if (not elementData or not elementData.info) then
       return;
     end
-
-    local npcName = UnitName("npc");
 
     for _, gossipConfig in ipairs(dialogActionConfigs) do
       if (CheckOption(npcName, gossipConfig, elementData)) then
@@ -119,6 +123,7 @@ EventRegistry:RegisterFrameEventAndCallback("GOSSIP_SHOW", function()
         else
           C_GossipInfo.SelectOptionByIndex(elementData.info.orderIndex);
         end
+
         return;
       end
     end
