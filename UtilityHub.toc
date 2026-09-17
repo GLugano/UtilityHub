@@ -1,4 +1,4 @@
-## Interface: 11509, 20505, 20506
+## Interface: 11509, 20505, 20506, 16001
 ## Notes: Add some functionalities to the game, like mail buttons and trade info window.
 ## Title: UtilityHub
 ## IconTexture: Interface\Addons\UtilityHub\Assets\Icons\addon
