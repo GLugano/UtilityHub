@@ -49,10 +49,10 @@ local function ByFormat(text, format)
   return string.format(format, value);
 end
 
-Module.formats                               = {};
+Module.formats                                        = {};
 
 -- Physical
-Module.formats.ATTACK_POWER_CLASSIC          = {
+Module.formats.ATTACK_POWER_CLASSIC                   = {
   pattern = "+(%d+) Attack Power.$",
   FormatText = function(self, text)
     local ap = text:match("(%d+) Attack Power");
@@ -60,14 +60,24 @@ Module.formats.ATTACK_POWER_CLASSIC          = {
   end
 };
 
-Module.formats.ATTACK_POWER                  = {
+Module.formats.ATTACK_POWER                           = {
   pattern = "Increases attack power by (%d+).$",
   FormatText = function(self, text)
     return ByFormat(text, "+%s Attack Power");
   end
 };
 
-Module.formats.RANGED_ATTACK_POWER_CLASSIC   = {
+Module.formats.ATTACK_POWER_SPECIFIC_MOB_TYPE_FOREVER = {
+  pattern = "+(%d+) Attack Power against (%a+).$",
+  FormatText = function(self, text)
+    local ap = text:match("(%d+) Attack Power");
+    local mobType = text:match("against (%a+).");
+
+    return string.format("+%s Attack Power against %s", ap, mobType);
+  end
+};
+
+Module.formats.RANGED_ATTACK_POWER_CLASSIC            = {
   pattern = "+(%d+) ranged Attack Power.$",
   FormatText = function(self, text)
     local ap = text:match("(%d+)");
@@ -75,42 +85,42 @@ Module.formats.RANGED_ATTACK_POWER_CLASSIC   = {
   end
 };
 
-Module.formats.RANGED_ATTACK_POWER           = {
+Module.formats.RANGED_ATTACK_POWER                    = {
   pattern = "Increases ranged attack power by (%d+).$",
   FormatText = function(self, text)
     return ByFormat(text, "+%s Ranged Attack Power");
   end
 };
 
-Module.formats.RANGED_CRITICAL               = {
+Module.formats.RANGED_CRITICAL                        = {
   pattern = "Increases your ranged critical strike rating by (%d+)",
   FormatText = function(self, text)
     return ByFormat(text, "+%s Ranged Crit Rating");
   end
 };
 
-Module.formats.RANGED_ATTACK_SPEED           = {
+Module.formats.RANGED_ATTACK_SPEED                    = {
   pattern = "Increases ranged attack speed by (%d+)%%",
   FormatText = function(self, text)
     return ByFormat(text, "+%s%% Ranged Attack Speed");
   end
 };
 
-Module.formats.MISSILE_CRITICAL              = {
+Module.formats.MISSILE_CRITICAL                       = {
   pattern = "Improves your chance to get a critical strike with missile weapons by (%d+)",
   FormatText = function(self, text)
     return ByFormat(text, "+%s%% Ranged Crit");
   end
 };
 
-Module.formats.PHYSICAL_CRITICAL_CLASSIC     = {
+Module.formats.PHYSICAL_CRITICAL_CLASSIC              = {
   pattern = "(critical strike by (%d+))",
   FormatText = function(self, text)
     return ByFormat(text, "+%s%% Physical Crit");
   end
 };
 
-Module.formats.PHYSICAL_CRITICAL             = {
+Module.formats.PHYSICAL_CRITICAL                      = {
   pattern = {
     "Increases your critical strike rating by (%d+)",
     "Improves critical strike rating by (%d+)"
@@ -120,14 +130,14 @@ Module.formats.PHYSICAL_CRITICAL             = {
   end
 };
 
-Module.formats.PHYSICAL_HIT_CLASSIC          = {
+Module.formats.PHYSICAL_HIT_CLASSIC                   = {
   pattern = "(%Improves your chance to hit by)",
   FormatText = function(self, text)
     return ByFormat(text, "+%s%% Physical Hit");
   end
 };
 
-Module.formats.PHYSICAL_HIT                  = {
+Module.formats.PHYSICAL_HIT                           = {
   pattern = {
     "Increases your hit rating by (%d+)",
     "Improves hit rating by (%d+)"
@@ -137,14 +147,14 @@ Module.formats.PHYSICAL_HIT                  = {
   end
 };
 
-Module.formats.PHYSICAL_EXPERTISE            = {
+Module.formats.PHYSICAL_EXPERTISE                     = {
   pattern = "Increases your expertise rating by (%d+).$",
   FormatText = function(self, text)
     return ByFormat(text, "+%s Expertise Rating");
   end
 };
 
-Module.formats.DRUID_ATTACK_POWER_CLASSIC    = {
+Module.formats.DRUID_ATTACK_POWER_CLASSIC             = {
   pattern = "Attack Power in Cat, Bear, and Dire Bear forms only",
   FormatText = function(self, text)
     local ap = text:match("%+(%d+)");
@@ -152,14 +162,14 @@ Module.formats.DRUID_ATTACK_POWER_CLASSIC    = {
   end
 };
 
-Module.formats.DRUID_ATTACK_POWER            = {
+Module.formats.DRUID_ATTACK_POWER                     = {
   pattern = "Increases attack power by (%d+) in Cat, Bear, Dire Bear, and Moonkin forms only.",
   FormatText = function(self, text)
     return ByFormat(text, "+%s Feral Attack Power");
   end
 };
 
-Module.formats.PHYSICAL_ARMOR_PENETRATION    = {
+Module.formats.PHYSICAL_ARMOR_PENETRATION             = {
   pattern = "Your attacks ignore (%d+) of your opponent's armor.",
   FormatText = function(self, text)
     local ap = text:match("(%d+)");
@@ -167,7 +177,7 @@ Module.formats.PHYSICAL_ARMOR_PENETRATION    = {
   end
 };
 
-Module.formats.PHYSICAL_HASTE                = {
+Module.formats.PHYSICAL_HASTE                         = {
   pattern = "Improves haste rating by (%d+).",
   FormatText = function(self, text)
     return ByFormat(text, "+%s Haste Rating");
@@ -175,7 +185,7 @@ Module.formats.PHYSICAL_HASTE                = {
 };
 
 -- Spell
-Module.formats.SPELL_PENETRATION_CLASSIC     = {
+Module.formats.SPELL_PENETRATION_CLASSIC              = {
   pattern = "Decreases the magical resistances",
   FormatText = function(self, text)
     local magicResist = text:match("(%d+)");
@@ -183,14 +193,14 @@ Module.formats.SPELL_PENETRATION_CLASSIC     = {
   end
 };
 
-Module.formats.SPELL_PENETRATION             = {
+Module.formats.SPELL_PENETRATION                      = {
   pattern = "Increases your spell penetration by (%d+)",
   FormatText = function(self, text)
     return ByFormat(text, "+%s Spell Penetration");
   end
 };
 
-Module.formats.SPELL_PENETRATION_FOREVER     = {
+Module.formats.SPELL_PENETRATION_FOREVER              = {
   pattern = "Your spells pierce",
   FormatText = function(self, text)
     local magicResist = text:match("(%d+)");
@@ -198,7 +208,7 @@ Module.formats.SPELL_PENETRATION_FOREVER     = {
   end
 };
 
-Module.formats.SPELL_DAMAGE_SPECIFIC_SCHOOL  = {
+Module.formats.SPELL_DAMAGE_SPECIFIC_SCHOOL           = {
   pattern = {
     "Increases damage done by (%a+) spells",
     "Increases the damage done by (%a+) spells",
@@ -206,18 +216,23 @@ Module.formats.SPELL_DAMAGE_SPECIFIC_SCHOOL  = {
   FormatText = function(self, text)
     local schoolType = text:match("by (%a+) spells?");
     local spellPower = text:match("(%d+)");
+
+    if (schoolType and schoolType:lower() == "magical") then
+      return string.format("+%s Spell Power", spellPower);
+    end
+
     return string.format("+%s %s Spell Power", spellPower, schoolType);
   end
 };
 
-Module.formats.SPELL_HIT_CLASSIC             = {
+Module.formats.SPELL_HIT_CLASSIC                      = {
   pattern = "(%Improves your chance to hit with spells)",
   FormatText = function(self, text)
     return ByFormat(text, "+%s%% Spell Hit");
   end
 };
 
-Module.formats.SPELL_HIT                     = {
+Module.formats.SPELL_HIT                              = {
   pattern = {
     "Increases your spell hit rating by (%d+)",
     "Improves spell hit rating by (%d+)"
@@ -227,7 +242,7 @@ Module.formats.SPELL_HIT                     = {
   end
 };
 
-Module.formats.SPELL_DAMAGE_CLASSIC          = { -- +ATIESH AURA
+Module.formats.SPELL_DAMAGE_CLASSIC                   = { -- +ATIESH AURA
   pattern = "(%Increases damage and healing)",
   FormatText = function(self, text)
     local spellPower = text:match("by up to (%d+)");
@@ -251,7 +266,7 @@ Module.formats.SPELL_DAMAGE_CLASSIC          = { -- +ATIESH AURA
   end
 };
 
-Module.formats.SPELL_DAMAGE                  = {
+Module.formats.SPELL_DAMAGE                           = {
   pattern = "Increases damage and healing done by magical spells and effects by up to (%d+).",
   FormatText = function(self, text)
     local spellPower = text:match("by up to (%d+)");
@@ -259,14 +274,14 @@ Module.formats.SPELL_DAMAGE                  = {
   end
 };
 
-Module.formats.SPELL_CRITICAL_CLASSIC        = { -- Spell/Healing
+Module.formats.SPELL_CRITICAL_CLASSIC                 = { -- Spell/Healing
   pattern = "(critical strike with spells by (%d+))",
   FormatText = function(self, text)
     return ByFormat(text, "+%s%% Spell Crit");
   end
 };
 
-Module.formats.SPELL_CRITICAL                = { -- Spell/Healing
+Module.formats.SPELL_CRITICAL                         = { -- Spell/Healing
   pattern = {
     "Increases your spell critical strike rating by (%d+)",
     "Improves spell critical strike rating by (%d+)"
@@ -276,7 +291,7 @@ Module.formats.SPELL_CRITICAL                = { -- Spell/Healing
   end
 };
 
-Module.formats.SPELL_HASTE                   = {
+Module.formats.SPELL_HASTE                            = {
   pattern = {
     "Increases your spell haste rating by (%d+)",
     "Improves spell haste rating by (%d+)"
@@ -286,8 +301,17 @@ Module.formats.SPELL_HASTE                   = {
   end
 };
 
+Module.formats.SPELL_DAMAGE_SPECIFIC_MOB_TYPE_FOREVER = {
+  pattern = "Increases damage done to (%a+) by magical spells and effects by up to (%d+).",
+  FormatText = function(self, text)
+    local spellPower = text:match("by up to (%d+)");
+    local mobType = text:match("to (%a+) by");
+    return string.format("+%s Spell Power against %s", spellPower, mobType);
+  end
+};
+
 -- Healing
-Module.formats.HEALING_CLASSIC               = { -- + ATIESH AURA
+Module.formats.HEALING_CLASSIC                        = { -- + ATIESH AURA
   pattern = "Increases healing done by",
   FormatText = function(self, text)
     local healingPower = text:match("by up to (%d+)");
@@ -311,7 +335,7 @@ Module.formats.HEALING_CLASSIC               = { -- + ATIESH AURA
   end
 };
 
-Module.formats.HEALING                       = {
+Module.formats.HEALING                                = {
   pattern = "Increases healing done by up to (%d+) and damage done by up to (%d+) for all magical spells and effects",
   FormatText = function(self, text, prefix)
     local healing = text:match("healing done by up to (%d+)");
@@ -321,8 +345,25 @@ Module.formats.HEALING                       = {
   end
 };
 
+Module.formats.HEALING_FOREVER                        = {
+  pattern = {
+    "Increases healing done by up to (%d+) and damage done by up to (%d+) for all magical spells and effects",
+    "Increases healing done by magical spells and effects by up to (%d+)",
+  },
+  FormatText = function(self, text, prefix)
+    local damage = text:match("damage done by up to (%d+)");
+
+    if (damage) then
+      return string.format("+%s Healing Power\n%s +%s Spell Power", text:match("healing done by up to (%d+)"), prefix,
+        damage);
+    end
+
+    return string.format("+%s Healing Power", text:match("by up to (%d+)"), prefix);
+  end
+};
+
 -- Resources
-Module.formats.MANA_REGEN                    = {
+Module.formats.MANA_REGEN                             = {
   pattern = "(%d+) mana per",
   FormatText = function(self, text, prefix)
     if (prefix) then
@@ -336,15 +377,15 @@ Module.formats.MANA_REGEN                    = {
   end
 };
 
-Module.formats.MANA_REGEN_FOREVER            = {
+Module.formats.MANA_REGEN_FOREVER                     = {
   pattern = "Restores (%d+) Mana per",
   FormatText = function(self, text, prefix)
-    local regen = text:lower():match("Restores (%d+)");
+    local regen = text:lower():match("restores (%d+)");
     return string.format("+%s MP5", regen);
   end
 };
 
-Module.formats.HEALTH_REGEN                  = {
+Module.formats.HEALTH_REGEN                           = {
   pattern = {
     "(%d+) health per",
     "(%d+) Health per",
@@ -356,7 +397,7 @@ Module.formats.HEALTH_REGEN                  = {
 };
 
 -- Fixed
-Module.formats.MINOR_SPEED                   = {
+Module.formats.MINOR_SPEED                            = {
   pattern = {
     "Minor Speed Increase",
     "Run speed increased slightly",
@@ -367,7 +408,7 @@ Module.formats.MINOR_SPEED                   = {
 };
 
 -- Atiesh
-Module.formats.ATIESH_AURA_CRIT              = {
+Module.formats.ATIESH_AURA_CRIT                       = {
   pattern = "Increases the spell critical chance of all",
   FormatText = function(self, text)
     local spellPower = text:match("by (%d+)%%.");
@@ -381,7 +422,7 @@ Module.formats.ATIESH_AURA_CRIT              = {
   end
 };
 
-Module.formats.ATIESH_SPELL_HEALING          = {
+Module.formats.ATIESH_SPELL_HEALING                   = {
   pattern = "Increases your spell damage by up to (%d+) and your healing by up to (%d+)",
   FormatText = function(self, text, prefix)
     -- [1] = spellPower
@@ -397,7 +438,7 @@ Module.formats.ATIESH_SPELL_HEALING          = {
 };
 
 -- Temp stat Increase
-Module.formats.TEMP_STAT_INCREASE_CLASSIC    = {
+Module.formats.TEMP_STAT_INCREASE_CLASSIC             = {
   pattern = "Increases (.-) by (%d+) for (%d+) sec.",
   FormatText = function(self, text)
     local statName, value, duration = text:match("Increases (.-) by (%d+) for (%d+) sec%.$");
@@ -408,7 +449,7 @@ Module.formats.TEMP_STAT_INCREASE_CLASSIC    = {
   end
 };
 
-Module.formats.ATTACK_SPEED_INCREASE_CLASSIC = {
+Module.formats.ATTACK_SPEED_INCREASE_CLASSIC          = {
   pattern = "Increases your attack speed",
   FormatText = function(self, text)
     -- [1] = atkSpeed
@@ -424,7 +465,7 @@ Module.formats.ATTACK_SPEED_INCREASE_CLASSIC = {
 };
 
 -- Enchants
-Module.formats.GENERIC_ENCHANT               = {
+Module.formats.GENERIC_ENCHANT                        = {
   -- Rules:
   -- 1. Need to start with any string
   -- 2. Then have a [ +]
@@ -444,7 +485,7 @@ Module.formats.GENERIC_ENCHANT               = {
 };
 
 -- Skill
-Module.formats.SKILL_INCREASE_CLASSIC        = {
+Module.formats.SKILL_INCREASE_CLASSIC                 = {
   IdentifyPattern = function(self, text)
     for _, skill in ipairs(skills) do
       if (text:match(skill)) then
@@ -464,7 +505,7 @@ Module.formats.SKILL_INCREASE_CLASSIC        = {
   end
 };
 
-Module.formats.SKILL_INCREASE_ENDSWITH       = {
+Module.formats.SKILL_INCREASE_ENDSWITH                = {
   IdentifyPattern = function(self, text)
     for _, skill in ipairs(skills) do
       if (text:match(skill)) then
@@ -486,7 +527,7 @@ Module.formats.SKILL_INCREASE_ENDSWITH       = {
 };
 
 -- Defensive stats
-Module.formats.DEFENSE_CLASSIC               = {
+Module.formats.DEFENSE_CLASSIC                        = {
   pattern = "(%Increased Defense)",
   FormatText = function(self, text)
     local defense = text:match("(%d+)");
@@ -494,49 +535,49 @@ Module.formats.DEFENSE_CLASSIC               = {
   end
 };
 
-Module.formats.DEFENSE                       = {
+Module.formats.DEFENSE                                = {
   pattern = "Increases defense rating by (%d+)",
   FormatText = function(self, text)
     return ByFormat(text, "+%s Defense Rating");
   end
 };
 
-Module.formats.DODGE_CLASSIC                 = {
+Module.formats.DODGE_CLASSIC                          = {
   pattern = "(%Increases your chance to dodge)",
   FormatText = function(self, text)
     return ByFormat(text, "+%s%% Dodge");
   end
 };
 
-Module.formats.DODGE                         = {
+Module.formats.DODGE                                  = {
   pattern = "Increases your dodge rating by (%d+)",
   FormatText = function(self, text)
     return ByFormat(text, "+%s Dodge Rating");
   end
 };
 
-Module.formats.PARRY_CLASSIC                 = {
+Module.formats.PARRY_CLASSIC                          = {
   pattern = "(%Increases your chance to parry)",
   FormatText = function(self, text)
     return ByFormat(text, "+%s%% Parry");
   end
 };
 
-Module.formats.PARRY                         = {
+Module.formats.PARRY                                  = {
   pattern = "Increases your parry rating by (%d+)",
   FormatText = function(self, text)
     return ByFormat(text, "+%s Parry Rating");
   end
 };
 
-Module.formats.BLOCK_CLASSIC                 = {
+Module.formats.BLOCK_CLASSIC                          = {
   pattern = "(%Increases your chance to block)",
   FormatText = function(self, text)
     return ByFormat(text, "+%s%% Block");
   end
 };
 
-Module.formats.BLOCK                         = {
+Module.formats.BLOCK                                  = {
   pattern = {
     "Increases your shield block rating by (%d+)",
     "Increases your block rating by (%d+)"
@@ -546,42 +587,42 @@ Module.formats.BLOCK                         = {
   end
 };
 
-Module.formats.BLOCK_VALUE_CLASSIC           = {
+Module.formats.BLOCK_VALUE_CLASSIC                    = {
   pattern = "(%Increases the block value)",
   FormatText = function(self, text)
     return ByFormat(text, "+%s Block Value");
   end
 };
 
-Module.formats.BLOCK_VALUE                   = {
+Module.formats.BLOCK_VALUE                            = {
   pattern = "Increases the block value of your shield by (%d+)",
   FormatText = function(self, text)
     return ByFormat(text, "+%s Block Value");
   end
 };
 
-Module.formats.RESILIENCE                    = {
+Module.formats.RESILIENCE                             = {
   pattern = "Improves your resilience rating by (%d+)",
   FormatText = function(self, text)
     return ByFormat(text, "+%s Resilience Rating");
   end
 };
 
-Module.formats.SWIM_SPEED                    = {
+Module.formats.SWIM_SPEED                             = {
   pattern = "Increases swim speed by (%d+)",
   FormatText = function(self, text)
     return ByFormat(text, "+%s%% Swim Speed");
   end
 };
 
-Module.formats.STEALTH_DETECTION_SLIGHTLY    = {
+Module.formats.STEALTH_DETECTION_SLIGHTLY             = {
   pattern = "Slightly increases your stealth detection",
   FormatText = function(self, text)
     return "+10 Stealth Detection";
   end
 };
 
-Module.formats.STEALTH_DETECTION_MODERATELY  = {
+Module.formats.STEALTH_DETECTION_MODERATELY           = {
   pattern = {
     "Increases your stealth detection.",
     "Moderately increases your stealth detection."
@@ -591,14 +632,21 @@ Module.formats.STEALTH_DETECTION_MODERATELY  = {
   end
 };
 
-Module.formats.STEALTH                       = {
+Module.formats.STEALTH_DETECTION                      = {
+  pattern = "Increases your effective stealth detection level by (%d+)",
+  FormatText = function(self, text)
+    return ByFormat(text, "+%s Stealth Detection");
+  end
+};
+
+Module.formats.STEALTH                                = {
   pattern = "Increases your effective stealth level by 1",
   FormatText = function(self, text)
     return ByFormat(text, "+%s Stealth");
   end
 };
 
-Module.formats.LOCKPICKING                   = {
+Module.formats.LOCKPICKING                            = {
   pattern = "Increases your lockpicking skill slightly",
   FormatText = function(self, text)
     return "+5 Lockpicking";
@@ -606,28 +654,28 @@ Module.formats.LOCKPICKING                   = {
 };
 
 -- Strange things
-Module.formats.NEGATIVE_PARRY                = {
+Module.formats.NEGATIVE_PARRY                         = {
   pattern = "Decreases your chance to parry an attack by (%d+)",
   FormatText = function(self, text)
     return ByFormat(text, "-%s%% Parry");
   end
 };
 
-Module.formats.FLAT_SPELL_DAMAGE_REDUCTION   = {
+Module.formats.FLAT_SPELL_DAMAGE_REDUCTION            = {
   pattern = "Spell Damage received is reduced by (%d+)",
   FormatText = function(self, text)
     return ByFormat(text, "-%s Spell Damage Taken");
   end
 };
 
-Module.formats.DISARM_DURATION               = {
+Module.formats.DISARM_DURATION                        = {
   pattern = "Disarm duration reduced by (%d+)%%",
   FormatText = function(self, text)
     return ByFormat(text, "-%s%% Disarm Duration");
   end
 };
 
-Module.formats.INTERRUPT_DURATION            = {
+Module.formats.INTERRUPT_DURATION                     = {
   pattern = {
     "Reduces the duration of any Silence or Interrupt effects used against the wearer by (%d+)%%",
     "Increases your resistance to silence effects by (%d+)%%",
@@ -638,16 +686,16 @@ Module.formats.INTERRUPT_DURATION            = {
 };
 
 ---@type PatternConfig[]
-Module.patternConfigList                     = {};
-Module.statNameConversionMap                 = {
+Module.patternConfigList                              = {};
+Module.statNameConversionMap                          = {
   Health = "HP",
   Mana = "MP",
 };
 
 ---@type boolean
-Module.itemRefTooltipHooked                  = false;
+Module.itemRefTooltipHooked                           = false;
 ---@type boolean
-Module.gameTooltipHooked                     = false;
+Module.gameTooltipHooked                              = false;
 
 ---@param patternConfig PatternConfig
 ---@param text string|nil
@@ -713,7 +761,7 @@ local function SearchAndApplyPattern(text, prefix, tooltipLineRef)
     if (UtilityHub.Constants.IsForever) then
       local matched, patternMatched = IdentifyPattern(patternConfig, clearText);
 
-      if (prefix ~= "Use:" and matched) then
+      if (prefix ~= "Use:" and prefix ~= "Change on hit:" and matched) then
         local newString, prefixConfig = patternConfig:FormatText(clearText, prefix);
         local newPrefix = prefix;
 
@@ -805,6 +853,9 @@ local function UpdatePatternConfig()
 
     tinsert(Module.patternConfigList, formats.TEMP_STAT_INCREASE_CLASSIC);
   elseif (UtilityHub.Constants.IsForever) then
+    tinsert(Module.patternConfigList, formats.ATTACK_POWER_CLASSIC);
+    tinsert(Module.patternConfigList, formats.ATTACK_POWER_SPECIFIC_MOB_TYPE_FOREVER);
+
     tinsert(Module.patternConfigList, formats.DEFENSE_CLASSIC);
     tinsert(Module.patternConfigList, formats.BLOCK_CLASSIC);
     tinsert(Module.patternConfigList, formats.DODGE_CLASSIC);
@@ -814,10 +865,12 @@ local function UpdatePatternConfig()
     tinsert(Module.patternConfigList, formats.MANA_REGEN_FOREVER);
 
     tinsert(Module.patternConfigList, formats.SPELL_DAMAGE);
-    tinsert(Module.patternConfigList, formats.HEALING);
+    tinsert(Module.patternConfigList, formats.HEALING_FOREVER);
     tinsert(Module.patternConfigList, formats.SPELL_PENETRATION_FOREVER);
+    tinsert(Module.patternConfigList, formats.SPELL_DAMAGE_SPECIFIC_MOB_TYPE_FOREVER);
 
     tinsert(Module.patternConfigList, formats.TEMP_STAT_INCREASE_CLASSIC);
+    tinsert(Module.patternConfigList, formats.STEALTH_DETECTION);
   else
     tinsert(Module.patternConfigList, formats.ATTACK_POWER);
     tinsert(Module.patternConfigList, formats.PHYSICAL_HIT);
