@@ -696,7 +696,7 @@ local function SearchAndApplyPattern(text, prefix, tooltipLineRef)
       local matched, patternMatched = IdentifyPattern(patternConfig, clearText);
 
       if (prefix ~= "Use:" and matched) then
-        local newString, prefixConfig = patternConfig:FormatText(clearText);
+        local newString, prefixConfig = patternConfig:FormatText(clearText, prefix);
         local newPrefix = prefix;
 
         if (prefixConfig and prefixConfig.overrite and prefixConfig.value) then
