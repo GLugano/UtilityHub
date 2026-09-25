@@ -27,10 +27,10 @@ _G.UtilityHub = {
       autoBuyList = {},
       -- Profession
       ---@type boolean
-      automaticEnchantFilter = true,
+      automaticEnchantFilter = false,
       -- Cooldowns
       ---@type boolean
-      cooldowns = true,
+      cooldowns = false,
       ---@type CooldownConfig[]
       cooldownConfigs = {},
       ---@type boolean
@@ -51,38 +51,6 @@ _G.UtilityHub = {
       graphicsSettings = {
         originalValues = {},
         presetApplied = nil
-      },
-      -- MouseRing
-      mouseRing = {
-        enabled = false,
-        size = 34,
-        shape = "thick_ring.tga",
-        colorR = 1,
-        colorG = 1,
-        colorB = 1,
-        useClassColor = true,
-        hideBackground = false,
-        showOutOfCombat = true,
-        hideOnRightClick = false,
-        -- Cast swipe
-        castSwipeEnabled = true,
-        castSwipeR = 1,
-        castSwipeG = 1,
-        castSwipeB = 1,
-        castSwipeUseClassColor = false,
-        -- GCD swipe
-        gcdEnabled = true,
-        gcdR = 1,
-        gcdG = 1,
-        gcdB = 1,
-        gcdUseClassColor = false,
-        -- Trail
-        trailEnabled = false,
-        trailR = 1,
-        trailG = 0.8,
-        trailB = 0.2,
-        trailUseClassColor = false,
-        trailDuration = 0.6
       },
       -- LFG
       ---@type boolean
@@ -189,7 +157,8 @@ _G.UtilityHub = {
     ---@return boolean recentlyCreated
     CreateCurrentCharacter = function()
       ---@type Character|nil
-      local character = UtilityHub.DatabaseFunctions.GetCharacterData(UnitName("player"));
+      local name, realm = UtilityHub.Helpers.Unit:UnitName("player");
+      local character = UtilityHub.DatabaseFunctions.GetCharacterData(name, realm);
 
       if (character) then
         return character, false;
@@ -197,8 +166,8 @@ _G.UtilityHub = {
 
       ---@type Character
       character = {
-        name = UnitName("player"),
-        realm = GetRealmName(),
+        name = name,
+        realm = realm,
         race = select(1, UnitRace("player")),
         className = select(2, UnitClass("player")),
         group = UtilityHub.Enums.CharacterGroup.UNGROUPED,
@@ -214,7 +183,8 @@ _G.UtilityHub = {
     end,
     UpdateCurrentCharacter = function()
       ---@type Character|nil
-      local character = UtilityHub.DatabaseFunctions.GetCharacterData(UnitName("player"));
+      local name, realm = UtilityHub.Helpers.Unit:UnitName("player");
+      local character = UtilityHub.DatabaseFunctions.GetCharacterData(name, realm);
 
       if (not character) then
         return;
@@ -228,7 +198,7 @@ _G.UtilityHub = {
     ---@return number|nil
     GetCharacterIndex = function(playerName, realm)
       if (realm == nil) then
-        realm = GetRealmName();
+        realm = select(2, UnitNameUnmodified("player"));
       end
 
       for index, value in ipairs(UtilityHub.Database.global.characters) do
@@ -253,7 +223,8 @@ _G.UtilityHub = {
     end,
     ---@return Character|nil
     GetCurrentCharacterData = function()
-      return UtilityHub.DatabaseFunctions.GetCharacterData(UnitName("player"), GetRealmName());
+      local name, realm = UnitNameUnmodified("player");
+      return UtilityHub.DatabaseFunctions.GetCharacterData(name, realm);
     end,
     ---Update the current options based on the Constant about cooldowns
     UpdateCurrentCooldownOptions = function()
@@ -461,17 +432,20 @@ _G.UtilityHub = {
       UtilityHub.Helpers.Notification:ShowNotification("Merged Auto-Restock items into AutoBuy list");
     end
 
+    local playerName, playerRealm = UtilityHub.Helpers.Unit:UnitName("player");
+
     if (UtilityHub.Database.global.characters) then
       for index, value in ipairs(UtilityHub.Database.global.characters) do
         if (type(value) == "string") then
           local name = UtilityHub.Database.global.characters[index];
 
-          if (name == UnitName("player")) then
+          if (name == playerName) then
             local race = select(2, UnitRace("player"));
             local className = select(2, UnitClass("player"));
 
             UtilityHub.Database.global.characters[index] = {
               name = name,
+              realm = playerRealm,
               race = race,
               className = className,
               group = nil
@@ -479,6 +453,7 @@ _G.UtilityHub = {
           else
             UtilityHub.Database.global.characters[index] = {
               name = name,
+              realm = playerRealm,
               race = nil,
               className = nil,
               group = nil
@@ -491,11 +466,11 @@ _G.UtilityHub = {
 
           -- If there is no tag for the character and the character is not the one that is logged in, consider the worst (imported)
           if (type(value.importedCharacter) ~= "boolean") then
-            value.importedCharacter = value.name ~= UnitName("player");
+            value.importedCharacter = value.name ~= playerName;
           end
 
           if (type(value.realm) ~= "string") then
-            value.realm = GetRealmName();
+            value.realm = playerRealm;
           end
         end
       end

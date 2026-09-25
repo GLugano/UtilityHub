@@ -138,6 +138,7 @@ end
 
 function Module:GetAccountCharactersGeneratorFunction()
   return function(owner, rootDescription)
+    local playerName, playerRealm = UtilityHub.Helpers.Unit:UnitName("player");
     local groups = {
       [UtilityHub.Enums.CharacterGroup.MAIN_ALT] = {},
       [UtilityHub.Enums.CharacterGroup.BANK] = {},
@@ -177,7 +178,7 @@ function Module:GetAccountCharactersGeneratorFunction()
             local color = UtilityHub.Helpers.Color:GetRGBFromClassName(character.className);
             button.fontString:SetTextColor(color.r, color.g, color.b);
           end);
-          characterButton:SetEnabled(character.name ~= UnitName("player"));
+          characterButton:SetEnabled(character.name ~= playerName);
         end
       end
     end
@@ -186,6 +187,7 @@ end
 
 function Module:GetGuildCharactersGeneratorFunction()
   return function(owner, rootDescription)
+    local playerName, playerRealm = UtilityHub.Helpers.Unit:UnitName("player");
     local total = GetNumGuildMembers();
     local columns = math.ceil(total / 20);
     local playerGroups = {};
@@ -236,7 +238,7 @@ function Module:GetGuildCharactersGeneratorFunction()
           local color = UtilityHub.Helpers.Color:GetRGBFromClassName(player.class);
           button.fontString:SetTextColor(color.r, color.g, color.b);
         end);
-        characterButton:SetEnabled(player.name ~= UnitName("player"));
+        characterButton:SetEnabled(player.name ~= playerName);
       end
     end
 

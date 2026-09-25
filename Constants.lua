@@ -1,6 +1,27 @@
 local ADDON_NAME = ...;
 local interfaceVersion = select(4, GetBuildInfo());
-local GetAuctionItemSubClasses = C_AuctionHouse.GetAuctionItemSubClasses or GetAuctionItemSubClasses;
+local GetAuctionItemSubClasses;
+
+if (GetAuctionItemSubClasses) then
+  GetAuctionItemSubClasses = function(classID)
+    return { GetAuctionItemSubClasses(classID) };
+  end
+else
+  GetAuctionItemSubClasses = C_AuctionHouse.GetAuctionItemSubClasses;
+end
+
+local IsHardcore = C_GameRules.IsGameRuleActive(Enum.GameRule.HardcoreRuleset);
+local IsRP = C_GameRules.IsGameRuleActive(Enum.GameRule.RPRuleset);
+local IsPVP = C_GameRules.IsGameRuleActive(Enum.GameRule.PvPRuleset);
+local currentRealmRule = UtilityHub.Enums.RealmRule.PVE;
+
+if (IsHardcore) then
+  currentRealmRule = UtilityHub.Enums.RealmRule.HC;
+elseif (IsRP) then
+  currentRealmRule = UtilityHub.Enums.RealmRule.RP;
+elseif (IsPVP) then
+  currentRealmRule = UtilityHub.Enums.RealmRule.PVP;
+end
 
 ---@class Constants
 UtilityHub.Constants = {
@@ -14,6 +35,14 @@ UtilityHub.Constants = {
   IsClassic = (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC) and (interfaceVersion < 20000),
   IsTBC = (interfaceVersion >= 20505) and (interfaceVersion < 30000),
   IsTBCorLater = interfaceVersion >= 20505,
+  IsForever = interfaceVersion > 16000 and interfaceVersion < 16999,
+
+  -- Game Rules
+  IsHardcore = IsHardcore,
+  IsRP = IsRP,
+  IsPVP = IsPVP,
+
+  RealmRule = currentRealmRule,
 
   ---@type number[]
   AuctionHouseItemClass = {},
@@ -54,6 +83,7 @@ UtilityHub.Constants = {
     BAG_3 = 3,
     BAG_4 = 4,
     KEYRING = -2,
+    REAGENT = -3,
   },
 };
 
@@ -73,6 +103,19 @@ if (UtilityHub.Constants.IsClassic) then
     Enum.ItemClass.Questitem,
     Enum.ItemClass.Key,
   };
+elseif (UtilityHub.Constants.IsForever) then
+  UtilityHub.Constants.AuctionHouseItemClass = {
+    Enum.ItemClass.Weapon,
+    Enum.ItemClass.Armor,
+    Enum.ItemClass.Container,
+    Enum.ItemClass.Tradegoods,
+    Enum.ItemClass.Consumable,
+    Enum.ItemClass.Projectile,
+    Enum.ItemClass.Quiver,
+    Enum.ItemClass.Recipe,
+    Enum.ItemClass.Miscellaneous,
+    Enum.ItemClass.Questitem,
+  };
 else
   UtilityHub.Constants.AuctionHouseItemClass = {
     Enum.ItemClass.Weapon,
@@ -91,7 +134,7 @@ end
 
 for _, classID in ipairs(UtilityHub.Constants.AuctionHouseItemClass) do
   local className = C_Item.GetItemClassInfo(classID);
-  local subclasses = { GetAuctionItemSubClasses(classID) };
+  local subclasses = GetAuctionItemSubClasses(classID);
 
   if (subclasses and #subclasses > 0) then
     local class = { name = className, classID = classID, subClasses = {} }

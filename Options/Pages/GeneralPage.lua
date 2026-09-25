@@ -75,15 +75,19 @@ function GeneralPage:Create(parent)
     content:SetWidth(self:GetWidth());
   end);
 
+  local previous = nil;
+
   -- Title
   local title = content:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge");
   title:SetPoint("TOPLEFT", 20, -20);
   title:SetText("General Settings");
+  previous = title;
 
   -- Section: Tooltip
   local sectionTooltip = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
-  sectionTooltip:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -20);
+  sectionTooltip:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -20);
   sectionTooltip:SetText("Tooltip");
+  previous = sectionTooltip;
 
   local cbTooltip = self:CreateCheckbox(
     content,
@@ -92,12 +96,14 @@ function GeneralPage:Create(parent)
     "Change the way most stats are shown in the tooltip",
     nil
   );
-  cbTooltip:SetPoint("TOPLEFT", sectionTooltip, "BOTTOMLEFT", 0, -10);
+  cbTooltip:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -10);
+  previous = cbTooltip;
 
   -- Section: Trade
   local sectionTrade = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
-  sectionTrade:SetPoint("TOPLEFT", cbTooltip, "BOTTOMLEFT", 0, -20);
+  sectionTrade:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -20);
   sectionTrade:SetText("Trade");
+  previous = sectionTrade;
 
   local cbTrade = self:CreateCheckbox(
     content,
@@ -106,211 +112,246 @@ function GeneralPage:Create(parent)
     "Show extra frame with more info about the person you are trading",
     cbTooltip
   );
-  cbTrade:SetPoint("TOPLEFT", sectionTrade, "BOTTOMLEFT", 0, -10);
+  cbTrade:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -10);
+  previous = cbTrade;
 
-  -- Section: Daily Quests
-  local sectionDaily = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
-  sectionDaily:SetPoint("TOPLEFT", cbTrade, "BOTTOMLEFT", 0, -20);
-  sectionDaily:SetText("Daily Quests");
+  if (not UtilityHub.Constants.IsForever) then
+    -- Section: Daily Quests
+    local sectionDaily = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+    sectionDaily:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -20);
+    sectionDaily:SetText("Daily Quests");
+    previous = sectionDaily;
 
-  local cbDaily = self:CreateCheckbox(
-    content,
-    "Enable tracking",
-    "dailyQuests",
-    "Enable tracking of daily quests",
-    cbTrade
-  );
-  cbDaily:SetPoint("TOPLEFT", sectionDaily, "BOTTOMLEFT", 0, -10);
+    local cbDaily = self:CreateCheckbox(
+      content,
+      "Enable tracking",
+      "dailyQuests",
+      "Enable tracking of daily quests",
+      nil
+    );
+    cbDaily:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -10);
+    previous = cbDaily;
+  end
 
-  -- Section: Professions
-  local sectionProfessions = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
-  sectionProfessions:SetPoint("TOPLEFT", cbDaily, "BOTTOMLEFT", 0, -20);
-  sectionProfessions:SetText("Professions");
+  if (not UtilityHub.Constants.IsForever) then
+    -- Section: Professions
+    local sectionProfessions = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+    sectionProfessions:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -20);
+    sectionProfessions:SetText("Professions");
+    previous = sectionProfessions;
 
-  local cbEnchant = self:CreateCheckbox(
-    content,
-    "Automatic filter enchants when trading",
-    "automaticEnchantFilter",
-    "When trading and the enchant frame is open, the filter will be updated when the person you are trading change the item in the non-trade slot",
-    cbDaily
-  );
-  cbEnchant:SetPoint("TOPLEFT", sectionProfessions, "BOTTOMLEFT", 0, -10);
+    local cbEnchant = self:CreateCheckbox(
+      content,
+      "Automatic filter enchants when trading",
+      "automaticEnchantFilter",
+      "When trading and the enchant frame is open, the filter will be updated when the person you are trading change the item in the non-trade slot",
+      nil
+    );
+    cbEnchant:SetPoint("TOPLEFT", sectionProfessions, "BOTTOMLEFT", 0, -10);
+    previous = cbEnchant;
+  end
 
-  -- Section: NPCs
-  local sectionNPCs = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
-  sectionNPCs:SetPoint("TOPLEFT", cbEnchant, "BOTTOMLEFT", 0, -20);
-  sectionNPCs:SetText("NPCs");
+  if (not UtilityHub.Constants.IsForever) then
+    -- Section: NPCs
+    local sectionNPCs = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+    sectionNPCs:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -20);
+    sectionNPCs:SetText("NPCs");
+    previous = sectionNPCs;
 
-  local cbAutoOpenMerchantFrameLHCBlacksmith = self:CreateCheckbox(
-    content,
-    "Auto open merchant frame with BS in LHC",
-    "automaticOpenMerchantFrameLHCBlacksmith",
-    "Automatic open the trade window with the blacksmith in Light's Hope Chapel (Craftsman Wilhelm) when there is only one gossip option available",
-    cbDaily
-  );
-  cbAutoOpenMerchantFrameLHCBlacksmith:SetPoint("TOPLEFT", sectionNPCs, "BOTTOMLEFT", 0, -10);
+    local cbAutoOpenMerchantFrameLHCBlacksmith = self:CreateCheckbox(
+      content,
+      "Auto open BS merchant frame with LHC",
+      "automaticOpenMerchantFrameLHCBlacksmith",
+      "Automatic open the trade window with the blacksmith in Light's Hope Chapel (Craftsman Wilhelm) when there is only one gossip option available",
+      nil
+    );
+    cbAutoOpenMerchantFrameLHCBlacksmith:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -10);
+    previous = cbAutoOpenMerchantFrameLHCBlacksmith;
 
-  local cbPopupFlyTBtoOrg = self:CreateCheckbox(
-    content,
-    "Ask before flying from TB to ORG (option)",
-    "askBeforeFlyingFromTBtoORGFromOption",
-    "When active, the option that enables you to fly from Thunder Bluff to Orgrimmar will ask first before flying",
-    cbAutoOpenMerchantFrameLHCBlacksmith
-  );
+    local cbPopupFlyTBtoOrg = self:CreateCheckbox(
+      content,
+      "Ask before flying from TB to ORG (option)",
+      "askBeforeFlyingFromTBtoORGFromOption",
+      "When active, the option that enables you to fly from Thunder Bluff to Orgrimmar will ask first before flying",
+      previous
+    );
+    previous = cbPopupFlyTBtoOrg;
 
-  local cbPopupFlyGromgolToStonard = self:CreateCheckbox(
-    content,
-    "Ask before flying from Grom'gol to Stonard (option)",
-    "askBeforeFlyingFromGromgolToStonardFromOption",
-    "When active, the option that enables you to fly from Grom'gol to Stonard will ask first before flying",
-    cbPopupFlyTBtoOrg
-  );
+    local cbPopupFlyGromgolToStonard = self:CreateCheckbox(
+      content,
+      "Ask before flying from Grom'gol to Stonard (option)",
+      "askBeforeFlyingFromGromgolToStonardFromOption",
+      "When active, the option that enables you to fly from Grom'gol to Stonard will ask first before flying",
+      previous
+    );
+    previous = cbPopupFlyGromgolToStonard;
+  end
 
-  -- -- Section: Cooldowns
-  -- local sectionCooldowns = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
-  -- sectionCooldowns:SetPoint("TOPLEFT", cbPopupFlyTBtoOrg, "BOTTOMLEFT", 0, -20);
-  -- sectionCooldowns:SetText("Cooldowns");
+  if (UtilityHub.Constants.IsTBC) then
+    -- Section: Cooldowns
+    local sectionCooldowns = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+    sectionCooldowns:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -20);
+    sectionCooldowns:SetText("Cooldowns");
+    previous = sectionCooldowns;
 
-  -- local cbCooldowns = self:CreateCheckbox(
-  --   content,
-  --   "Enable tracking",
-  --   "cooldowns",
-  --   "Enable tracking and listing of all character cooldowns",
-  --   cbPopupFlyTBtoOrg
-  -- );
-  -- cbCooldowns:SetPoint("TOPLEFT", sectionCooldowns, "BOTTOMLEFT", 0, -10);
+    local cbCooldowns = self:CreateCheckbox(
+      content,
+      "Enable tracking",
+      "cooldowns",
+      "Enable tracking and listing of all character cooldowns",
+      nil
+    );
+    cbCooldowns:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -10);
+    previous = cbCooldowns;
 
-  -- local cbCooldownSound = self:CreateCheckbox(
-  --   content,
-  --   "Play sound when ready",
-  --   "cooldownPlaySound",
-  --   "Play sound when a cooldown is ready",
-  --   cbCooldowns
-  -- );
+    local cbCooldownSound = self:CreateCheckbox(
+      content,
+      "Play sound when ready",
+      "cooldownPlaySound",
+      "Play sound when a cooldown is ready",
+      previous
+    );
+    previous = cbCooldownSound;
 
-  -- local cbCooldownCollapsed = self:CreateCheckbox(
-  --   content,
-  --   "Start collapsed",
-  --   "cooldownStartCollapsed",
-  --   "When opening the cooldowns content, all groups will start minimized",
-  --   cbCooldownSound
-  -- );
+    local cbCooldownCollapsed = self:CreateCheckbox(
+      content,
+      "Start collapsed",
+      "cooldownStartCollapsed",
+      "When opening the cooldowns content, all groups will start minimized",
+      previous
+    );
+    previous = cbCooldownCollapsed;
 
-  -- local cbCooldownSync = self:CreateCheckbox(
-  --   content,
-  --   "Enable cross-account sync",
-  --   "cooldownSync",
-  --   "Sync cooldown data between multiple WoW accounts via a shared chat channel",
-  --   cbCooldownCollapsed
-  -- );
+    local cbCooldownSync = self:CreateCheckbox(
+      content,
+      "Enable cross-account sync",
+      "cooldownSync",
+      "Sync cooldown data between multiple WoW accounts via a shared chat channel",
+      previous
+    );
+    previous = cbCooldownSync;
 
-  -- -- Sync channel input
-  -- local syncChannelContainer = CreateFrame("Frame", nil, content);
-  -- syncChannelContainer:SetSize(400, 30);
-  -- syncChannelContainer:SetPoint("TOPLEFT", cbCooldownSync, "BOTTOMLEFT", 0, -10);
+    -- Sync channel input
+    local syncChannelContainer = CreateFrame("Frame", nil, content);
+    syncChannelContainer:SetSize(400, 30);
+    syncChannelContainer:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -10);
+    previous = syncChannelContainer;
 
-  -- local syncChannelLabel = syncChannelContainer:CreateFontString(nil, "OVERLAY", "GameFontNormal");
-  -- syncChannelLabel:SetPoint("LEFT", 30, 0);
-  -- syncChannelLabel:SetText("Sync channel:");
+    local syncChannelLabel = syncChannelContainer:CreateFontString(nil, "OVERLAY", "GameFontNormal");
+    syncChannelLabel:SetPoint("LEFT", 30, 0);
+    syncChannelLabel:SetText("Sync channel:");
+    previous = syncChannelLabel;
 
-  -- local syncChannelInput = CreateFrame("EditBox", nil, syncChannelContainer, "InputBoxTemplate");
-  -- syncChannelInput:SetSize(200, 30);
-  -- syncChannelInput:SetPoint("LEFT", syncChannelLabel, "RIGHT", 10, 0);
-  -- syncChannelInput:SetAutoFocus(false);
-  -- syncChannelInput:SetMaxLetters(50);
+    local syncChannelInput = CreateFrame("EditBox", nil, syncChannelContainer, "InputBoxTemplate");
+    syncChannelInput:SetSize(200, 30);
+    syncChannelInput:SetPoint("LEFT", previous, "RIGHT", 10, 0);
+    syncChannelInput:SetAutoFocus(false);
+    syncChannelInput:SetMaxLetters(50);
+    previous = syncChannelInput;
 
-  -- -- Force text to be visible
-  -- syncChannelInput:SetTextColor(1, 1, 1, 1);
-  -- syncChannelInput:SetFontObject("ChatFontNormal");
-  -- syncChannelInput:SetJustifyH("LEFT");
+    -- Force text to be visible
+    syncChannelInput:SetTextColor(1, 1, 1, 1);
+    syncChannelInput:SetFontObject("ChatFontNormal");
+    syncChannelInput:SetJustifyH("LEFT");
+    previous = syncChannelInput;
 
-  -- -- Function to save the channel
-  -- local function SaveChannel()
-  --   local text = syncChannelInput:GetText();
-  --   UtilityHub.Database.global.options.cooldownSyncChannel = text;
-  --   UtilityHub.Events:TriggerEvent("OPTIONS_CHANGED", "cooldownSyncChannel", text);
-  -- end
+    -- Function to save the channel
+    local function SaveChannel()
+      local text = syncChannelInput:GetText();
+      UtilityHub.Database.global.options.cooldownSyncChannel = text;
+      UtilityHub.Events:TriggerEvent("OPTIONS_CHANGED", "cooldownSyncChannel", text);
+    end
 
-  -- -- Save when pressing Enter
-  -- syncChannelInput:SetScript("OnEnterPressed", function(self)
-  --   SaveChannel();
-  --   self:ClearFocus();
-  -- end);
+    -- Save when pressing Enter
+    syncChannelInput:SetScript("OnEnterPressed", function(self)
+      SaveChannel();
+      self:ClearFocus();
+    end);
 
-  -- -- Save when losing focus
-  -- syncChannelInput:SetScript("OnEditFocusLost", function(self)
-  --   SaveChannel();
-  -- end);
+    -- Save when losing focus
+    syncChannelInput:SetScript("OnEditFocusLost", function(self)
+      SaveChannel();
+    end);
 
-  -- -- Cancel on Escape
-  -- syncChannelInput:SetScript("OnEscapePressed", function(self)
-  --   -- Restore original value
-  --   self:SetText(UtilityHub.Database.global.options.cooldownSyncChannel or "");
-  --   self:ClearFocus();
-  -- end);
+    -- Cancel on Escape
+    syncChannelInput:SetScript("OnEscapePressed", function(self)
+      -- Restore original value
+      self:SetText(UtilityHub.Database.global.options.cooldownSyncChannel or "");
+      self:ClearFocus();
+    end);
 
-  -- -- Tooltip
-  -- syncChannelInput:SetScript("OnEnter", function(self)
-  --   GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-  --   GameTooltip:SetText("Sync Channel", 1, 1, 1);
-  --   GameTooltip:AddLine("Enter the name of a custom chat channel (e.g., 'MyCooldowns')", nil, nil, nil, true);
-  --   GameTooltip:AddLine("All accounts must use the same channel name to sync", nil, nil, nil, true);
-  --   GameTooltip:Show();
-  -- end);
+    -- Tooltip
+    syncChannelInput:SetScript("OnEnter", function(self)
+      GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+      GameTooltip:SetText("Sync Channel", 1, 1, 1);
+      GameTooltip:AddLine("Enter the name of a custom chat channel (e.g., 'MyCooldowns')", nil, nil, nil, true);
+      GameTooltip:AddLine("All accounts must use the same channel name to sync", nil, nil, nil, true);
+      GameTooltip:Show();
+    end);
 
-  -- syncChannelInput:SetScript("OnLeave", function(self)
-  --   if (GameTooltip:IsOwned(self)) then
-  --     GameTooltip:Hide();
-  --   end
-  -- end);
+    syncChannelInput:SetScript("OnLeave", function(self)
+      if (GameTooltip:IsOwned(self)) then
+        GameTooltip:Hide();
+      end
+    end);
 
-  -- -- Update field value when page is shown
-  -- frame:SetScript("OnShow", function(self)
-  --   local currentValue = UtilityHub.Database.global.options.cooldownSyncChannel or "";
-  --   syncChannelInput:SetText(currentValue);
-  --   syncChannelInput:SetCursorPosition(0);
-  --   syncChannelInput:ClearFocus();
-  -- end);
+    -- Update field value when page is shown
+    frame:SetScript("OnShow", function(self)
+      local currentValue = UtilityHub.Database.global.options.cooldownSyncChannel or "";
+      syncChannelInput:SetText(currentValue);
+      syncChannelInput:SetCursorPosition(0);
+      syncChannelInput:ClearFocus();
+    end);
 
-  -- -- Load initial value immediately (in case frame is already shown)
-  -- local initialValue = UtilityHub.Database.global.options.cooldownSyncChannel or "";
-  -- syncChannelInput:SetText(initialValue);
-  -- syncChannelInput:SetCursorPosition(0);
-  -- syncChannelInput:ClearFocus();
+    -- Load initial value immediately (in case frame is already shown)
+    local initialValue = UtilityHub.Database.global.options.cooldownSyncChannel or "";
+    syncChannelInput:SetText(initialValue);
+    syncChannelInput:SetCursorPosition(0);
+    syncChannelInput:ClearFocus();
+  end
 
-  -- Section: Loot
-  local sectionLoot = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
-  sectionLoot:SetPoint("TOPLEFT", cbPopupFlyGromgolToStonard, "BOTTOMLEFT", 0, -20);
-  sectionLoot:SetText("Loot");
+  if (UtilityHub.Constants.IsTBC) then
+    -- Section: Loot
+    local sectionLoot = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+    sectionLoot:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -20);
+    sectionLoot:SetText("Loot");
+    previous = sectionLoot;
 
-  local cbLootConfirmStrat = self:CreateCheckbox(
-    content,
-    "Disable loot confirm in Stratholme",
-    "disableLootConfirmInStrat",
-    "Disable the loot confirm popup while looting in Stratholme while level 70 or higher"
-  );
-  cbLootConfirmStrat:SetPoint("TOPLEFT", sectionLoot, "BOTTOMLEFT", 0, -10);
+    local cbLootConfirmStrat = self:CreateCheckbox(
+      content,
+      "Disable loot confirm in Stratholme",
+      "disableLootConfirmInStrat",
+      "Disable the loot confirm popup while looting in Stratholme while level 70 or higher"
+    );
+    cbLootConfirmStrat:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -10);
+    previous = cbLootConfirmStrat;
+  end
 
-  -- Section: LFG
-  local sectionLFG = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
-  sectionLFG:SetPoint("TOPLEFT", cbLootConfirmStrat, "BOTTOMLEFT", 0, -20);
-  sectionLFG:SetText("LFG");
+  if (not UtilityHub.Constants.IsForever) then
+    -- Section: LFG
+    local sectionLFG = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+    sectionLFG:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -20);
+    sectionLFG:SetText("LFG");
+    previous = sectionLFG;
 
-  local cbEnteringListedGroupWarning = self:CreateCheckbox(
-    content,
-    "Show warning when entering an already listed group",
-    "showWarningEnteringListedGroupInLFG",
-    "When you enter in a group with someone listed in the LFG (Ex: invited someone to enchant), you will be listed too even if the other player leaves, so this will make a warning show in the middle of the screen"
-  );
-  cbEnteringListedGroupWarning:SetPoint("TOPLEFT", sectionLFG, "BOTTOMLEFT", 0, -10);
+    local cbEnteringListedGroupWarning = self:CreateCheckbox(
+      content,
+      "Show warning when entering an already listed group",
+      "showWarningEnteringListedGroupInLFG",
+      "When you enter in a group with someone listed in the LFG (Ex: invited someone to enchant), you will be listed too even if the other player leaves, so this will make a warning show in the middle of the screen"
+    );
+    cbEnteringListedGroupWarning:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -10);
+    previous = cbEnteringListedGroupWarning;
 
-  local cbLeavingListedGroupWarning = self:CreateCheckbox(
-    content,
-    "Show warning when leaving an already listed group",
-    "showWarningLeavingListedGroupInLFG",
-    "When you leave a group with someone listed in the LFG (Ex: invited by someone to enchant), you will be listed too even if the other player leaves, so this will make a warning show in the middle of the screen",
-    cbEnteringListedGroupWarning
-  );
+    local cbLeavingListedGroupWarning = self:CreateCheckbox(
+      content,
+      "Show warning when leaving an already listed group",
+      "showWarningLeavingListedGroupInLFG",
+      "When you leave a group with someone listed in the LFG (Ex: invited by someone to enchant), you will be listed too even if the other player leaves, so this will make a warning show in the middle of the screen",
+      previous
+    );
+    previous = cbLeavingListedGroupWarning;
+  end
 
   return frame;
 end

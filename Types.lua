@@ -45,7 +45,7 @@
 ---@class ItemGroupOption
 ---@field label string
 ---@field CheckItemBelongsToGroup fun(itemLink: ItemLink): boolean
----@field IsEnabledInThisExpansion? fun(): boolean
+---@field ShouldLoad? fun(): boolean
 
 ------- Options
 ---@class OptionsCreateList
@@ -66,38 +66,6 @@
 ---@field quantity number
 ---@field scope EAutoBuyScope
 ---@field scopeValue? string
-
-------- MouseRing
----@class MouseRingData
----@field enabled boolean
----@field size number
----@field shape string
----@field colorR number
----@field colorG number
----@field colorB number
----@field useClassColor boolean
----@field hideBackground boolean
----@field showOutOfCombat boolean
----@field hideOnRightClick boolean
--- Cast swipe
----@field castSwipeEnabled boolean
----@field castSwipeR? number
----@field castSwipeG? number
----@field castSwipeB? number
----@field castSwipeUseClassColor boolean
--- GCD swipe
----@field gcdEnabled boolean
----@field gcdR? number
----@field gcdG? number
----@field gcdB? number
----@field gcdUseClassColor boolean
--- Trail
----@field trailEnabled boolean
----@field trailR? number
----@field trailG? number
----@field trailB? number
----@field trailUseClassColor boolean
----@field trailDuration number
 
 --- Cooldowns
 ---@class CooldownConfig

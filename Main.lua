@@ -17,7 +17,7 @@ local function InitVariables()
     oldVersion = UHdatabase.global.oldVersion;
   end
 
-  UtilityHub.Database = LibStub("AceDB-3.0")
+  UtilityHub.Database = UtilityHub.Libs.AceDB
       :New(
         "UHdatabase",
         {
@@ -366,8 +366,8 @@ end
 
 local function UpdateCharacter()
   ---@type string
-  local name = UnitName("player");
-  local characterIndex = UtilityHub.DatabaseFunctions.GetCharacterIndex(name);
+  local name, realm = UtilityHub.Helpers.Unit:UnitName("player");
+  local characterIndex = UtilityHub.DatabaseFunctions.GetCharacterIndex(name, realm);
 
   if (characterIndex) then
     UtilityHub.DatabaseFunctions.UpdateCurrentCharacter();
@@ -440,18 +440,6 @@ UtilityHub.Events:RegisterCallback("OPTIONS_CHANGED", function(_, name)
       UtilityHub.Addon:DisableModule("Trade");
     end
   end
-
-  if (name == "mouseRing") then
-    if (UtilityHub.Addon:GetModule("MouseRing", true)) then
-      local db = UtilityHub.Database.global.options.mouseRing;
-
-      if (db and db.enabled) then
-        UtilityHub.Addon:EnableModule("MouseRing");
-      else
-        UtilityHub.Addon:DisableModule("MouseRing");
-      end
-    end
-  end
 end);
 
 UtilityHub.Events:RegisterCallback("COUNT_READY_COOLDOWNS_CHANGED", function(_, count, changed)
@@ -496,7 +484,6 @@ function UtilityHub.Addon:OnInitialize()
 
   UtilityHub.GameOptions.Register();
   UtilityHub.Integration.Baganator:Init();
-  -- UtilityHub.Integration.Auctionator();
   UtilityHub.Integration.TSM:Init();
   UtilityHub.Integration.DragonflightUI:Init();
   UtilityHub.Integration.AtlasLootClassic:Init();
@@ -509,11 +496,11 @@ function UtilityHub.Addon:OnInitialize()
     UtilityHub.Addon:EnableModule("AutoBuy");
   end
 
-  if (UtilityHub.Database.global.options.cooldowns) then
+  if (not UtilityHub.Constants.IsForever and UtilityHub.Database.global.options.cooldowns) then
     UtilityHub.Addon:EnableModule("Cooldowns");
   end
 
-  if (UtilityHub.Database.global.options.dailyQuests) then
+  if (not UtilityHub.Constants.IsForever and UtilityHub.Database.global.options.dailyQuests) then
     UtilityHub.Addon:EnableModule("DailyQuests");
   end
 
@@ -522,10 +509,4 @@ function UtilityHub.Addon:OnInitialize()
   end
 
   UtilityHub.Addon:EnableModule("GraphicsSettings");
-
-  local mouseRingDB = UtilityHub.Database.global.options.mouseRing;
-
-  if (mouseRingDB and mouseRingDB.enabled and UtilityHub.Addon:GetModule("MouseRing", true)) then
-    UtilityHub.Addon:EnableModule("MouseRing");
-  end
 end

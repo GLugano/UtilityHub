@@ -3,7 +3,7 @@
 ## Title: UtilityHub
 ## IconTexture: Interface\Addons\UtilityHub\Assets\Icons\addon
 ## Author: Cacetinho-Nightslayer 
-## Version: 0.40
+## Version: 0.50
 ## SavedVariables: UHdatabase
 
 # XMLs
@@ -11,8 +11,8 @@ embeds.xml
 
 # LUAs
 UtilityHub.lua
-Constants.lua
 Enums.lua
+Constants.lua
 Helpers.lua
 Main.lua
 Layout/TreeGroup/TreeGroup.lua
@@ -26,7 +26,6 @@ Options/Pages/CharactersPage.lua
 Options/Pages/AutoBuyPage.lua
 Options/Pages/MailPage.lua
 Options/Pages/CooldownsPage.lua
-Options/Pages/MouseRingPage.lua
 Options/Options.lua
 Modules/Mail/PresetItemsDB.lua
 Modules/Mail/Characters.lua
@@ -38,17 +37,14 @@ Modules/Trade/Trade.lua
 Modules/AutoBuy/AutoBuy.lua
 Modules/Integration/Integration.lua
 Modules/Integration/Baganator.lua
-Modules/Integration/Auctionator.lua
 Modules/Integration/TSM.lua
 Modules/Integration/DragonflightUI.lua
 Modules/Integration/AtlasLootClassic.lua
 Modules/Tooltip/Tooltip.lua
-# Modules/Cooldowns/Cooldowns.lua
+Modules/Cooldowns/Cooldowns.lua
 Modules/Cooldowns/CooldownsAPI.lua
-Modules/Cooldowns/Cooldowns2.lua
 Modules/Cooldowns/Sync.lua
 Modules/DailyQuests/DailyQuests.lua
-Modules/MouseRing/MouseRing.lua
 Modules/DebugLog/DebugLogViewer.lua
 Modules/GraphicsSettings/GraphicsSettings.lua
 Options/Pages/GraphicsSettingsPage.lua

@@ -1,8 +1,12 @@
-local moduleName = 'Tooltip';
+local moduleName = "Tooltip";
 ---@class Tooltip
-local Module     = UtilityHub.Addon:NewModule(moduleName);
+local Module = UtilityHub.Addon:NewModule(moduleName);
 
-local skills     = {
+if (not Module) then
+  return;
+end
+
+local skills = {
   -- Professions
   "Fishing",
   "Mining",
@@ -34,7 +38,7 @@ local skills     = {
 
 ---@class PatternConfig
 ---@field pattern? string|string[]
----@field IdentifyPattern? fun(self: PatternConfig, text: string): string
+---@field IdentifyPattern? fun(self: PatternConfig, text: string): boolean
 ---@field FormatText fun(self: PatternConfig, text: string, prefix?: string): (string, PrefixConfig?)
 
 ---@param text string
@@ -323,7 +327,10 @@ local MANA_REGEN                    = {
 };
 
 local HEALTH_REGEN                  = {
-  pattern = "(%d+) health per",
+  pattern = {
+    "(%d+) health per",
+    "(%d+) Health per",
+  },
   FormatText = function(self, text)
     local regen = text:match("(%d+) health per");
     return string.format("+%s HP5", regen);
@@ -626,10 +633,11 @@ Module.gameTooltipHooked            = false;
 
 ---@param patternConfig PatternConfig
 ---@param text string|nil
----@return string|nil
+---@return boolean
+---@return string|nil matchedPattern
 local function IdentifyPattern(patternConfig, text)
   if (not text or #text == 0) then
-    return nil;
+    return false;
   end
 
   if (patternConfig.IdentifyPattern) then
@@ -640,14 +648,14 @@ local function IdentifyPattern(patternConfig, text)
         or {};
 
     for _, pattern in ipairs(patternList) do
-      local result = text:match(pattern)
+      local result = text:match(pattern);
 
       if (result) then
-        return result;
+        return true, pattern;
       end
     end
 
-    return nil;
+    return false, nil;
   end
 end
 
@@ -659,6 +667,7 @@ local function ExtractPrefix(text)
     "^Chance on hit:", -- Equip
     "^Use:",           -- Equip
     "^Socket Bonus:",  -- Equip
+    "Enchanted:",
   };
 
   for _, prefix in ipairs(prefixes) do
@@ -676,22 +685,54 @@ end
 ---@param prefix string
 ---@param tooltipLineRef any
 local function SearchAndApplyPattern(text, prefix, tooltipLineRef)
+  local clearText = prefix and string.gsub(text, prefix .. " ", "");
+
+  if (clearText == nil or #clearText == 0) then
+    return;
+  end
+
   for _, patternConfig in pairs(Module.patternConfigList) do
-    if (prefix ~= "Use:" and IdentifyPattern(patternConfig, text)) then
-      local newString, prefixConfig = patternConfig:FormatText(text, prefix);
-      local newPrefix = prefix;
+    if (UtilityHub.Constants.IsForever) then
+      local matched, patternMatched = IdentifyPattern(patternConfig, clearText);
 
-      if (prefixConfig and prefixConfig.overrite and prefixConfig.value) then
-        newPrefix = prefixConfig.value;
+      if (prefix ~= "Use:" and matched) then
+        local newString, prefixConfig = patternConfig:FormatText(clearText);
+        local newPrefix = prefix;
+
+        if (prefixConfig and prefixConfig.overrite and prefixConfig.value) then
+          newPrefix = prefixConfig.value;
+        end
+
+        if (prefixConfig and prefixConfig.overrite and prefixConfig.value) then
+          newPrefix = prefixConfig.value;
+        end
+
+        if (newPrefix) then
+          newString = string.format("%s %s", newPrefix, newString);
+        end
+
+        if (newString) then
+          tooltipLineRef:SetText(newString);
+          return;
+        end
       end
+    else
+      if (prefix ~= "Use:" and IdentifyPattern(patternConfig, text)) then
+        local newString, prefixConfig = patternConfig:FormatText(text, prefix);
+        local newPrefix = prefix;
 
-      if (newPrefix) then
-        newString = string.format("%s %s", newPrefix, newString);
-      end
+        if (prefixConfig and prefixConfig.overrite and prefixConfig.value) then
+          newPrefix = prefixConfig.value;
+        end
 
-      if (newString) then
-        tooltipLineRef:SetText(newString);
-        return;
+        if (newPrefix) then
+          newString = string.format("%s %s", newPrefix, newString);
+        end
+
+        if (newString) then
+          tooltipLineRef:SetText(newString);
+          return;
+        end
       end
     end
   end
@@ -742,6 +783,17 @@ local function UpdatePatternConfig()
     tinsert(Module.patternConfigList, SKILL_INCREASE_CLASSIC);
 
     tinsert(Module.patternConfigList, TEMP_STAT_INCREASE_CLASSIC);
+  elseif (UtilityHub.Constants.IsForever) then
+    tinsert(Module.patternConfigList, DEFENSE_CLASSIC);
+    tinsert(Module.patternConfigList, BLOCK_CLASSIC);
+    tinsert(Module.patternConfigList, DODGE_CLASSIC);
+    tinsert(Module.patternConfigList, PARRY_CLASSIC);
+    tinsert(Module.patternConfigList, BLOCK_VALUE_CLASSIC);
+
+    tinsert(Module.patternConfigList, SPELL_DAMAGE);
+    tinsert(Module.patternConfigList, HEALING);
+
+    tinsert(Module.patternConfigList, TEMP_STAT_INCREASE_CLASSIC);
   else
     tinsert(Module.patternConfigList, ATTACK_POWER);
     tinsert(Module.patternConfigList, PHYSICAL_HIT);
@@ -771,7 +823,10 @@ local function UpdatePatternConfig()
 
   tinsert(Module.patternConfigList, SPELL_DAMAGE_SPECIFIC_SCHOOL);
 
-  tinsert(Module.patternConfigList, GENERIC_ENCHANT);
+  if (not UtilityHub.Constants.IsForever) then
+    tinsert(Module.patternConfigList, GENERIC_ENCHANT);
+  end
+
   tinsert(Module.patternConfigList, MINOR_SPEED);
 
   tinsert(Module.patternConfigList, ATIESH_AURA_CRIT);
@@ -796,28 +851,32 @@ end
 function Module:OnEnable()
   UpdatePatternConfig();
 
-  if (not Module.itemRefTooltipHooked) then
-    Module.itemRefTooltipHooked = ItemRefTooltip:HookScript("OnTooltipSetItem", OnTooltipSetItemEvent);
-  end
-
-  if (not Module.gameTooltipHooked) then
-    Module.gameTooltipHooked = GameTooltip:HookScript("OnTooltipSetItem", OnTooltipSetItemEvent);
-  end
-
-  if (not Module.shopping1TooltipHooked) then
-    Module.shopping1TooltipHooked = ShoppingTooltip1:HookScript("OnTooltipSetItem", OnTooltipSetItemEvent);
-  end
-
-  if (not Module.shopping2TooltipHooked) then
-    Module.shopping2TooltipHooked = ShoppingTooltip2:HookScript("OnTooltipSetItem", OnTooltipSetItemEvent);
-  end
-
-  hooksecurefunc("ItemSocketingFrame_LoadUI", function()
-    if (not Module.itemSocketingDescriptionHooked) then
-      Module.itemSocketingDescriptionHooked = ItemSocketingDescription:HookScript("OnTooltipSetItem",
-        OnTooltipSetItemEvent);
+  if (UtilityHub.Constants.IsForever) then
+    TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item, OnTooltipSetItemEvent);
+  else
+    if (not Module.itemRefTooltipHooked) then
+      Module.itemRefTooltipHooked = ItemRefTooltip:HookScript("OnTooltipSetItem", OnTooltipSetItemEvent);
     end
-  end);
+
+    if (not Module.gameTooltipHooked) then
+      Module.gameTooltipHooked = GameTooltip:HookScript("OnTooltipSetItem", OnTooltipSetItemEvent);
+    end
+
+    if (not Module.shopping1TooltipHooked) then
+      Module.shopping1TooltipHooked = ShoppingTooltip1:HookScript("OnTooltipSetItem", OnTooltipSetItemEvent);
+    end
+
+    if (not Module.shopping2TooltipHooked) then
+      Module.shopping2TooltipHooked = ShoppingTooltip2:HookScript("OnTooltipSetItem", OnTooltipSetItemEvent);
+    end
+
+    hooksecurefunc("ItemSocketingFrame_LoadUI", function()
+      if (not Module.itemSocketingDescriptionHooked) then
+        Module.itemSocketingDescriptionHooked = ItemSocketingDescription:HookScript("OnTooltipSetItem",
+          OnTooltipSetItemEvent);
+      end
+    end);
+  end
 end
 
 -- Events

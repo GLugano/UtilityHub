@@ -5,6 +5,11 @@
 ---@field character string
 ---@field className string
 
+--- Disable if forever
+if (UtilityHub.Constants.IsForever) then
+  return;
+end
+
 ---@param profession Profession
 local function KnowsProfession(profession)
   for _, spellID, value in ipairs(profession.spellIDs) do
@@ -394,6 +399,9 @@ local function UpdateCooldowns()
 end
 
 EventRegistry:RegisterFrameEventAndCallback("TRADE_SKILL_LIST_UPDATE", UpdateCooldowns);
-EventRegistry:RegisterFrameEventAndCallback("TRADE_SKILL_UPDATE", UpdateCooldowns);
+if (UtilityHub.Constants.IsClassic or UtilityHub.Constants.IsTBC) then
+  EventRegistry:RegisterFrameEventAndCallback("TRADE_SKILL_UPDATE", UpdateCooldowns);
+end
+
 UtilityHub.Events:RegisterCallback("CHARACTER_UPDATE_NEEDED", UpdateCooldowns);
 UtilityHub.Events:RegisterCallback("CHARACTERS_IMPORT_COMPLETED", UpdateCooldowns);

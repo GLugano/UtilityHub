@@ -3,6 +3,40 @@ local moduleName = 'DailyQuests';
 local Module = UtilityHub.Addon:NewModule(moduleName);
 
 local IsQuestComplete = C_QuestLog and C_QuestLog.IsComplete or IsQuestComplete;
+local GetNumFactions = C_Reputation and C_Reputation.GetNumFactions or GetNumFactions;
+local GetFactionInfoLocal;
+
+if (not C_Reputation or not C_Reputation.GetFactionDataByIndex) then
+  GetFactionInfoLocal = function(index)
+    local name, description, standingID, barMin, barMax, barValue, atWarWith,
+    canToggleAtWar, isHeader, isCollapsed, hasRep, isWatched, isChild, factionID,
+    hasBonusRepGain, canSetInactive = GetFactionInfo(index);
+    local repValue = barValue - barMin
+    local repMax = barMax - barMin
+
+    return {
+      factionID = factionID,
+      name = name,
+      description = description,
+      reaction = standingID,
+      currentReactionThreshold = repMax,
+      nextReactionThreshold = nil, -- Next bar size, old function doesnt return it
+      currentStanding = repValue,
+      atWarWith = atWarWith,
+      canToggleAtWar = canToggleAtWar,
+      isChild = isChild,
+      isHeader = isHeader,
+      isHeaderWithRep = false,
+      isCollapsed = isCollapsed,
+      isWatched = isWatched,
+      hasBonusRepGain = hasBonusRepGain,
+      canSetInactive = canSetInactive,
+      isAccountWide = false,
+    };
+  end
+else
+  GetFactionInfoLocal = C_Reputation.GetFactionDataByIndex;
+end
 
 ---@class Quest
 ---@field questID number
@@ -1036,12 +1070,12 @@ function ValidateRequirements(requirements)
     reputation = function(requirements)
       ---@param factionID number
       ---@return EReputationStanding|nil
-      function GetFactionStandingID(factionID)
+      local function GetFactionStandingID(factionID)
         for i = 1, GetNumFactions() do
-          local _, _, standingID, _, _, _, _, _, _, _, _, _, _, factionIDLoop = GetFactionInfo(i);
+          local factionData = GetFactionInfoLocal(i);
 
-          if (factionID == factionIDLoop) then
-            return standingID;
+          if (factionID == factionData.factionID) then
+            return factionData.reaction;
           end
         end
 
@@ -1051,7 +1085,7 @@ function ValidateRequirements(requirements)
       ---@param val1 any
       ---@param val2 any
       ---@param operator "equals" | "greater" | "lower" | "greaterEqual" | "lowerEqual"
-      function RunOperator(val1, val2, operator)
+      local function RunOperator(val1, val2, operator)
         if (operator == "equals") then
           return val1 == val2;
         end
@@ -1171,6 +1205,14 @@ Module.Ticker = C_Timer.NewTicker(1, function()
     end
   end
 end);
+
+function Module:OnEnable()
+  Module:UpdateFlags();
+
+  if (Module.Frame) then
+    Module:UpdateDailyQuestsFrameList();
+  end
+end
 
 function Module:SaveFlagChanges()
   UtilityHub.Database.char.complete = Module.QuestDB.complete or {};
@@ -1846,6 +1888,10 @@ EventRegistry:RegisterFrameEventAndCallback("CHAT_MSG_COMBAT_FACTION_CHANGE", fu
 end);
 
 EventRegistry:RegisterFrameEventAndCallback("PLAYER_LEVEL_UP", function()
+  if (not Module:IsEnabled()) then
+    return;
+  end
+
   Module:UpdateFlags();
   Module:UpdateDailyQuestsFrameList();
 end);
@@ -1855,6 +1901,10 @@ UtilityHub.Events:RegisterCallback("TOGGLE_DAILY_FRAME", function(_, name)
 end);
 
 UtilityHub.Events:RegisterCallback("FORCE_DAILY_QUESTS_FLAG_UPDATE", function(_, questID, ...)
+  if (not Module:IsEnabled()) then
+    return;
+  end
+
   questID = questID and tonumber(questID) or nil;
 
   if (questID) then

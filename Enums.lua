@@ -23,6 +23,13 @@ local COOLDOWN_GROUP_BY = {
 
 ---@class Enums
 UtilityHub.Enums = {
+  ---@enum RealmRule
+  RealmRule = {
+    RP = "RP",
+    PVE = "PvE",
+    PVP = "PvP",
+    HC = "Hardcore",
+  },
   ---@type EAutoBuyScope
   AutoBuyScope = AUTO_BUY_SCOPE,
   ---@enum EAutoBuyScopeText
