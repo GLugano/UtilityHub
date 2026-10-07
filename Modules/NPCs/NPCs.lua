@@ -47,7 +47,7 @@ local dialogActionConfigs = {
 ---@param elementData table
 ---@return boolean
 local function CheckOption(npcName, gossipConfig, elementData)
-  if (not elementData or not elementData.info) then
+  if (not elementData or not elementData.info or issecretvalue(npcName)) then
     return false;
   end
 

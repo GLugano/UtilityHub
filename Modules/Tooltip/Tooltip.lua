@@ -31,6 +31,10 @@ local skills = {
   "Crossbows",
   "Guns",
 };
+---@class SearchAndApplyPatternData
+---@field text string | nil
+---@field prefix string | nil
+---@field tooltipLineRef FontString
 
 ---@class PrefixConfig
 ---@field overrite boolean
@@ -39,7 +43,7 @@ local skills = {
 ---@class PatternConfig
 ---@field pattern? string|string[]
 ---@field IdentifyPattern? fun(self: PatternConfig, text: string): boolean
----@field FormatText fun(self: PatternConfig, text: string, prefix?: string): (string, PrefixConfig?)
+---@field FormatText fun(self: PatternConfig, text: string, data: SearchAndApplyPatternData): (string, PrefixConfig?)
 
 ---@param text string
 ---@param format string
@@ -337,11 +341,11 @@ Module.formats.HEALING_CLASSIC                        = { -- + ATIESH AURA
 
 Module.formats.HEALING                                = {
   pattern = "Increases healing done by up to (%d+) and damage done by up to (%d+) for all magical spells and effects",
-  FormatText = function(self, text, prefix)
+  FormatText = function(self, text, data)
     local healing = text:match("healing done by up to (%d+)");
     local damage = text:match("damage done by up to (%d+)");
 
-    return string.format("+%s Healing Power\n%s +%s Spell Power", healing, prefix, damage);
+    return string.format("+%s Healing Power\n%s +%s Spell Power", healing, data.prefix, damage);
   end
 };
 
@@ -350,24 +354,25 @@ Module.formats.HEALING_FOREVER                        = {
     "Increases healing done by up to (%d+) and damage done by up to (%d+) for all magical spells and effects",
     "Increases healing done by magical spells and effects by up to (%d+)",
   },
-  FormatText = function(self, text, prefix)
+  FormatText = function(self, text, data)
     local damage = text:match("damage done by up to (%d+)");
 
     if (damage) then
-      return string.format("+%s Healing Power\n%s +%s Spell Power", text:match("healing done by up to (%d+)"), prefix,
+      return string.format("+%s Healing Power\n%s +%s Spell Power", text:match("healing done by up to (%d+)"),
+        data.prefix,
         damage);
     end
 
-    return string.format("+%s Healing Power", text:match("by up to (%d+)"), prefix);
+    return string.format("+%s Healing Power", text:match("by up to (%d+)"), data.prefix);
   end
 };
 
 -- Resources
 Module.formats.MANA_REGEN                             = {
   pattern = "(%d+) mana per",
-  FormatText = function(self, text, prefix)
-    if (prefix) then
-      text = text:gsub(prefix, "");
+  FormatText = function(self, text, data)
+    if (data.prefix) then
+      text = text:gsub(data.prefix, "");
       text = text:gsub(" Restores ", "+");
     end
 
@@ -379,7 +384,7 @@ Module.formats.MANA_REGEN                             = {
 
 Module.formats.MANA_REGEN_FOREVER                     = {
   pattern = "Restores (%d+) Mana per",
-  FormatText = function(self, text, prefix)
+  FormatText = function(self, text)
     local regen = text:lower():match("restores (%d+)");
     return string.format("+%s MP5", regen);
   end
@@ -571,7 +576,10 @@ Module.formats.PARRY                                  = {
 };
 
 Module.formats.BLOCK_CLASSIC                          = {
-  pattern = "(%Increases your chance to block)",
+  pattern = {
+    "(%Increases your chance to block)",
+    "(%Increases your chance to Block)",
+  },
   FormatText = function(self, text)
     return ByFormat(text, "+%s%% Block");
   end
@@ -601,6 +609,18 @@ Module.formats.BLOCK_VALUE                            = {
   end
 };
 
+Module.formats.FALL_DAMAGE                            = {
+  pattern = "Reduces damage from falling",
+  FormatText = function(self, text, data)
+    DevTools_Dump(data);
+    if (data.itemID == 3748) then
+      return "-6% Fall Damage";
+    end
+
+    return;
+  end
+};
+
 Module.formats.RESILIENCE                             = {
   pattern = "Improves your resilience rating by (%d+)",
   FormatText = function(self, text)
@@ -609,9 +629,19 @@ Module.formats.RESILIENCE                             = {
 };
 
 Module.formats.SWIM_SPEED                             = {
-  pattern = "Increases swim speed by (%d+)",
+  pattern = {
+    "Increases swim speed by (%d+)",
+    "Swim speed increased by (%d+)",
+  },
   FormatText = function(self, text)
     return ByFormat(text, "+%s%% Swim Speed");
+  end
+};
+
+Module.formats.MOVEMENT_SPEED_DECREASE                = {
+  pattern = "Movement speed reduced by (%d+)",
+  FormatText = function(self, text)
+    return ByFormat(text, "-%s%% Movement Speed");
   end
 };
 
@@ -747,11 +777,9 @@ local function ExtractPrefix(text)
   return nil;
 end
 
----@param text string
----@param prefix string
----@param tooltipLineRef any
-local function SearchAndApplyPattern(text, prefix, tooltipLineRef)
-  local clearText = prefix and string.gsub(text, prefix .. " ", "");
+---@param data SearchAndApplyPatternData
+local function SearchAndApplyPattern(data)
+  local clearText = data.prefix and string.gsub(data.text, data.prefix .. " ", "");
 
   if (clearText == nil or #clearText == 0) then
     return;
@@ -761,9 +789,9 @@ local function SearchAndApplyPattern(text, prefix, tooltipLineRef)
     if (UtilityHub.Constants.IsForever) then
       local matched, patternMatched = IdentifyPattern(patternConfig, clearText);
 
-      if (prefix ~= "Use:" and prefix ~= "Change on hit:" and matched) then
-        local newString, prefixConfig = patternConfig:FormatText(clearText, prefix);
-        local newPrefix = prefix;
+      if (data.prefix ~= "Use:" and data.prefix ~= "Change on hit:" and matched) then
+        local newString, prefixConfig = patternConfig:FormatText(clearText, data);
+        local newPrefix = data.prefix;
 
         if (prefixConfig and prefixConfig.overrite and prefixConfig.value) then
           newPrefix = prefixConfig.value;
@@ -778,14 +806,14 @@ local function SearchAndApplyPattern(text, prefix, tooltipLineRef)
         end
 
         if (newString) then
-          tooltipLineRef:SetText(newString);
+          data.tooltipLineRef:SetText(newString);
           return;
         end
       end
     else
-      if (prefix ~= "Use:" and IdentifyPattern(patternConfig, text)) then
-        local newString, prefixConfig = patternConfig:FormatText(text, prefix);
-        local newPrefix = prefix;
+      if (data.prefix ~= "Use:" and IdentifyPattern(patternConfig, data.text)) then
+        local newString, prefixConfig = patternConfig:FormatText(data.text, data.prefix);
+        local newPrefix = data.prefix;
 
         if (prefixConfig and prefixConfig.overrite and prefixConfig.value) then
           newPrefix = prefixConfig.value;
@@ -796,7 +824,7 @@ local function SearchAndApplyPattern(text, prefix, tooltipLineRef)
         end
 
         if (newString) then
-          tooltipLineRef:SetText(newString);
+          data.tooltipLineRef:SetText(newString);
           return;
         end
       end
@@ -810,6 +838,13 @@ local function OnTooltipSetItemEvent(tooltip)
     return;
   end
 
+  local itemID = nil;
+
+  if (tooltip.GetItem) then
+    local name, link = tooltip:GetItem();
+    itemID = C_Item.GetItemInfoInstant(link);
+  end
+
   local tooltipName = tooltip:GetName();
 
   for i = 1, tooltip:NumLines() do
@@ -817,9 +852,17 @@ local function OnTooltipSetItemEvent(tooltip)
 
     if (tooltipLineRef) then
       local text = tooltipLineRef:GetText();
-      local prefix = ExtractPrefix(text);
 
-      SearchAndApplyPattern(text, prefix, tooltipLineRef);
+      if (text and #text > 0) then
+        local prefix = ExtractPrefix(text);
+
+        SearchAndApplyPattern({
+          text = text,
+          prefix = prefix,
+          tooltipLineRef = tooltipLineRef,
+          itemID = itemID,
+        });
+      end
     end
   end
 end
@@ -870,7 +913,9 @@ local function UpdatePatternConfig()
     tinsert(Module.patternConfigList, formats.SPELL_DAMAGE_SPECIFIC_MOB_TYPE_FOREVER);
 
     tinsert(Module.patternConfigList, formats.TEMP_STAT_INCREASE_CLASSIC);
+    tinsert(Module.patternConfigList, formats.MOVEMENT_SPEED_DECREASE);
     tinsert(Module.patternConfigList, formats.STEALTH_DETECTION);
+    tinsert(Module.patternConfigList, formats.FALL_DAMAGE);
   else
     tinsert(Module.patternConfigList, formats.ATTACK_POWER);
     tinsert(Module.patternConfigList, formats.PHYSICAL_HIT);
