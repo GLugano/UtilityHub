@@ -23,6 +23,11 @@ local function GetOrCreateEditDialog()
   dialog:SetScript("OnDragStop", dialog.StopMovingOrSizing);
   dialog:Hide();
 
+  -- Title
+  dialog.title = dialog:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+  dialog.title:SetPoint("CENTER", dialog.TitleBg, "CENTER", 0, 0)
+  dialog.title:SetText("Editing character")
+
   -- Scope label
   local groupLabel = dialog:CreateFontString(nil, "OVERLAY", "GameFontNormal");
   groupLabel:SetPoint("TOPLEFT", 15, -30);
@@ -232,7 +237,7 @@ function CharactersPage:Create(parent)
             local characterRealm = rowData.realm;
 
             for _, character in ipairs(characters) do
-              if (character.name == characterName == character.realm == characterRealm) then
+              if (character.name == characterName and character.realm == characterRealm) then
                 character.group = group;
                 break;
               end
