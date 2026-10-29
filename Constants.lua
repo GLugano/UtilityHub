@@ -30,6 +30,7 @@ UtilityHub.Constants = {
   AddonPrefix = "UH",
   AddonVersion = C_AddOns.GetAddOnMetadata(ADDON_NAME, "Version"),
   AddonColorHex = "F5566EFF",
+  Path = "Interface\\AddOns\\" .. ADDON_NAME,
 
   --- Version
   IsClassic = (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC) and (interfaceVersion < 20000),

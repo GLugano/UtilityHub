@@ -327,6 +327,23 @@ function GeneralPage:Create(parent)
     previous = cbLootConfirmStrat;
   end
 
+  if (UtilityHub.Constants.IsForever) then
+    -- Section: ReplaceSound
+    local sectionReplaceSound = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+    sectionReplaceSound:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -20);
+    sectionReplaceSound:SetText("Replace Sound");
+    previous = sectionReplaceSound;
+
+    local cbReplaceSoundHolyStrike = self:CreateCheckbox(
+      content,
+      "Holy Strike -> Hammer of the Righteous",
+      "replaceSoundHolyStrike",
+      "Replace the sound from paladin spell Holy Strike to Hammer of the Righteous"
+    );
+    cbReplaceSoundHolyStrike:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -10);
+    previous = cbReplaceSoundHolyStrike;
+  end
+
   if (not UtilityHub.Constants.IsForever) then
     -- Section: LFG
     local sectionLFG = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");

@@ -47,6 +47,8 @@ _G.UtilityHub = {
       -- Trade
       ---@type boolean
       tradeExtraInfo = false,
+      -- Sound
+      replaceSoundHolyStrike = false,
       -- GraphicsSettings
       graphicsSettings = {
         originalValues = {},

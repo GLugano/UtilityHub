@@ -508,5 +508,6 @@ function UtilityHub.Addon:OnInitialize()
     UtilityHub.Addon:EnableModule("Trade");
   end
 
+  UtilityHub.Addon:EnableModule("ReplaceSound");
   UtilityHub.Addon:EnableModule("GraphicsSettings");
 end

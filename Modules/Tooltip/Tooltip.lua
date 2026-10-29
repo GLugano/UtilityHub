@@ -842,7 +842,11 @@ local function OnTooltipSetItemEvent(tooltip)
 
   if (tooltip.GetItem) then
     local name, link = tooltip:GetItem();
-    itemID = C_Item.GetItemInfoInstant(link);
+
+    -- Check if the item really exists (sometimes it doesnt?)
+    if (link) then
+      itemID = C_Item.GetItemInfoInstant(link);
+    end
   end
 
   local tooltipName = tooltip:GetName();
