@@ -1,6 +1,6 @@
 local ADDON_NAME = ...;
 local interfaceVersion = select(4, GetBuildInfo());
-local GetAuctionItemSubClasses = C_AuctionHouse.GetAuctionItemSubClasses or GetAuctionItemSubClasses;
+local GetAuctionItemSubClasses = C_AuctionHouse and C_AuctionHouse.GetAuctionItemSubClasses or GetAuctionItemSubClasses;
 
 ---@class Constants
 UtilityHub.Constants = {
