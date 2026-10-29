@@ -23,10 +23,15 @@ local function GetOrCreateEditDialog()
   dialog:SetScript("OnDragStop", dialog.StopMovingOrSizing);
   dialog:Hide();
 
+  -- Title
+  dialog.title = dialog:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+  dialog.title:SetPoint("CENTER", dialog.TitleBg, "CENTER", 0, 0)
+  dialog.title:SetText("Editing character")
+
   -- Scope label
   local groupLabel = dialog:CreateFontString(nil, "OVERLAY", "GameFontNormal");
   groupLabel:SetPoint("TOPLEFT", 15, -30);
-  groupLabel:SetText("Scope:");
+  groupLabel:SetText("Group:");
 
   dialog.groupButtons = {};
 
@@ -120,7 +125,7 @@ function CharactersPage:Create(parent)
   local framesHelper = UtilityHub.GameOptions.framesHelper;
 
   -- Forward-declare so closures defined before the function bodies can capture them
-  local RefreshList;
+  local UpdateData;
 
   listFrame          = framesHelper:CreateCustomList(
     "CharactersList",
@@ -139,8 +144,9 @@ function CharactersPage:Create(parent)
       end,
       GetText = function(rowData)
         local realmColor = "FFB68655";
+        local playerName, playerRealm = UtilityHub.Helpers.Unit:UnitName("player");
 
-        if (GetRealmName() == rowData.realm) then
+        if (playerRealm == rowData.realm) then
           realmColor = "FFCA4F4B";
         end
 
@@ -171,7 +177,7 @@ function CharactersPage:Create(parent)
 
             UtilityHub.Database.global.characters = list;
             UtilityHub.Events:TriggerEvent("CHARACTER_UPDATE_NEEDED");
-            RefreshList();
+            frame.UpdateData();
           end,
           OnCancel = function() end,
           timeout = 0,
@@ -231,14 +237,14 @@ function CharactersPage:Create(parent)
             local characterRealm = rowData.realm;
 
             for _, character in ipairs(characters) do
-              if (character.name == characterName == character.realm == characterRealm) then
+              if (character.name == characterName and character.realm == characterRealm) then
                 character.group = group;
                 break;
               end
             end
 
             UtilityHub.Events:TriggerEvent("CHARACTER_UPDATE_NEEDED");
-            RefreshList();
+            frame.UpdateData();
           end);
         end);
       end,
@@ -251,12 +257,12 @@ function CharactersPage:Create(parent)
   listFrame:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6);
   listFrame:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -20, 20);
 
-  RefreshList = function()
+  frame.UpdateData = function()
     listFrame:ReplaceData(UtilityHub.Database.global.characters);
   end;
 
   -- Load initial data
-  RefreshList();
+  frame.UpdateData();
 
   return frame;
 end

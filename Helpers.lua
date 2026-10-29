@@ -9,6 +9,7 @@ UtilityHub.Helpers = {
   Mail = {},
   DebugLog = {},
   Professions = {},
+  Unit = {},
 };
 
 -- Debug
@@ -376,4 +377,17 @@ function UtilityHub.Helpers.DebugLog:Export()
   end
 
   return table.concat(UtilityHub.Database.global.debugLogs, "\n");
+end
+
+---@return string name
+---@return string realmOrRule
+function UtilityHub.Helpers.Unit:UnitName(unit)
+  local name, realm = UnitNameUnmodified(unit);
+
+  if (UtilityHub.Constants.IsForever) then
+    name = string.format("%s %s", name, realm);
+    realm = UtilityHub.Constants.RealmRule;
+  end
+
+  return name, realm;
 end

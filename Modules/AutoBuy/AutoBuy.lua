@@ -13,7 +13,7 @@ function Module:SearchAndBuyItems()
   end
 
   local purchasedItems = {};
-  local playerName = UnitName("player");
+  local playerName, playerRealm = UtilityHub.Helpers.Unit:UnitName("player");
   local playerClass = UnitClassBase("player");
 
   -- Iterate through autoBuyList in order

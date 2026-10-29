@@ -84,7 +84,8 @@ local function GetOrCreateEditDialog()
       end
 
       if (self.scopeKey == UtilityHub.Enums.AutoBuyScope.CHARACTER) then
-        dialog.scopeValueInput:SetText(UnitName("player") or "");
+        local playerName, playerRealm = UtilityHub.Helpers.Unit:UnitName("player");
+        dialog.scopeValueInput:SetText(playerName or "");
         dialog.scopeValueInput:SetEnabled(true);
         dialog.scopeValueLabel:SetAlpha(1);
       elseif (self.scopeKey == UtilityHub.Enums.AutoBuyScope.CLASS) then
@@ -561,7 +562,8 @@ function AutoBuyPage:Create(parent)
     if (scope == UtilityHub.Enums.AutoBuyScope.ACCOUNT) then
       return true;
     elseif (scope == UtilityHub.Enums.AutoBuyScope.CHARACTER) then
-      return rowData.scopeValue == UnitName("player");
+      local playerName, playerRealm = UtilityHub.Helpers.Unit:UnitName("player");
+      return rowData.scopeValue == playerName;
     elseif (scope == UtilityHub.Enums.AutoBuyScope.CLASS) then
       local _, classFile = UnitClass("player");
       return rowData.scopeValue == classFile;

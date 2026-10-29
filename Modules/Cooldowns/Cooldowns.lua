@@ -1,47 +1,75 @@
+---@class CooldownRow
+---@field group string
+---@field row string
+---@field isReady boolean
+---@field endTime number
+---@field color BasicRGB
+---@class CooldownHeader
+---@field groupName string
+---@field readyCount number
+---@field cooldowns CooldownRow[]
+---@field color BasicRGB
+---@class PreProcessedRow
+---@field characterName string
+---@field className string
+---@field professionID number
+---@field professionName string
+---@field cooldownName string
+---@field isReady boolean
+---@field endTime number
+---@field isHidden boolean
+---@class CooldownHeaderNode
+---@field groupName string
+---@field readyCount number
+---@field totalCount number
+---@field color BasicRGB
+---@class CooldownRowNode
+---@field group string
+---@field rowName string
+---@field endTime number
+---@field isReady boolean
+---@field color BasicRGB
 local moduleName = 'Cooldowns';
 ---@class Cooldowns
 local Module = UtilityHub.Addon:NewModule(moduleName);
 Module.frame = nil;
 
+Module.CollapsedGroups = {};
+
+---@param cooldown ProfessionCooldownData
 ---@return boolean
-local function IsDebugMode()
-  return UtilityHub.Database and UtilityHub.Database.global and UtilityHub.Database.global.debugMode;
+local function IsCooldownReady(cooldown)
+  return cooldown.endTime < GetServerTime();
 end
 
----@class NormalizedCooldown
----@field duration number
----@field expiration number
----@field start number
+---@param professionID number
+---@return Profession|nil
+local function GetProfessionByID(professionID)
+  ---@type Profession[]
+  local professions = UtilityHub.Constants.Cooldowns;
 
----@class CurrentCooldown
----@field source "TRADE_SKILL_FRAME"|"SPELL_API"|nil
----@field name string
----@field start number | nil
----@field maxCooldown number
-
----@param remaining number
----@return string
-local function FormatRemainingTimestamp(remaining)
-  local days = math.floor(remaining / (24 * 60 * 60));
-  local hours = math.floor((remaining % (24 * 60 * 60)) / (60 * 60));
-  local minutes = math.floor((remaining % (60 * 60)) / 60);
-  local seconds = math.floor(remaining % 60);
-  local resultStr;
-
-  if (days > 0) then
-    resultStr = string.format(
-      "%d %s %02d:%02d:%02d",
-      days,
-      days == 1 and "day" or "days",
-      hours,
-      minutes,
-      seconds
-    );
-  else
-    resultStr = string.format("%02d:%02d:%02d", hours, minutes, seconds);
+  for _, profession in ipairs(professions) do
+    if (profession.id == professionID) then
+      return profession;
+    end
   end
 
-  return resultStr;
+  return nil;
+end
+
+---@param internalID number
+---@return boolean
+local function IsCooldownHidden(internalID)
+  ---@type CooldownConfig[]
+  local baseData = UtilityHub.Database.global.options.cooldownConfigs;
+
+  for _, cooldownConfig in ipairs(baseData) do
+    if (cooldownConfig.internalID == internalID) then
+      return not cooldownConfig.enabled;
+    end
+  end
+
+  return false;
 end
 
 ---@param str string
@@ -53,7 +81,7 @@ local function Utf8Sub(str, numChars)
 
   for i = 1, numChars do
     if (bytePos > strLen) then
-      break;
+      break
     end
 
     local byte = string.byte(str, bytePos);
@@ -74,6 +102,13 @@ end
 
 ---@param readyTimestamp number
 ---@return string
+local function FormatReadyTime(readyTimestamp)
+  local t = date("*t", readyTimestamp);
+  return string.format("%02d:%02d", t.hour, t.min);
+end
+
+---@param readyTimestamp number
+---@return string
 local function FormatReadyDate(readyTimestamp)
   local t = date("*t", readyTimestamp);
 
@@ -90,63 +125,55 @@ local function FormatReadyDate(readyTimestamp)
   return string.format("%s, %d %s %02d:%02d", shortDay, t.day, shortMonth, t.hour, t.min);
 end
 
----@param timestamp number
+---@param remaining number
 ---@return string
-local function FormatDateGroupLabel(timestamp)
-  local t = date("*t", timestamp);
+local function FormatRemainingTimestamp(remaining)
+  local days = math.floor(remaining / (24 * 60 * 60));
+  local hours = math.floor((remaining % (24 * 60 * 60)) / (60 * 60));
+  local minutes = math.floor((remaining % (60 * 60)) / 60);
+  local seconds = math.floor(remaining % 60);
+  local resultStr;
 
-  local dayName = CALENDAR_WEEKDAY_NAMES[t.wday];
-  local monthName = CALENDAR_FULLDATE_MONTH_NAMES[t.month];
-  local shortDay = Utf8Sub(dayName, 3);
-  local shortMonth = Utf8Sub(monthName, 3);
-
-  local locale = GetLocale();
-
-  if (locale == "enUS" or locale == "enGB") then
-    return string.format("%s, %s %d", shortDay, shortMonth, t.day);
+  if (days > 0) then
+    resultStr = string.format("%d %s %02d:%02d:%02d", days, days == 1 and "day" or "days", hours, minutes, seconds);
+  else
+    resultStr = string.format("%02d:%02d:%02d", hours, minutes, seconds);
   end
 
-  return string.format("%s, %d %s", shortDay, t.day, shortMonth);
+  return resultStr;
 end
 
----@param readyTimestamp number
----@return string
-local function FormatReadyTime(readyTimestamp)
-  local t = date("*t", readyTimestamp);
-  return string.format("%02d:%02d", t.hour, t.min);
-end
-
----@param cooldown CurrentCooldown
+---@param nodeRow CooldownRowNode
 ---@return string "Converted time"
 ---@return boolean "If its ready"
 ---@return table "RGB"
 ---@return string|nil "Ready date"
 ---@return string|nil "Ready time (HH:MM)"
-local function CooldownToRemainingTime(cooldown)
-  if (cooldown.start and cooldown.maxCooldown and cooldown.maxCooldown > 0) then
-    local finish = cooldown.start + cooldown.maxCooldown;
-    ---@type number
-    local remaining = 0;
-
-    if (cooldown.source == "TRADE_SKILL_FRAME") then
-      remaining = finish - GetServerTime();
-    else
-      remaining = finish - GetTime();
-    end
+local function CooldownToRemainingTime(nodeRow)
+  if (not nodeRow.isReady) then
+    local finish = nodeRow.endTime;
+    local remaining = finish - GetServerTime();
 
     if (remaining > 0) then
-      local progress = math.max(0, math.min(1, remaining / cooldown.maxCooldown));
-      local r, g;
+      local r = 0;
+      local g = 0;
+      local b = 0;
 
-      if (progress > 0.5) then
-        r = 1.0;
-        g = (1.0 - progress) * 2;
+      if (remaining > 60 * 60) then
+        r = 191;
+        g = 13;
+        b = 13;
       else
-        r = progress * 2;
-        g = 1.0;
+        r = 212;
+        g = 22;
+        b = 16;
       end
 
-      local rgb = { r = r, g = g, b = 0 };
+      local rgb = UtilityHub.Helpers.Color:NormalizeRGB({
+        r = r,
+        g = g,
+        b = b
+      });
       local readyDate = FormatReadyDate(finish);
       local readyTime = FormatReadyTime(finish);
       local resultStr = FormatRemainingTimestamp(remaining);
@@ -155,175 +182,13 @@ local function CooldownToRemainingTime(cooldown)
     end
   end
 
-  return "Ready", true, { r = 16 / 255, g = 179 / 255, b = 16 / 255 }, nil, nil;
+  return "Ready", true, UtilityHub.Helpers.Color:NormalizeRGB({
+    r = 16,
+    g = 179,
+    b = 16
+  }), nil, nil;
 end
 
----@param start number|nil
----@param duration number|nil
----@return NormalizedCooldown
-local function GetNormalizedCooldownValues(start, duration)
-  -- Source: https://wago.io/ku2ECkSTv/3
-  -- The good function doesnt exist in classic
-  local normalizedData = {};
-  local now = GetTime();
-
-  if (not start) then
-    start = 0;
-  end
-
-  if (not duration) then
-    duration = 0;
-  end
-
-  if (duration > 604800) then
-    start = 0;
-    duration = 0;
-  end
-
-  if (start > now + 2147483.648) then
-    start = start - 4294967.296;
-  end
-
-  local dt = now - start;
-  local serverStart = GetServerTime() - dt;
-  local serverExpiration = serverStart + duration;
-
-  normalizedData.start = start;
-  normalizedData.duration = duration;
-  normalizedData.expiration = serverExpiration;
-
-  return normalizedData;
-end
-
----@param profession Profession
-local function KnowsProfession(profession)
-  for _, spellID, value in ipairs(profession.spellIDs) do
-    if (C_SpellBook.IsSpellKnown(spellID)) then
-      return true;
-    end
-  end
-
-  --- Fallback to skill lines
-  for i = 1, GetNumSkillLines() do
-    local name = GetSkillLineInfo(i);
-
-    if (name == profession.name) then
-      return true;
-    end
-  end
-
-  return false;
-end
-
-Module.Ticker = C_Timer.NewTicker(1, function()
-  if (UtilityHub.Flags.addonReady) then
-    Module:UpdateCountReadyCooldowns();
-  end
-
-  if (not Module.Frame or not Module.Frame:IsShown()) then
-    return;
-  end
-
-  local dataProvider = Module.Frame.ScrollBox:GetDataProvider();
-
-  if (not dataProvider) then
-    return;
-  end
-
-  for _, frame in ipairs(Module.Frame.ScrollBox:GetFrames()) do
-    if (frame.Timer) then
-      frame.Timer:Update();
-    end
-  end
-end);
-
-Module.CollapsedGroups = {};
-Module.NotifiedCooldowns = {};
----@type number
-Module.CountReadyGraceTicks = 5;
-
-function Module:UpdateCountReadyCooldowns()
-  local currentCount = 0;
-  local currentReadySet = {};
-
-  for _, character in ipairs(UtilityHub.Database.global.characters) do
-    for _, cooldownGroup in pairs(character.cooldownGroup or {}) do
-      for _, cooldown in ipairs(cooldownGroup) do
-        local finish = cooldown.start + cooldown.maxCooldown;
-        ---@type number|nil
-        local remaining = nil;
-
-        if (cooldown.source == "TRADE_SKILL_FRAME") then
-          remaining = finish - GetServerTime();
-        else
-          remaining = finish - GetTime();
-        end
-
-        if (cooldown.start == 0 or remaining < 0) then
-          currentCount = currentCount + 1;
-
-          local key = character.name .. ":" .. cooldown.name;
-          currentReadySet[key] = character.name .. " - " .. cooldown.name;
-
-          -- Log Point 6: Transição para Ready
-          if (IsDebugMode() and not Module.NotifiedCooldowns[key] and Module.CountReadyGraceTicks == 0) then
-            local reason;
-            if (cooldown.start == 0) then
-              reason = "start=0";
-            else
-              reason = string.format("expired (%.0fs ago)", math.abs(remaining));
-            end
-            local now = GetTime();
-            UtilityHub.Helpers.DebugLog:Add(
-              string.format(
-                "|cffFFFF00[UH-SYNC]|r |cff00FF00READY|r %s - %s (%s) [start=%.2f, max=%d, end=%.2f, now=%.2f]",
-                character.name,
-                cooldown.name,
-                reason,
-                cooldown.start,
-                cooldown.maxCooldown,
-                cooldown.start + cooldown.maxCooldown,
-                now
-              ));
-          end
-        end
-      end
-    end
-  end
-
-  local isInitializing = Module.CountReadyGraceTicks > 0;
-
-  if (isInitializing) then
-    Module.CountReadyGraceTicks = Module.CountReadyGraceTicks - 1;
-  else
-    local hasNewReady = false;
-
-    for key, label in pairs(currentReadySet) do
-      if (not Module.NotifiedCooldowns[key]) then
-        UtilityHub.Helpers.Notification:ShowNotification("Cooldown - " .. label .. " is ready!");
-        hasNewReady = true;
-      end
-    end
-
-    if (hasNewReady and UtilityHub.Database.global.options.cooldownPlaySound) then
-      PlaySoundFile("Interface\\AddOns\\UtilityHub\\Assets\\Sounds\\Cooldown_Ready.ogg", "Master");
-    end
-
-    Module.NotifiedCooldowns = currentReadySet;
-  end
-
-  if (currentCount ~= UtilityHub.lastCountReadyCooldowns) then
-    UtilityHub.Events:TriggerEvent(
-      "COUNT_READY_COOLDOWNS_CHANGED",
-      currentCount,
-      isInitializing
-    );
-  end
-
-  UtilityHub.lastCountReadyCooldowns = currentCount;
-end
-
--- Frame
 function Module:CreateCooldownsFrame()
   local MIN_WIDTH = 320;
   local MIN_HEIGHT = 200;
@@ -331,54 +196,56 @@ function Module:CreateCooldownsFrame()
   local DEFAULT_HEIGHT = 450;
 
   local frame = CreateFrame("Frame", "UHCooldowns", UIParent, "SettingsFrameTemplate");
-  tinsert(UISpecialFrames, frame:GetName());
   Module.Frame = frame;
+  tinsert(UISpecialFrames, frame:GetName());
   frame:SetResizable(true);
   frame:SetResizeBounds(MIN_WIDTH, MIN_HEIGHT);
   frame:Hide();
 
-  local savedSize = UtilityHub.Database.global.cooldownFrameSize;
-  if (savedSize) then
-    frame:SetSize(savedSize.width, savedSize.height);
-  else
-    frame:SetSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
-  end
-  local savedPosition = UtilityHub.Database.global.cooldownFramePosition;
+  do -- Size/positioning
+    local savedSize = UtilityHub.Database.global.cooldownFrameSize;
+    local savedPosition = UtilityHub.Database.global.cooldownFramePosition;
 
-  if (UtilityHub.Database.global.cooldownFramePosition) then
-    frame:SetPoint(
-      savedPosition.point,
-      frame:GetParent(),
-      savedPosition.relativePoint,
-      savedPosition.x,
-      savedPosition.y
-    );
-  else
-    frame:SetPoint("CENTER");
+    if (savedSize) then
+      frame:SetSize(savedSize.width, savedSize.height);
+    else
+      frame:SetSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    end
+
+    if (UtilityHub.Database.global.cooldownFramePosition) then
+      frame:SetPoint(savedPosition.point, frame:GetParent(), savedPosition.relativePoint, savedPosition.x,
+        savedPosition.y);
+    else
+      frame:SetPoint("CENTER");
+    end
+
+    UtilityHub.Libs.Utils:AddMovableToFrame(frame, function(pos)
+      UtilityHub.Database.global.cooldownFramePosition = pos;
+    end);
+
+    local resizeHandle = CreateFrame("Button", nil, frame);
+    resizeHandle:SetSize(16, 16);
+    resizeHandle:SetPoint("BOTTOMRIGHT", -4, 4);
+    resizeHandle:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up");
+    resizeHandle:SetHighlightTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight");
+    resizeHandle:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down");
+    resizeHandle:SetScript("OnMouseDown", function(self, button)
+      if (button == "LeftButton") then
+        frame:StartSizing("BOTTOMRIGHT");
+      end
+    end);
+    resizeHandle:SetScript("OnMouseUp", function(self, button)
+      frame:StopMovingOrSizing();
+      local w, h = frame:GetSize();
+      UtilityHub.Database.global.cooldownFrameSize = {
+        width = math.floor(w),
+        height = math.floor(h)
+      };
+      Module:UpdateCooldownsFrameList();
+    end);
   end
 
   frame.NineSlice.Text:SetText("Cooldowns");
-  UtilityHub.Libs.Utils:AddMovableToFrame(frame, function(pos)
-    UtilityHub.Database.global.cooldownFramePosition = pos;
-  end);
-
-  local resizeHandle = CreateFrame("Button", nil, frame);
-  resizeHandle:SetSize(16, 16);
-  resizeHandle:SetPoint("BOTTOMRIGHT", -4, 4);
-  resizeHandle:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up");
-  resizeHandle:SetHighlightTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight");
-  resizeHandle:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down");
-  resizeHandle:SetScript("OnMouseDown", function(self, button)
-    if (button == "LeftButton") then
-      frame:StartSizing("BOTTOMRIGHT");
-    end
-  end);
-  resizeHandle:SetScript("OnMouseUp", function(self, button)
-    frame:StopMovingOrSizing();
-    local w, h = frame:GetSize();
-    UtilityHub.Database.global.cooldownFrameSize = { width = math.floor(w), height = math.floor(h) };
-    Module:UpdateCooldownsFrameList();
-  end);
 
   local content = CreateFrame("Frame", nil, frame);
   frame.Content = content;
@@ -386,77 +253,79 @@ function Module:CreateCooldownsFrame()
   content:SetPoint("TOPLEFT", 15, -37);
   content:SetPoint("BOTTOMRIGHT", -5, 7);
 
-  local groupByEnum = UtilityHub.Enums.CooldownGroupBy;
-  local groupByText = UtilityHub.Enums.CooldownGroupByText;
+  do -- Top actions
+    local dropdown = CreateFrame("Frame", "UHCooldownGroupByDropdown", content, "UIDropDownMenuTemplate");
+    frame.GroupByDropdown = dropdown;
+    dropdown:SetPoint("TOPLEFT", content, "TOPLEFT", -15, 2);
+    UIDropDownMenu_SetWidth(dropdown, 140);
 
-  local dropdown = CreateFrame("Frame", "UHCooldownGroupByDropdown", content, "UIDropDownMenuTemplate");
-  frame.GroupByDropdown = dropdown;
-  dropdown:SetPoint("TOPLEFT", content, "TOPLEFT", -15, 2);
-  UIDropDownMenu_SetWidth(dropdown, 140);
+    local currentGroupBy = UtilityHub.Database.global.cooldownGroupBy or UtilityHub.Enums.CooldownGroupBy.CHARACTER;
+    UIDropDownMenu_SetText(dropdown, UtilityHub.Enums.CooldownGroupByText[currentGroupBy]);
 
-  local currentGroupBy = UtilityHub.Database.global.cooldownGroupBy or groupByEnum.CHARACTER;
-  UIDropDownMenu_SetText(dropdown, groupByText[currentGroupBy]);
+    UIDropDownMenu_Initialize(dropdown, function(self, level, menuList)
+      local current = UtilityHub.Database.global.cooldownGroupBy or UtilityHub.Enums.CooldownGroupBy.CHARACTER;
+      local options = {
+        UtilityHub.Enums.CooldownGroupBy.CHARACTER,
+        UtilityHub.Enums.CooldownGroupBy.TYPE
+      };
 
-  UIDropDownMenu_Initialize(dropdown, function(self, level, menuList)
-    local current = UtilityHub.Database.global.cooldownGroupBy or groupByEnum.CHARACTER;
+      for _, value in ipairs(options) do
+        local info = UIDropDownMenu_CreateInfo();
+        info.text = UtilityHub.Enums.CooldownGroupByText[value];
+        info.value = value;
+        info.checked = (current == value);
+        info.func = function(btn)
+          UtilityHub.Database.global.cooldownGroupBy = btn.value;
+          UIDropDownMenu_SetText(dropdown, UtilityHub.Enums.CooldownGroupByText[btn.value]);
+          Module.CollapsedGroups = {};
+          Module:UpdateCooldownsFrameList();
+          CloseDropDownMenus();
+        end;
+        UIDropDownMenu_AddButton(info);
+      end
+    end);
 
-    for _, value in ipairs({ groupByEnum.CHARACTER, groupByEnum.TYPE, groupByEnum.READY_DATE, groupByEnum.READY_DATE_PROFESSION }) do
-      local info = UIDropDownMenu_CreateInfo();
-      info.text = groupByText[value];
-      info.value = value;
-      info.checked = (current == value);
-      info.func = function(btn)
-        UtilityHub.Database.global.cooldownGroupBy = btn.value;
-        UIDropDownMenu_SetText(dropdown, groupByText[btn.value]);
-        Module.CollapsedGroups = {};
-        Module:UpdateCooldownsFrameList();
-        CloseDropDownMenus();
-      end;
-      UIDropDownMenu_AddButton(info);
-    end
-  end);
+    local collapseBtn = CreateFrame("Button", nil, content, "UIPanelButtonTemplate");
+    frame.CollapseButton = collapseBtn;
+    collapseBtn:SetSize(80, 28);
+    collapseBtn:SetPoint("TOPRIGHT", content, "TOPRIGHT", -30, 2);
+    collapseBtn:SetText("Collapse");
+    collapseBtn:SetScript("OnClick", function()
+      local dataProvider = Module.Frame.ScrollBox:GetDataProvider();
 
-  local collapseBtn = CreateFrame("Button", nil, content, "UIPanelButtonTemplate");
-  frame.CollapseButton = collapseBtn;
-  collapseBtn:SetSize(80, 28);
-  collapseBtn:SetPoint("TOPRIGHT", content, "TOPRIGHT", -30, 2);
-  collapseBtn:SetText("Collapse");
+      if (not dataProvider) then
+        return;
+      end
 
-  collapseBtn:SetScript("OnClick", function()
-    local dataProvider = Module.Frame.ScrollBox:GetDataProvider();
+      -- Check current state from all group nodes
+      local allCollapsed = true;
 
-    if (not dataProvider) then
-      return;
-    end
+      for _, node in dataProvider:EnumerateEntireRange() do
+        local data = node:GetData();
 
-    -- Check current state from all group nodes
-    local allCollapsed = true;
-
-    for _, node in dataProvider:EnumerateEntireRange() do
-      local data = node:GetData();
-
-      if (data.group) then
-        if (not Module.CollapsedGroups[data.group]) then
-          allCollapsed = false;
-          break;
+        if (data.group) then
+          if (not Module.CollapsedGroups[data.group]) then
+            allCollapsed = false;
+            break
+          end
         end
       end
-    end
 
-    local newState = not allCollapsed;
+      local newState = not allCollapsed;
 
-    for _, node in dataProvider:EnumerateEntireRange() do
-      local data = node:GetData();
+      for _, node in dataProvider:EnumerateEntireRange() do
+        local data = node:GetData();
 
-      if (data.group) then
-        Module.CollapsedGroups[data.group] = newState;
+        if (data.group) then
+          Module.CollapsedGroups[data.group] = newState;
+        end
       end
-    end
 
-    collapseBtn:SetText(newState and "Expand" or "Collapse");
-    Module:UpdateCooldownsFrameList();
-    PlaySound(SOUNDKIT.IG_MAINMENU_OPTION);
-  end);
+      collapseBtn:SetText(newState and "Expand" or "Collapse");
+      Module:UpdateCooldownsFrameList();
+      PlaySound(SOUNDKIT.IG_MAINMENU_OPTION);
+    end);
+  end
 
   frame.ScrollBar = CreateFrame("EventFrame", nil, content, "MinimalScrollBar");
   frame.ScrollBar:SetPoint("TOPRIGHT", -10, -5);
@@ -469,6 +338,7 @@ function Module:CreateCooldownsFrame()
   local function UpdateScrollBoxAnchor()
     frame.ScrollBox:ClearAllPoints();
     frame.ScrollBox:SetPoint("TOPLEFT", 2, -30);
+
     if (frame.ScrollBar:IsShown()) then
       frame.ScrollBox:SetPoint("BOTTOMRIGHT", frame.ScrollBar, "BOTTOMLEFT", -3, 0);
     else
@@ -487,56 +357,32 @@ function Module:CreateCooldownsFrame()
   Module.View = view;
 
   view:SetElementFactory(function(factory, node)
+    ---@type CooldownRowNode|CooldownHeaderNode
     local elementData = node:GetData();
 
-    if (elementData.group) then
+    if (elementData.groupName) then
       local function Initializer(button, node)
-        if (Module.CollapsedGroups[elementData.group] == nil) then
-          Module.CollapsedGroups[elementData.group] = node:IsCollapsed();
+        if (Module.CollapsedGroups[elementData.groupName] == nil) then
+          Module.CollapsedGroups[elementData.groupName] = node:IsCollapsed();
         end
 
-        local color = UtilityHub.Helpers.Color:GetRGBFromClassName(elementData.className);
-        button.Label:SetText(elementData.group);
-        button.Label:SetTextColor(color.r, color.g, color.b);
+        button.Label:SetText(elementData.groupName);
+        button.Label:SetTextColor(elementData.color.r, elementData.color.g, elementData.color.b);
 
         local readySuffix = elementData.readyCount .. "/" .. elementData.totalCount .. " ready";
         button.LabelRight:SetText(readySuffix);
-        button:SetCollapseState(Module.CollapsedGroups[elementData.group]);
-
-        if (elementData.nearestEndTime) then
-          button.Timer = {
-            Update = function()
-              local remaining = 0;
-
-              if (elementData.source == "TRADE_SKILL_FRAME") then
-                remaining = elementData.nearestEndTime - GetServerTime();
-              else
-                remaining = elementData.nearestEndTime - GetTime();
-              end
-
-              if (remaining > 0) then
-                local resultStr = FormatRemainingTimestamp(remaining);
-                button.LabelRight:SetText(resultStr .. " - " .. readySuffix);
-              else
-                button.LabelRight:SetText(readySuffix);
-              end
-            end,
-          };
-          button.Timer:Update();
-        else
-          button.Timer = nil;
-        end
+        button:SetCollapseState(Module.CollapsedGroups[elementData.groupName]);
 
         button:SetScript("OnClick", function(button)
           node:ToggleCollapsed();
-          Module.CollapsedGroups[elementData.group] = node:IsCollapsed();
+          Module.CollapsedGroups[elementData.groupName] = node:IsCollapsed();
           button:SetCollapseState(node:IsCollapsed());
           PlaySound(SOUNDKIT.IG_MAINMENU_OPTION);
         end);
       end
 
       factory("TreeGroupButtonTemplate", Initializer);
-    elseif (elementData.cooldown) then
+    elseif (elementData.rowName) then
       local function Initializer(button, node)
         local width = button:GetWidth();
         local timerWidth = 130;
@@ -544,8 +390,9 @@ function Module:CreateCooldownsFrame()
         button:SetPushedTextOffset(0, 0);
         button:SetHighlightAtlas("search-highlight");
         button:SetNormalFontObject(GameFontHighlight);
-        button:SetText(elementData.cooldown);
+        button:SetText(elementData.rowName);
         button.elementData = elementData;
+        button:GetFontString():SetTextColor(elementData.color.r, elementData.color.g, elementData.color.b);
         button:GetFontString():ClearAllPoints();
         button:GetFontString():SetPoint("LEFT", 12, 0);
         button:GetFontString():SetPoint("RIGHT", -(timerWidth + 6), 0);
@@ -558,6 +405,7 @@ function Module:CreateCooldownsFrame()
           button.Timer:SetFont(font, size, flags);
           button.Timer:SetJustifyH("RIGHT");
         end
+
         button.Timer:ClearAllPoints();
         button.Timer:SetPoint("TOPRIGHT", -6, -10);
         button.Timer:SetPoint("LEFT", width - timerWidth - 6, 0);
@@ -570,33 +418,15 @@ function Module:CreateCooldownsFrame()
           button.ReadyDate:SetTextColor(0.7, 0.7, 0.7);
         end
         button.ReadyDate:ClearAllPoints();
-        button.ReadyDate:SetPoint("BOTTOMRIGHT", -6, 2);
-        button.ReadyDate:SetPoint("LEFT", width - timerWidth - 6, 0);
+        button.ReadyDate:SetPoint("BOTTOMRIGHT", -6, 0);
+        button.ReadyDate:SetPoint("LEFT", width - timerWidth - 6, 10);
 
         function button.Timer:Update()
           local parent = self:GetParent();
           local text, ready, rgb, readyDate, readyTime = CooldownToRemainingTime(parent.elementData);
 
-          if (parent.elementData.hideCountdown) then
-            if (ready) then
-              self:SetText(text);
-              self:SetTextColor(rgb.r, rgb.g, rgb.b);
-            else
-              self:SetText(readyTime);
-              self:SetTextColor(0.7, 0.7, 0.7);
-            end
-            parent.ReadyDate:Hide();
-          else
-            self:SetText(text);
-            self:SetTextColor(rgb.r, rgb.g, rgb.b);
-
-            -- if (readyDate) then
-            --   parent.ReadyDate:SetText(readyDate);
-            --   parent.ReadyDate:Show();
-            -- else
-            --   parent.ReadyDate:Hide();
-            -- end
-          end
+          self:SetText(text);
+          self:SetTextColor(rgb.r, rgb.g, rgb.b);
         end
 
         button.Timer:Update();
@@ -608,13 +438,10 @@ function Module:CreateCooldownsFrame()
   end);
 
   view:SetElementExtentCalculator(function(dataIndex, node)
+    ---@type CooldownRowNode|CooldownHeaderNode
     local elementData = node:GetData();
 
-    if (elementData.cooldown) then
-      return elementData.hideCountdown and 26 or 30;
-    end
-
-    if (elementData.group) then
+    if (elementData.rowName or elementData.groupName) then
       return 30;
     end
 
@@ -628,374 +455,175 @@ end
 function Module:UpdateCooldownsFrameList()
   local groupByEnum = UtilityHub.Enums.CooldownGroupBy;
   local groupBy = UtilityHub.Database.global.cooldownGroupBy or groupByEnum.CHARACTER;
-  local dataProvider = CreateTreeDataProvider();
+  ---@type LinearizedTreeDataProviderMixin|nil
+  local dataProvider = Module.Frame.ScrollBox:GetDataProvider();
+  Module.Frame.ScrollBox:RemoveDataProvider();
+  Module.AllCollapsedOverride = nil;
 
-  -- Collect all cooldown entries across all characters
-  local allEntries = {};
-  ---@type Character[]
-  local characters = UtilityHub.Database.global.characters;
+  if (dataProvider) then
+    dataProvider:Flush();
+  else
+    dataProvider = CreateTreeDataProvider();
+    Module.Frame.ScrollBox:SetDataProvider(dataProvider);
+  end
 
-  for _, character in ipairs(characters) do
-    for profName, cooldownGroup in pairs(character.cooldownGroup or {}) do
-      for _, cooldown in ipairs(cooldownGroup) do
-        local _, isReady = CooldownToRemainingTime(cooldown);
-        ---@type number
-        local remaining = 0;
+  ---@type PreProcessedRow[]
+  local preProcessedCooldowns = {};
 
-        if (cooldown.start and cooldown.maxCooldown and cooldown.maxCooldown > 0) then
-          if (cooldown.source) then
-            remaining = (cooldown.start + cooldown.maxCooldown) - GetServerTime();
-          else
-            remaining = (cooldown.start + cooldown.maxCooldown) - GetTime();
-          end
+  do -- Pre process data
+    local characters = UtilityHub.Database.global.characters;
 
-          if (remaining < 0) then
-            remaining = 0;
-          end
+    --- Create a flat list with all data that can be grouped after
+    for _, character in ipairs(characters) do
+      for professionID, cooldownList in pairs(character.professionsData) do
+        for _, cooldown in ipairs(cooldownList) do
+          local isReady = IsCooldownReady(cooldown);
+          local isHidden = IsCooldownHidden(cooldown.internalID);
+          local profession = GetProfessionByID(professionID);
+
+          tinsert(preProcessedCooldowns, {
+            characterName = character.name,
+            className = character.className,
+            professionID = professionID,
+            professionName = profession.name,
+            cooldownName = cooldown.name,
+            isReady = isReady,
+            isHidden = isHidden,
+            endTime = cooldown.endTime
+          });
         end
-
-        tinsert(allEntries, {
-          characterName = character.name,
-          className = character.className,
-          professionName = profName,
-          cooldownName = cooldown.name,
-          start = cooldown.start,
-          maxCooldown = cooldown.maxCooldown,
-          isReady = isReady,
-          remaining = remaining,
-          source = cooldown.source,
-        });
       end
     end
   end
 
-  ---@param entry table
-  ---@return string
-  local function ColorCharName(entry)
-    if (entry.className) then
-      local color = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[entry.className];
+  ---@type CooldownHeader[]
+  local processedGroups = {};
 
-      if (color and color.colorStr) then
-        return "|c" .. color.colorStr .. entry.characterName .. "|r";
-      end
-    end
-
-    return entry.characterName;
-  end
-
-  ---@param entry table
-  ---@return string
-  local function MakeEntryLabel(entry)
-    if (groupBy == groupByEnum.CHARACTER) then
-      return entry.cooldownName;
-    elseif (groupBy == groupByEnum.TYPE) then
-      return ColorCharName(entry);
-    elseif (groupBy == groupByEnum.READY_DATE_PROFESSION) then
-      return ColorCharName(entry) .. " " .. entry.cooldownName;
-    end
-
-    return ColorCharName(entry) .. " - " .. entry.cooldownName;
-  end
-
-  ---@param entry table
-  ---@return table
-  local function MakeEntryData(entry)
-    return {
-      cooldown = MakeEntryLabel(entry),
-      start = entry.start,
-      maxCooldown = entry.maxCooldown,
-      hideCountdown = (groupBy == groupByEnum.READY_DATE or groupBy == groupByEnum.READY_DATE_PROFESSION),
-      source = entry.source,
+  do -- Process groups/rows
+    local groupKey;
+    local rowKey;
+    local defaultColor = {
+      r = 1,
+      g = 1,
+      b = 1
     };
-  end
 
-  ---@param entries table[]
-  ---@param key string
-  ---@param groupData table
-  ---@param groups table
-  ---@param order string[]
-  local function AddToGroup(entries, key, groupData, groups, order)
-    if (not groups[key]) then
-      groups[key] = groupData;
-      groups[key].entries = {};
-      groups[key].readyCount = 0;
-      tinsert(order, key);
+    if (groupBy == groupByEnum.CHARACTER) then
+      groupKey = "characterName";
+      rowKey = "cooldownName";
+    else
+      groupKey = "cooldownName";
+      rowKey = "characterName";
     end
 
-    local g = groups[key];
+    for _, preProcessedCooldown in ipairs(preProcessedCooldowns) do
+      ---@type CooldownHeader|nil
+      local currentProcessedGroup = nil;
+      local groupName = preProcessedCooldown[groupKey];
+      local rowName = preProcessedCooldown[rowKey];
+      local isReady = preProcessedCooldown.isReady;
+      local isHidden = preProcessedCooldown.isHidden;
+      local classColor = UtilityHub.Helpers.Color:GetRGBFromClassName(preProcessedCooldown.className);
+      local rowColor = defaultColor;
 
-    for _, entry in ipairs(entries) do
-      if (entry.isReady) then
-        g.readyCount = g.readyCount + 1;
-      end
-
-      tinsert(g.entries, entry);
-    end
-  end
-
-  ---@param groups table
-  ---@param order string[]
-  local function InsertGroupsIntoProvider(groups, order)
-    for _, key in ipairs(order) do
-      local g = groups[key];
-
-      if (#g.entries > 0) then
-        local groupNode = dataProvider:Insert({
-          group = g.label or key,
-          className = g.className,
-          readyCount = g.readyCount,
-          totalCount = #g.entries,
-          nearestEndTime = g.nearestEndTime,
-          source = g.source,
-        });
-
-        for _, entry in ipairs(g.entries) do
-          groupNode:Insert(MakeEntryData(entry));
-        end
-      end
-    end
-  end
-
-  if (groupBy == groupByEnum.CHARACTER) then
-    local groups = {};
-    local order = {};
-
-    for _, entry in ipairs(allEntries) do
-      AddToGroup({ entry }, entry.characterName, { className = entry.className }, groups, order);
-    end
-
-    InsertGroupsIntoProvider(groups, order);
-  elseif (groupBy == groupByEnum.TYPE) then
-    local groups = {};
-    local order = {};
-
-    for _, entry in ipairs(allEntries) do
-      AddToGroup({ entry }, entry.cooldownName, {}, groups, order);
-    end
-
-    table.sort(order);
-    InsertGroupsIntoProvider(groups, order);
-  elseif (groupBy == groupByEnum.READY_DATE) then
-    local groups = {};
-    local order = {};
-
-    for _, entry in ipairs(allEntries) do
-      local dateKey, dateLabel;
-
-      if (entry.isReady or entry.remaining <= 0) then
-        dateKey = "0000-00-00";
-        dateLabel = "Ready";
-      else
-        local readyTimestamp = time() + entry.remaining;
-        dateKey = date("%Y-%m-%d", readyTimestamp);
-        dateLabel = FormatDateGroupLabel(readyTimestamp);
-      end
-
-      AddToGroup({ entry }, dateKey, { label = dateLabel }, groups, order);
-
-      if (not entry.isReady and entry.remaining > 0) then
-        local endTime = entry.start + entry.maxCooldown;
-        local g = groups[dateKey];
-
-        if (not g.nearestEndTime or endTime < g.nearestEndTime) then
-          g.nearestEndTime = endTime;
-          g.source = entry.source;
-        end
-      end
-    end
-
-    table.sort(order);
-
-    for _, key in ipairs(order) do
-      table.sort(groups[key].entries, function(a, b)
-        return a.remaining < b.remaining;
-      end);
-    end
-
-    InsertGroupsIntoProvider(groups, order);
-  elseif (groupBy == groupByEnum.READY_DATE_PROFESSION) then
-    local groups = {};
-    local order = {};
-
-    -- Time window: 2 hours in seconds
-    local TIME_WINDOW = 2 * 60 * 60;
-
-    -- First, group entries by profession
-    local professionEntries = {};
-    for _, entry in ipairs(allEntries) do
-      local profession = entry.professionName;
-      if (not professionEntries[profession]) then
-        professionEntries[profession] = {};
-      end
-      tinsert(professionEntries[profession], entry);
-    end
-
-    -- For each profession, apply time window grouping
-    local tempGroups = {};
-
-    for profession, entries in pairs(professionEntries) do
-      -- Separate ready and non-ready entries
-      local readyEntries = {};
-      local nonReadyEntries = {};
-
-      for _, entry in ipairs(entries) do
-        if (entry.isReady or entry.remaining <= 0) then
-          tinsert(readyEntries, entry);
-        else
-          tinsert(nonReadyEntries, entry);
-        end
-      end
-
-      -- Process ready entries
-      if (#readyEntries > 0) then
-        local dateKey = "0000-00-00|" .. profession;
-        local dateLabel = "Ready - " .. profession;
-
-        if (not tempGroups[dateKey]) then
-          tempGroups[dateKey] = {
-            label = dateLabel,
-            characters = {},
-            nearestEndTime = nil,
-          };
-          tinsert(order, dateKey);
+      if (not isHidden) then
+        if (groupBy == groupByEnum.TYPE) then
+          rowColor = classColor;
         end
 
-        for _, entry in ipairs(readyEntries) do
-          local charName = entry.characterName;
-          if (not tempGroups[dateKey].characters[charName]) then
-            tempGroups[dateKey].characters[charName] = {
-              className = entry.className,
-              characterName = charName,
-              count = 0,
-              entries = {},
-            };
-          end
-          tempGroups[dateKey].characters[charName].count = tempGroups[dateKey].characters[charName].count + 1;
-          tinsert(tempGroups[dateKey].characters[charName].entries, entry);
-        end
-      end
-
-      -- Process non-ready entries with time window
-      if (#nonReadyEntries > 0) then
-        -- Sort by ready timestamp
-        table.sort(nonReadyEntries, function(a, b)
-          local timeA = time() + a.remaining;
-          local timeB = time() + b.remaining;
-          return timeA < timeB;
-        end);
-
-        -- Group entries within time window
-        local currentGroupTimestamp = nil;
-        local currentDateKey = nil;
-        local currentDateLabel = nil;
-
-        for _, entry in ipairs(nonReadyEntries) do
-          local readyTimestamp = time() + entry.remaining;
-
-          -- Check if this entry is within time window of current group
-          if (not currentGroupTimestamp or (readyTimestamp - currentGroupTimestamp) > TIME_WINDOW) then
-            -- Start a new group
-            currentGroupTimestamp = readyTimestamp;
-            local formattedDate = date("%Y-%m-%d", readyTimestamp);
-            currentDateKey = formattedDate .. "|" .. profession;
-            currentDateLabel = FormatDateGroupLabel(readyTimestamp) .. " - " .. profession;
-
-            if (not tempGroups[currentDateKey]) then
-              tempGroups[currentDateKey] = {
-                label = currentDateLabel,
-                characters = {},
-                nearestEndTime = nil,
-              };
-              tinsert(order, currentDateKey);
+        do -- Find or create the group
+          for _, proccessedRow in ipairs(processedGroups) do
+            if (proccessedRow.groupName == groupName) then
+              currentProcessedGroup = proccessedRow;
+              break
             end
           end
 
-          -- Add entry to current group
-          local charName = entry.characterName;
+          if (currentProcessedGroup == nil) then
+            local groupColor = defaultColor;
 
-          if (not tempGroups[currentDateKey].characters[charName]) then
-            tempGroups[currentDateKey].characters[charName] = {
-              className = entry.className,
-              characterName = charName,
-              count = 0,
-              entries = {},
+            if (groupBy == groupByEnum.CHARACTER) then
+              groupColor = classColor;
+            end
+
+            currentProcessedGroup = {
+              groupName = groupName,
+              cooldowns = {},
+              readyCount = 0,
+              color = groupColor
             };
-          end
-          tempGroups[currentDateKey].characters[charName].count = tempGroups[currentDateKey].characters[charName].count +
-              1;
-          tinsert(tempGroups[currentDateKey].characters[charName].entries, entry);
-
-          -- Update nearest end time
-          local endTime = entry.start + entry.maxCooldown;
-          if (not tempGroups[currentDateKey].nearestEndTime or endTime < tempGroups[currentDateKey].nearestEndTime) then
-            tempGroups[currentDateKey].nearestEndTime = endTime;
-            tempGroups[currentDateKey].source = entry.source;
+            tinsert(processedGroups, currentProcessedGroup);
           end
         end
-      end
-    end
 
-    -- Now convert to final groups structure
-    table.sort(order);
-
-    for _, key in ipairs(order) do
-      local tempGroup = tempGroups[key];
-      groups[key] = {
-        label = tempGroup.label,
-        entries = {},
-        readyCount = 0,
-        nearestEndTime = tempGroup.nearestEndTime,
-        source = tempGroup.source,
-      };
-
-      local charNames = {};
-
-      for charName, _ in pairs(tempGroup.characters) do
-        tinsert(charNames, charName);
-      end
-
-      table.sort(charNames);
-
-      for _, charName in ipairs(charNames) do
-        local charData = tempGroup.characters[charName];
-        -- Use the first entry as representative for timing
-        local firstEntry = charData.entries[1];
-
-        tinsert(groups[key].entries, {
-          characterName = charData.characterName,
-          className = charData.className,
-          cooldownName = "(" .. charData.count .. ")",
-          start = firstEntry.start,
-          maxCooldown = firstEntry.maxCooldown,
-          isReady = firstEntry.isReady,
-          remaining = firstEntry.remaining,
-          source = firstEntry.source,
+        tinsert(currentProcessedGroup.cooldowns, {
+          group = groupName,
+          row = rowName,
+          endTime = preProcessedCooldown.endTime,
+          isReady = isReady,
+          color = rowColor
         });
 
-        if (firstEntry.isReady) then
-          groups[key].readyCount = groups[key].readyCount + 1;
+        if (isReady) then
+          currentProcessedGroup.readyCount = currentProcessedGroup.readyCount + 1;
         end
       end
     end
-
-    InsertGroupsIntoProvider(groups, order);
   end
 
-  -- Apply collapsed state to nodes before rendering
+  do -- Sorting
+    table.sort(processedGroups, function(a, b)
+      return a.groupName < b.groupName;
+    end);
+
+    for _, proccessedRow in ipairs(processedGroups) do
+      table.sort(proccessedRow.cooldowns, function(a, b)
+        return a.row < b.row;
+      end);
+    end
+  end
+
+  do -- Update dataProvider
+    for _, processedGroup in ipairs(processedGroups) do
+      ---@type CooldownHeaderNode
+      local headerNode = {
+        groupName = processedGroup.groupName,
+        totalCount = #processedGroup.cooldowns,
+        readyCount = processedGroup.readyCount,
+        color = processedGroup.color
+      };
+
+      local groupNode = dataProvider:Insert(headerNode);
+
+      for _, cooldownRow in ipairs(processedGroup.cooldowns) do
+        ---@type CooldownRowNode
+        local rowNode = {
+          group = processedGroup.groupName,
+          rowName = cooldownRow.row,
+          endTime = cooldownRow.endTime,
+          isReady = cooldownRow.isReady,
+          color = cooldownRow.color
+        };
+
+        groupNode:Insert(rowNode);
+      end
+    end
+  end
+
   for _, node in dataProvider:EnumerateEntireRange() do
     local elementData = node:GetData();
 
-    if (elementData.group) then
+    if (elementData.groupName) then
       if (Module.AllCollapsedOverride) then
-        Module.CollapsedGroups[elementData.group] = true;
+        Module.CollapsedGroups[elementData.groupName] = true;
         node:SetCollapsed(true);
-      elseif (Module.CollapsedGroups[elementData.group]) then
+      elseif (Module.CollapsedGroups[elementData.groupName]) then
         node:SetCollapsed(true);
+      else
+        node:SetCollapsed(false);
       end
     end
   end
-
-  Module.AllCollapsedOverride = nil;
 
   Module.Frame.ScrollBox:SetDataProvider(dataProvider);
 end
@@ -1041,287 +669,32 @@ function Module:ToggleFrame()
   end
 end
 
--- Life cycle
 function Module:OnInitialize()
   if (not Module.Frame) then
     Module:CreateCooldownsFrame();
   end
 end
 
-function Module:TestNotification()
-  Module.NotifiedCooldowns = {};
-  Module.CountReadyGraceTicks = 0;
-  Module:UpdateCountReadyCooldowns();
-  UtilityHub.Helpers.Notification:ShowNotification("Triggered cooldown notification test");
-end
-
----@param spellID number
----@return boolean exist, string|nil groupOrCd, string|nil professionName
-function Module:IsSpellInTheCooldownsList(spellID)
-  for _, data in pairs(UtilityHub.Constants.Cooldowns) do
-    local profession = data.name;
-
-    for _, cdOrGroup in pairs(data.cooldowns) do
-      if (cdOrGroup.spellList and #cdOrGroup.spellList > 0) then
-        for _, cd in ipairs(cdOrGroup.spellList) do
-          if (cd.spellID == spellID) then
-            return true, cdOrGroup.name, profession;
-          end
-        end
-      elseif (cdOrGroup.spellID == spellID) then
-        return true, cdOrGroup.name, profession;
-      end
-    end
-  end
-
-  return false, nil;
-end
-
---- It will only update the cooldowns of the current selected profession
-function Module:UpdateCooldownsFromTradeSkill()
-  local currentCharacter = UtilityHub.DatabaseFunctions.GetCurrentCharacterData();
-
-  if (not currentCharacter) then
+Module.Ticker = C_Timer.NewTicker(1, function()
+  -- Only update if its visible
+  if (not Module.Frame or not Module.Frame:IsShown()) then
     return;
   end
 
-  for i = 1, GetNumTradeSkills() do
-    local skillName, skillType = GetTradeSkillInfo(i);
+  local dataProvider = Module.Frame.ScrollBox:GetDataProvider();
 
-    -- Skip headers/subheaders, they have no recipe link
-    if (skillType ~= "header" and skillType ~= "subheader") then
-      local link = GetTradeSkillRecipeLink(i);
-
-      if (link) then
-        local spellID = tonumber(link:match("|H%w+:(%d+)"));
-
-        if (spellID) then
-          local exist, groupName, profession = Module:IsSpellInTheCooldownsList(spellID);
-
-          if (exist) then
-            local now = GetServerTime();
-            local cd = GetTradeSkillCooldown(i) or 0;
-            local spi = C_Spell.GetSpellCooldown(spellID);
-            local start = now + cd - spi.duration;
-
-            if (not currentCharacter.cooldownGroup[profession]) then
-              currentCharacter.cooldownGroup[profession] = {};
-            end
-
-            ---@type CurrentCooldown|nil
-            local group = nil;
-
-            for index, loopGroup in ipairs(currentCharacter.cooldownGroup[profession]) do
-              if (loopGroup.name == groupName) then
-                group = currentCharacter.cooldownGroup[profession][index];
-                break;
-              end
-            end
-
-            if (group) then
-              group.source = "TRADE_SKILL_FRAME";
-              group.start = start;
-              group.maxCooldown = spi.duration;
-            else
-              tinsert(currentCharacter.cooldownGroup[profession], {
-                source = "TRADE_SKILL_FRAME",
-                name = groupName,
-                start = start,
-                maxCooldown = spi.duration,
-              });
-            end
-          end
-        end
-      end
-    end
-  end
-
-  UtilityHub.Events:TriggerEvent("CHARACTER_UPDATED");
-end
-
-function Module:UpdateCooldownsFromOtherSources()
-  local currentCharacter = UtilityHub.DatabaseFunctions.GetCurrentCharacterData();
-
-  if (not currentCharacter) then
+  if (not dataProvider) then
     return;
   end
 
-  ---@param cooldown BasicCooldown|GroupedCooldown
-  ---@return number|nil
-  local function GetSpellIDFromCooldown(cooldown)
-    if (cooldown.spellList and #cooldown.spellList > 0) then
-      for _, spell in pairs(cooldown.spellList) do
-        if (C_SpellBook.IsSpellKnown(spell.spellID)) then
-          return spell.spellID;
-        end
-      end
-    else
-      if (C_SpellBook.IsSpellKnown(cooldown.spellID)) then
-        return cooldown.spellID;
-      end
-    end
-
-    return nil;
-  end
-
-  ---@param professionName string
-  ---@return CurrentCooldown[]
-  local function GetOrCreateCooldownGroup(professionName)
-    local cooldownGroup = currentCharacter.cooldownGroup[professionName];
-
-    if (not cooldownGroup) then
-      cooldownGroup = {};
-      currentCharacter.cooldownGroup[professionName] = cooldownGroup;
-    end
-
-    return cooldownGroup;
-  end
-
-  ---@param list CurrentCooldown[]
-  ---@param cooldownName string
-  ---@return number|nil
-  local function GetCurrentCooldownIndex(list, cooldownName)
-    for index, loopCooldown in ipairs(list) do
-      if (loopCooldown.name == cooldownName) then
-        return index;
-      end
-    end
-
-    return nil;
-  end
-
-  ---@param cooldown BasicCooldown
-  ---@param professionName string
-  local function UpdateItemCD(cooldown, professionName)
-    if (C_Item.GetItemCount(cooldown.itemID, true) == 0) then
-      return;
-    end
-
-    local start, duration = C_Container.GetItemCooldown(cooldown.itemID);
-    local normalized = GetNormalizedCooldownValues(start, duration);
-    local cooldownGroup = GetOrCreateCooldownGroup(professionName);
-    local index = GetCurrentCooldownIndex(cooldownGroup, cooldown.name);
-
-    -- Dont need to care about overriding the CD here because its an item, so there is no problem
-    if (index and cooldownGroup[index]) then
-      cooldownGroup[index].start = normalized.start;
-      cooldownGroup[index].maxCooldown = normalized.duration;
-    else
-      tinsert(
-        cooldownGroup,
-        {
-          name = cooldown.name,
-          maxCooldown = normalized.duration,
-          start = normalized.start,
-        }
-      );
+  for _, frame in ipairs(Module.Frame.ScrollBox:GetFrames()) do
+    if (frame.Timer) then
+      frame.Timer:Update();
     end
   end
-
-  ---@param cooldownOrGroup BasicCooldown|GroupedCooldown
-  ---@param professionName string
-  ---@return boolean exist
-  local function UpdateSpellCD(cooldownOrGroup, professionName)
-    ---@type number|nil
-    local spellID = GetSpellIDFromCooldown(cooldownOrGroup);
-
-    if (not spellID) then
-      return false;
-    end
-
-    local spi = C_Spell.GetSpellCooldown(spellID);
-    local normalized = GetNormalizedCooldownValues(spi.startTime, spi.duration);
-    local cooldownGroup = GetOrCreateCooldownGroup(professionName);
-    local index = GetCurrentCooldownIndex(cooldownGroup, cooldownOrGroup.name);
-
-    -- If not exists, just insert
-    if (not index or not cooldownGroup[index]) then
-      tinsert(
-        cooldownGroup,
-        {
-          name = cooldownOrGroup.name,
-          maxCooldown = normalized.duration,
-          start = normalized.start,
-        }
-      );
-      return true;
-    end
-
-    ---@type CurrentCooldown
-    local cooldown = cooldownGroup[index];
-
-    -- If a CD already exists and its source is from the tradeSkillFrame, it should verify the timers before trying to override the data
-    if (cooldown.source == "TRADE_SKILL_FRAME" and cooldown.start) then
-      local remaining = (cooldown.start + cooldown.maxCooldown) - GetServerTime();
-
-      -- If there is still a cooldown remaining, follow the trusted source, otherwise it can be overridden
-      if (remaining > 0) then
-        return true;
-      end
-    end
-
-    cooldown.source = "SPELL_API";
-    cooldown.maxCooldown = normalized.duration;
-    cooldown.start = normalized.start;
-
-    return true;
-  end
-
-  for _, professionData in pairs(UtilityHub.Constants.Cooldowns) do
-    local profession = professionData.name;
-    local groupsToRemove = {};
-
-    if (KnowsProfession(professionData)) then
-      for _, cdOrGroupList in ipairs(professionData.cooldowns) do
-        if (cdOrGroupList.itemID) then
-          UpdateItemCD(cdOrGroupList, profession);
-        else
-          local exists = UpdateSpellCD(cdOrGroupList, profession);
-
-          if (not exists) then
-            tinsert(groupsToRemove, i);
-          end
-        end
-      end
-
-      if (#groupsToRemove > 0) then
-        for _, value in ipairs(groupsToRemove) do
-          table.remove(professionCdsList, value);
-        end
-
-        if (#professionCdsList == 0) then
-          currentCharacter.cooldownGroup[profession] = nil;
-        end
-      end
-    else
-      --- Profession doesnt exist
-      currentCharacter.cooldownGroup[profession] = nil;
-    end
-  end
-end
-
--- Events
-local function UpdateCooldowns()
-  if (not UtilityHub.Flags.addonReady) then
-    return;
-  end
-
-  if (GetNumSkillLines() > 0 and GetNumTradeSkills() > 0) then
-    Module:UpdateCooldownsFromTradeSkill();
-  end
-
-  Module:UpdateCooldownsFromOtherSources();
-end
-
-EventRegistry:RegisterFrameEventAndCallback("TRADE_SKILL_LIST_UPDATE", UpdateCooldowns);
-EventRegistry:RegisterFrameEventAndCallback("TRADE_SKILL_UPDATE", UpdateCooldowns);
-
-EventRegistry:RegisterFrameEventAndCallback("LOADING_SCREEN_DISABLED", function()
-  Module.NotifiedCooldowns = {};
-  Module.CountReadyGraceTicks = 5;
 end);
 
-UtilityHub.Events:RegisterCallback("CHARACTER_UPDATED", function(_, name)
+UtilityHub.Events:RegisterCallback("COOLDOWNS_UPDATED", function(_, name)
   Module:UpdateCooldownsFrameList();
 end);
 
@@ -1335,8 +708,4 @@ end);
 
 UtilityHub.Events:RegisterCallback("TOGGLE_COOLDOWNS_FRAME", function(_, name)
   Module:ToggleFrame();
-end);
-
-UtilityHub.Events:RegisterCallback("CHARACTER_UPDATE_NEEDED", function(_, name)
-  UpdateCooldowns();
 end);

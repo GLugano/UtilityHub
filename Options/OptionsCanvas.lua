@@ -85,19 +85,29 @@ function OptionsCanvas:CreateNavigationButton(
 end
 
 ---@param contentFrame Frame
----@param pageName string
-function OptionsCanvas:ShowPage(contentFrame, pageName)
+---@param pageKey string
+function OptionsCanvas:ShowPage(contentFrame, pageKey)
+  local targetPageData = nil;
+
   -- Hide all pages
-  for name, page in pairs(self.pages) do
-    if (page.frame) then
-      page.frame:Hide();
+  for name, pageData in pairs(self.pages) do
+    if (pageData.frame) then
+      pageData.frame:Hide();
+    end
+
+    if (pageData.key == pageKey) then
+      targetPageData = pageData;
     end
   end
 
   -- Show requested page
-  if (self.pages[pageName] and self.pages[pageName].frame) then
-    self.pages[pageName].frame:Show();
-    self.currentPage = pageName;
+  if (targetPageData and targetPageData.frame) then
+    if (targetPageData.frame.UpdateData) then
+      targetPageData.frame.UpdateData();
+    end
+
+    targetPageData.frame:Show();
+    self.currentPage = pageKey;
   end
 end
 
@@ -106,78 +116,94 @@ function OptionsCanvas:Create()
   local mainFrame = self:CreateMainFrame();
 
   -- Register pages (order matters for navigation)
-  self.pageOrder = { "general", "characters", "autoBuy", "mail", "cooldowns", "graphicsSettings", "mouseRing" };
   self.pages = {
-    general = {
+    {
       label = "General",
+      key = "general",
+      order = 1,
       CreateFrame = function(parent)
         return UtilityHub.OptionsPages.General:Create(parent);
       end
     },
-    characters = {
+    {
       label = "Characters",
+      key = "characters",
+      order = 2,
       CreateFrame = function(parent)
         return UtilityHub.OptionsPages.Characters:Create(parent);
       end
     },
-    autoBuy = {
+    {
       label = "AutoBuy",
+      key = "autobuy",
+      order = 3,
       CreateFrame = function(parent)
         return UtilityHub.OptionsPages.AutoBuy:Create(parent);
       end
     },
-    mail = {
+    {
       label = "Mail",
+      key = "mail",
+      order = 4,
       CreateFrame = function(parent)
         return UtilityHub.OptionsPages.Mail:Create(parent);
       end
     },
-    cooldowns = {
+    {
       label = "Cooldowns",
+      key = "cooldowns",
+      order = 5,
+      ShouldLoad = function()
+        return UtilityHub.Constants.IsTBC;
+      end,
       CreateFrame = function(parent)
         return UtilityHub.OptionsPages.Cooldowns:Create(parent);
       end
     },
-    graphicsSettings = {
+    {
       label = "Graphics",
+      key = "graphics",
+      order = 6,
+      ShouldLoad = function()
+        return UtilityHub.Constants.IsTBC or UtilityHub.Constants.IsClassic;
+      end,
       CreateFrame = function(parent)
         return UtilityHub.OptionsPages.GraphicsSettings:Create(parent);
       end
     },
-    mouseRing = {
-      label = "Mouse Ring",
-      CreateFrame = function(parent)
-        return UtilityHub.OptionsPages.MouseRing:Create(parent);
-      end
-    },
   };
+
+  table.sort(self.pages, function(a, b)
+    return a.order < b.order;
+  end);
 
   -- Create navigation buttons in order
   local previousButton = nil;
   local isFirst = true;
 
-  for _, pageName in ipairs(self.pageOrder) do
-    local pageData = self.pages[pageName];
-    local button = self:CreateNavigationButton(
-      mainFrame.sidebar,
-      pageData.label,
-      function()
-        self:ShowPage(mainFrame.content, pageName);
-      end,
-      isFirst,
-      previousButton
-    );
+  for _, pageData in ipairs(self.pages) do
+    if (not pageData.ShouldLoad or pageData.ShouldLoad()) then
+      local button = self:CreateNavigationButton(
+        mainFrame.sidebar,
+        pageData.label,
+        function()
+          self:ShowPage(mainFrame.content, pageData.key);
+        end,
+        isFirst,
+        previousButton
+      );
 
-    previousButton = button;
-    isFirst = false;
+      previousButton = button;
+      isFirst = false;
+    end
   end
 
   -- Create page frames
-  for pageName, pageData in pairs(self.pages) do
+  for pageKey, pageData in pairs(self.pages) do
     local pageFrame = pageData.CreateFrame(mainFrame.content);
     pageFrame:SetAllPoints(mainFrame.content);
     pageFrame:Hide();
-    self.pages[pageName].frame = pageFrame;
+    self.pages[pageKey].frame = pageFrame;
   end
 
   -- Show first page by default

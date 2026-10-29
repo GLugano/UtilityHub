@@ -1111,14 +1111,16 @@ UtilityHub.GameOptions.Register = function()
           end
 
           for itemGroupName, itemGroup in UtilityHub.Libs.Utils:OrderedPairs(presetModule.ItemGroupOptions) do
-            tinsert(
-              tempItemGroups,
-              {
-                checked = selectedPreset.itemGroups[itemGroupName] or false,
-                name = itemGroup.label,
-                key = itemGroupName,
-              }
-            );
+            if (not itemGroup.ShouldLoad or itemGroup.ShouldLoad()) then
+              tinsert(
+                tempItemGroups,
+                {
+                  checked = selectedPreset.itemGroups[itemGroupName] or false,
+                  name = itemGroup.label,
+                  key = itemGroupName,
+                }
+              );
+            end
           end
 
           -- Update UtilityHub.tempPreset with selectedPreset data (already done in OnEditClicked)

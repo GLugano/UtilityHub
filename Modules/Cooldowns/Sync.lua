@@ -213,8 +213,7 @@ end
 ---@param sender string
 local function OnSyncDataReceived(prefix, data, distribution, senderFullname)
   local sender, senderRealm = strsplit("-", senderFullname, 2);
-  local player = UnitName("player");
-  local playerRealm = GetRealmName();
+  local player, playerRealm = UnitNameUnmodified("player");
 
   if (sender == player and senderRealm == playerRealm) then
     return;
@@ -319,10 +318,10 @@ EventRegistry:RegisterFrameEventAndCallback("CHAT_MSG_CHANNEL_JOIN",
       return;
     end
 
-    local myName = UnitName("player");
+    local playerName, playerRealm = UtilityHub.Helpers.Unit:UnitName("player");
     sender = Ambiguate(sender, "none");
 
-    if (sender == myName) then
+    if (sender == playerName) then
       return;
     end
 

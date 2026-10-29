@@ -32,8 +32,12 @@ Module.ItemGroupOptions = {
         -- Check if the item is Green (Quality 2) and is an Equipment type
         return itemQuality == 2 and (itemType == "Armor" or itemType == "Weapon");
       else
+        -- Forever uses retail enum
+        local itemQualityEnumValue = UtilityHub.Constants.IsForever and Enum.ItemQuality.Uncommon or
+            Enum.ItemQuality.Good;
+
         return (classID == Enum.ItemClass.Armor or classID == Enum.ItemClass.Weapon) and
-            itemQuality == Enum.ItemQuality.Good;
+            itemQuality == itemQualityEnumValue;
       end
     end
   },
@@ -261,7 +265,10 @@ Module.ItemGroupOptions = {
     end
   },
   ["ZgCurrency"] = {
-    label = "ZG Currency",
+    label = "Zul'Gurub Currency",
+    ShouldLoad = function()
+      return not UtilityHub.Constants.IsForever;
+    end,
     CheckItemBelongsToGroup = function(itemLink)
       local itemName, _, _, _, _, _, _, _, _, _, _, classID, subclassID = C_Item.GetItemInfo(itemLink);
 
@@ -358,7 +365,7 @@ Module.ItemGroupOptions = {
   },
   ["AldorScryer"] = {
     label = "Aldor/Scryer",
-    IsEnabledInThisExpansion = function()
+    ShouldLoad = function()
       return UtilityHub.Constants.IsTBCorLater;
     end,
     CheckItemBelongsToGroup = function(itemLink)
@@ -391,7 +398,7 @@ Module.ItemGroupOptions = {
   },
   ["CenarionExpedition"] = {
     label = "Cenarion Expedition",
-    IsEnabledInThisExpansion = function()
+    ShouldLoad = function()
       return UtilityHub.Constants.IsTBCorLater;
     end,
     CheckItemBelongsToGroup = function(itemLink)

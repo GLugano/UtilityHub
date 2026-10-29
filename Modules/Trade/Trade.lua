@@ -74,8 +74,10 @@ local function CreateModule()
     label:SetFullHeight(true);
 
     function frame:GetNameAndServer()
+      local playerName, playerRealm = UtilityHub.Helpers.Unit:UnitName("player");
+
       local name, server = UnitFullName("npc");
-      server = server or GetRealmName();
+      server = server or playerRealm;
 
       if (not server) then
         server = "-";
