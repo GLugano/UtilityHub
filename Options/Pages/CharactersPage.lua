@@ -3,7 +3,7 @@ local ADDON_NAME = ...;
 ---@class CharactersPage
 local CharactersPage = {};
 
----@type Frame|nil
+---@type CustomList|nil
 local listFrame = nil;
 
 ---@return Frame
@@ -134,7 +134,7 @@ function CharactersPage:Create(parent)
     {
       SortComparator = function(a, b)
         if (a.name == b.name) then
-          return a.realm < b.name;
+          return (a.realm or "") < b.name;
         end
 
         return a.name < b.name;
@@ -146,7 +146,7 @@ function CharactersPage:Create(parent)
         local realmColor = "FFB68655";
         local playerName, playerRealm = UtilityHub.Helpers.Unit:UnitName("player");
 
-        if (playerRealm == rowData.realm) then
+        if (playerRealm == (rowData.realm or "")) then
           realmColor = "FFCA4F4B";
         end
 
@@ -154,12 +154,12 @@ function CharactersPage:Create(parent)
         local groupText = UtilityHub.Helpers.Color:AddColorToString(
           " (" .. UtilityHub.Enums.CharacterGroupText[group] .. ")", "FF949392");
         local realmText = UtilityHub.Helpers.Color:AddColorToString(
-          " [" .. rowData.realm .. "]", realmColor);
+          " [" .. (rowData.realm or "") .. "]", realmColor);
         return string.format("%s %s %s", rowData.name, realmText, groupText);
       end,
       OnRemove = function(rowData, configuration)
         StaticPopupDialogs["UTILITY_HUB_ON_REMOVE_CHARACTER"] = {
-          text = string.format("You really want to remove %s-%s?", rowData.name, rowData.realm),
+          text = string.format("You really want to remove %s-%s?", rowData.name, rowData.realm or ""),
           button1 = "Yes",
           button2 = "No",
           OnAccept = function()

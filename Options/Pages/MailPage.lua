@@ -3,7 +3,7 @@ local ADDON_NAME = ...;
 ---@class MailPage
 local MailPage = {};
 
----@type Frame|nil
+---@type CustomList|nil
 local mailListFrame = nil;
 
 ---@param parent Frame

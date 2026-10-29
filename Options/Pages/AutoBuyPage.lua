@@ -3,7 +3,7 @@ local ADDON_NAME = ...;
 ---@class AutoBuyPage
 local AutoBuyPage = {};
 
----@type Frame|nil
+---@type CustomList|nil
 local autoBuyListFrame = nil;
 
 -- Returns display name and icon for an itemLink (both may be nil if not cached)

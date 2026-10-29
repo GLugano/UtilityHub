@@ -1,18 +1,18 @@
 local ADDON_NAME = ...;
 local interfaceVersion = select(4, GetBuildInfo());
-local GetAuctionItemSubClasses;
+local GetAuctionItemSubClassesLocal;
 
 if (GetAuctionItemSubClasses) then
-  GetAuctionItemSubClasses = function(classID)
+  GetAuctionItemSubClassesLocal = function(classID)
     return { GetAuctionItemSubClasses(classID) };
   end
 else
-  GetAuctionItemSubClasses = C_AuctionHouse.GetAuctionItemSubClasses;
+  GetAuctionItemSubClassesLocal = C_AuctionHouse and C_AuctionHouse.GetAuctionItemSubClasses or GetAuctionItemSubClasses;
 end
 
 local IsHardcore = C_GameRules.IsGameRuleActive(Enum.GameRule.HardcoreRuleset);
-local IsRP = C_GameRules.IsGameRuleActive(Enum.GameRule.RPRuleset);
-local IsPVP = C_GameRules.IsGameRuleActive(Enum.GameRule.PvPRuleset);
+local IsRP = Enum.GameRule.RPRuleset and C_GameRules.IsGameRuleActive(Enum.GameRule.RPRuleset);
+local IsPVP = Enum.GameRule.PvPRuleset and C_GameRules.IsGameRuleActive(Enum.GameRule.PvPRuleset);
 local currentRealmRule = UtilityHub.Enums.RealmRule.PVE;
 
 if (IsHardcore) then
@@ -135,7 +135,7 @@ end
 
 for _, classID in ipairs(UtilityHub.Constants.AuctionHouseItemClass) do
   local className = C_Item.GetItemClassInfo(classID);
-  local subclasses = GetAuctionItemSubClasses(classID);
+  local subclasses = GetAuctionItemSubClassesLocal(classID);
 
   if (subclasses and #subclasses > 0) then
     local class = { name = className, classID = classID, subClasses = {} }
