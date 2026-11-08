@@ -84,7 +84,7 @@ UtilityHub.Constants = {
     BAG_3 = 3,
     BAG_4 = 4,
     KEYRING = -2,
-    REAGENT = -3,
+    REAGENT = 5,
   },
 };
 

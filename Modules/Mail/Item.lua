@@ -42,7 +42,7 @@ function Module:Execute(class, subClass)
 
     SendMailSubjectEditBox:SetText("UH -  [" .. name .. "]");
 
-    for bag = 0, 4 do -- Loops through bags 0 (backpack) to 4 (bags)
+    for _, bag in pairs(UtilityHub.Constants.BagIDs) do
       for slot = 1, C_Container.GetContainerNumSlots(bag) do
         local itemLink = C_Container.GetContainerItemLink(bag, slot);
 
