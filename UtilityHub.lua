@@ -225,7 +225,7 @@ _G.UtilityHub = {
     end,
     ---@return Character|nil
     GetCurrentCharacterData = function()
-      local name, realm = UnitNameUnmodified("player");
+      local name, realm = UtilityHub.Helpers.Unit:UnitName("player");
       return UtilityHub.DatabaseFunctions.GetCharacterData(name, realm);
     end,
     ---Update the current options based on the Constant about cooldowns

@@ -62,7 +62,7 @@ function GeneralPage:Create(parent)
 
   -- Scroll child (content lives here)
   local content = CreateFrame("Frame", nil, scrollFrame);
-  content:SetHeight(750);
+  content:SetHeight(775);
   content:SetWidth(scrollFrame:GetWidth());
   content:SetClipsChildren(true);
   scrollFrame:SetScrollChild(content);
@@ -185,6 +185,49 @@ function GeneralPage:Create(parent)
       previous
     );
     previous = cbPopupFlyGromgolToStonard;
+  end
+
+  if (UtilityHub.Constants.IsForever) then
+    -- Section: ReplaceSound
+    local sectionReplaceSound = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+    sectionReplaceSound:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -20);
+    sectionReplaceSound:SetText("Replace Sound");
+    previous = sectionReplaceSound;
+
+    local cbReplaceSoundHolyStrike = self:CreateCheckbox(
+      content,
+      "Holy Strike -> Hammer of the Righteous",
+      "replaceSoundHolyStrike",
+      "Replace the sound from paladin spell Holy Strike to Hammer of the Righteous"
+    );
+    cbReplaceSoundHolyStrike:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -10);
+    previous = cbReplaceSoundHolyStrike;
+  end
+
+  if (not UtilityHub.Constants.IsForever) then
+    -- Section: LFG
+    local sectionLFG = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+    sectionLFG:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -20);
+    sectionLFG:SetText("LFG");
+    previous = sectionLFG;
+
+    local cbEnteringListedGroupWarning = self:CreateCheckbox(
+      content,
+      "Show warning when entering an already listed group",
+      "showWarningEnteringListedGroupInLFG",
+      "When you enter in a group with someone listed in the LFG (Ex: invited someone to enchant), you will be listed too even if the other player leaves, so this will make a warning show in the middle of the screen"
+    );
+    cbEnteringListedGroupWarning:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -10);
+    previous = cbEnteringListedGroupWarning;
+
+    local cbLeavingListedGroupWarning = self:CreateCheckbox(
+      content,
+      "Show warning when leaving an already listed group",
+      "showWarningLeavingListedGroupInLFG",
+      "When you leave a group with someone listed in the LFG (Ex: invited by someone to enchant), you will be listed too even if the other player leaves, so this will make a warning show in the middle of the screen",
+      previous
+    );
+    previous = cbLeavingListedGroupWarning;
   end
 
   if (UtilityHub.Constants.IsTBC) then
@@ -325,49 +368,6 @@ function GeneralPage:Create(parent)
     );
     cbLootConfirmStrat:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -10);
     previous = cbLootConfirmStrat;
-  end
-
-  if (UtilityHub.Constants.IsForever) then
-    -- Section: ReplaceSound
-    local sectionReplaceSound = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
-    sectionReplaceSound:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -20);
-    sectionReplaceSound:SetText("Replace Sound");
-    previous = sectionReplaceSound;
-
-    local cbReplaceSoundHolyStrike = self:CreateCheckbox(
-      content,
-      "Holy Strike -> Hammer of the Righteous",
-      "replaceSoundHolyStrike",
-      "Replace the sound from paladin spell Holy Strike to Hammer of the Righteous"
-    );
-    cbReplaceSoundHolyStrike:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -10);
-    previous = cbReplaceSoundHolyStrike;
-  end
-
-  if (not UtilityHub.Constants.IsForever) then
-    -- Section: LFG
-    local sectionLFG = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
-    sectionLFG:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -20);
-    sectionLFG:SetText("LFG");
-    previous = sectionLFG;
-
-    local cbEnteringListedGroupWarning = self:CreateCheckbox(
-      content,
-      "Show warning when entering an already listed group",
-      "showWarningEnteringListedGroupInLFG",
-      "When you enter in a group with someone listed in the LFG (Ex: invited someone to enchant), you will be listed too even if the other player leaves, so this will make a warning show in the middle of the screen"
-    );
-    cbEnteringListedGroupWarning:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -10);
-    previous = cbEnteringListedGroupWarning;
-
-    local cbLeavingListedGroupWarning = self:CreateCheckbox(
-      content,
-      "Show warning when leaving an already listed group",
-      "showWarningLeavingListedGroupInLFG",
-      "When you leave a group with someone listed in the LFG (Ex: invited by someone to enchant), you will be listed too even if the other player leaves, so this will make a warning show in the middle of the screen",
-      previous
-    );
-    previous = cbLeavingListedGroupWarning;
   end
 
   return frame;

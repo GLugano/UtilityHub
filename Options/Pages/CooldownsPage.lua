@@ -9,7 +9,7 @@
 ---@class CooldownsPage
 local CooldownsPage = {};
 
----@type Frame|nil
+---@type CustomList|nil
 local listFrame = nil;
 ---@type BasicDialog|nil
 local basicDialog = nil;

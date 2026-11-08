@@ -389,5 +389,9 @@ function UtilityHub.Helpers.Unit:UnitName(unit)
     realm = UtilityHub.Constants.RealmRule;
   end
 
+  if (not realm) then
+    realm = select(2, UnitFullName("player"));
+  end
+
   return name, realm;
 end
