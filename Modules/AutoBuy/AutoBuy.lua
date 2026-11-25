@@ -1,3 +1,26 @@
+local function LocalGetMerchantInfo(index)
+  if (GetMerchantItemInfo) then
+    local name, texture, price, quantity, numAvailable, isPurchasable, isUsable, hasExtendedCost, currencyID, spellID =
+        GetMerchantItemInfo(index);
+
+    return {
+      name             = name,
+      texture          = texture,
+      price            = price,
+      stackCount       = quantity,
+      numAvailable     = numAvailable,
+      isPurchasable    = isPurchasable,
+      isUsable         = isUsable,
+      hasExtendedCost  = hasExtendedCost,
+      currencyID       = currencyID,
+      spellID          = spellID,
+      isQuestStartItem = false,
+    };
+  end
+
+  return C_MerchantFrame.GetItemInfo(index);
+end
+
 local moduleName = 'AutoBuy';
 ---@class AutoBuy
 local Module = UtilityHub.Addon:NewModule(moduleName);
@@ -51,7 +74,8 @@ end
 ---@param itemQuantityList number[]
 ---@return string[] purchasedItems
 function Module:BuyItemQuantityListByStack(itemMerchantIndex, itemQuantityList)
-  local itemName, _, _, _, availableCount = GetMerchantItemInfo(itemMerchantIndex);
+  local itemInfo = LocalGetMerchantInfo(itemMerchantIndex);
+  local availableCount = itemInfo.numAvailable;
   ---@type number
   local totalBought = 0;
   local purchasedItems = {};
@@ -64,13 +88,14 @@ function Module:BuyItemQuantityListByStack(itemMerchantIndex, itemQuantityList)
 
     BuyMerchantItem(itemMerchantIndex, itemQuantity);
     totalBought = totalBought + itemQuantity;
-    availableCount = select(5, GetMerchantItemInfo(itemMerchantIndex));
+    local itemInfoLoop = LocalGetMerchantInfo(itemMerchantIndex);
+    availableCount = itemInfoLoop.numAvailable;
   end
 
   local pattern = "%s x%d";
 
   if (totalBought > 0) then
-    tinsert(purchasedItems, string.format(pattern, itemName, totalBought));
+    tinsert(purchasedItems, string.format(pattern, itemInfo.name, totalBought));
   end
 
   return purchasedItems;
@@ -187,9 +212,9 @@ function Module:FindAndBuyItem(itemData)
     return purchasedItems;
   end
 
-  local _, _, price, stackCount = GetMerchantItemInfo(i);
+  local itemInfo = LocalGetMerchantInfo(i);
   local maxStackSize = GetMerchantItemMaxStack(i);
-  local unitPrice = price / stackCount;
+  local unitPrice = itemInfo.price / itemInfo.stackCount;
 
   ---@type number
   local quantityToBuy = 0;

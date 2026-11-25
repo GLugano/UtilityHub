@@ -87,7 +87,7 @@ Module.ItemGroupOptions = {
       local _, _, _, _, _, _, _, _, _, _, _, classID = C_Item.GetItemInfo(
         itemLink);
 
-      if (UtilityHub.Constants.IsClassic) then
+      if (UtilityHub.Constants.IsClassic or UtilityHub.Constants.IsForever) then
         if (classID ~= 7) then
           return false;
         end

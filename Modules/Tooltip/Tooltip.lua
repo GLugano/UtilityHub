@@ -45,11 +45,19 @@ local skills = {
 ---@field IdentifyPattern? fun(self: PatternConfig, text: string): boolean
 ---@field FormatText fun(self: PatternConfig, text: string, data: SearchAndApplyPatternData): (string, PrefixConfig?)
 
+local PATTERN_NUMBER_WITH_DECIMAL_OPTIONAL = "(%d+%.?%d*)";
+
 ---@param text string
 ---@param format string
 ---@return string
 local function ByFormat(text, format)
-  local value = text:match("by (%d+)");
+  local pattern = "by " .. PATTERN_NUMBER_WITH_DECIMAL_OPTIONAL;
+  local value = text:match(pattern);
+
+  if (not value) then
+    return "";
+  end
+
   return string.format(format, value);
 end
 
@@ -104,7 +112,7 @@ Module.formats.RANGED_CRITICAL                        = {
 };
 
 Module.formats.RANGED_ATTACK_SPEED                    = {
-  pattern = "Increases ranged attack speed by (%d+)%%",
+  pattern = "Increases ranged attack speed by (%d+)",
   FormatText = function(self, text)
     return ByFormat(text, "+%s%% Ranged Attack Speed");
   end
@@ -155,6 +163,13 @@ Module.formats.PHYSICAL_EXPERTISE                     = {
   pattern = "Increases your expertise rating by (%d+).$",
   FormatText = function(self, text)
     return ByFormat(text, "+%s Expertise Rating");
+  end
+};
+
+Module.formats.PHYSICAL_EXPERTISE_FOREVER             = {
+  pattern = "Reduces chance to be Dodged or Parried by ",
+  FormatText = function(self, text)
+    return ByFormat(text, "+%s%% Expertise");
   end
 };
 
@@ -902,6 +917,7 @@ local function UpdatePatternConfig()
   elseif (UtilityHub.Constants.IsForever) then
     tinsert(Module.patternConfigList, formats.ATTACK_POWER_CLASSIC);
     tinsert(Module.patternConfigList, formats.ATTACK_POWER_SPECIFIC_MOB_TYPE_FOREVER);
+    tinsert(Module.patternConfigList, formats.PHYSICAL_EXPERTISE_FOREVER);
 
     tinsert(Module.patternConfigList, formats.DEFENSE_CLASSIC);
     tinsert(Module.patternConfigList, formats.BLOCK_CLASSIC);
