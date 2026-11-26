@@ -234,7 +234,7 @@ local function UpdateCooldownsFromOtherSources()
 
     do -- Find start/duration based on spellID, itemID or both
       if (cooldownOrGroup.itemID and C_Item.GetItemCount(cooldownOrGroup.itemID, true) > 0) then
-        startTime, duration = C_Container.GetItemCooldown(cooldown.itemID);
+        startTime, duration = C_Container.GetItemCooldown(cooldownOrGroup.itemID);
       else
         ---@type number|nil
         local spellID = GetSpellIDFromCooldown(cooldownOrGroup);
