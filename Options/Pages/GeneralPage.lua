@@ -230,41 +230,41 @@ function GeneralPage:Create(parent)
     previous = cbLeavingListedGroupWarning;
   end
 
+  -- Section: Cooldowns
+  local sectionCooldowns = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
+  sectionCooldowns:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -20);
+  sectionCooldowns:SetText("Cooldowns");
+  previous = sectionCooldowns;
+
+  local cbCooldowns = self:CreateCheckbox(
+    content,
+    "Enable tracking",
+    "cooldowns",
+    "Enable tracking and listing of all character cooldowns",
+    nil
+  );
+  cbCooldowns:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -10);
+  previous = cbCooldowns;
+
+  local cbCooldownSound = self:CreateCheckbox(
+    content,
+    "Play sound when ready",
+    "cooldownPlaySound",
+    "Play sound when a cooldown is ready",
+    previous
+  );
+  previous = cbCooldownSound;
+
+  local cbCooldownCollapsed = self:CreateCheckbox(
+    content,
+    "Start collapsed",
+    "cooldownStartCollapsed",
+    "When opening the cooldowns content, all groups will start minimized",
+    previous
+  );
+  previous = cbCooldownCollapsed;
+
   if (UtilityHub.Constants.IsTBC) then
-    -- Section: Cooldowns
-    local sectionCooldowns = content:CreateFontString(nil, "OVERLAY", "GameFontHighlight");
-    sectionCooldowns:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -20);
-    sectionCooldowns:SetText("Cooldowns");
-    previous = sectionCooldowns;
-
-    local cbCooldowns = self:CreateCheckbox(
-      content,
-      "Enable tracking",
-      "cooldowns",
-      "Enable tracking and listing of all character cooldowns",
-      nil
-    );
-    cbCooldowns:SetPoint("TOPLEFT", previous, "BOTTOMLEFT", 0, -10);
-    previous = cbCooldowns;
-
-    local cbCooldownSound = self:CreateCheckbox(
-      content,
-      "Play sound when ready",
-      "cooldownPlaySound",
-      "Play sound when a cooldown is ready",
-      previous
-    );
-    previous = cbCooldownSound;
-
-    local cbCooldownCollapsed = self:CreateCheckbox(
-      content,
-      "Start collapsed",
-      "cooldownStartCollapsed",
-      "When opening the cooldowns content, all groups will start minimized",
-      previous
-    );
-    previous = cbCooldownCollapsed;
-
     local cbCooldownSync = self:CreateCheckbox(
       content,
       "Enable cross-account sync",

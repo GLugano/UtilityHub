@@ -39,7 +39,7 @@ Module.CollapsedGroups = {};
 ---@param cooldown ProfessionCooldownData
 ---@return boolean
 local function IsCooldownReady(cooldown)
-  return cooldown.endTime < GetServerTime();
+  return not cooldown.endTime or cooldown.endTime < GetServerTime();
 end
 
 ---@param professionID number

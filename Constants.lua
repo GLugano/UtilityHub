@@ -188,12 +188,16 @@ tinsert(professionLeatherworking.cooldowns,
   }
 );
 
-if (UtilityHub.Constants.IsClassic) then
+if (UtilityHub.Constants.IsClassic or UtilityHub.Constants.IsForever) then
   tinsert(professionTailoring.cooldowns, { internalID = 3, name = "Mooncloth", spellID = 18560 });
 
   local transmutes = professionAlchemy.cooldowns[1];
 
   if (transmutes) then
+    if (UtilityHub.Constants.IsForever) then
+      tinsert(transmutes.spellList, { internalID = 31, name = "Arcanite Bar", spellID = 1317279 });
+    end
+
     tinsert(transmutes.spellList, { internalID = 4, name = "Arcanite Bar", spellID = 17187 });
     tinsert(transmutes.spellList, { internalID = 5, name = "Water to Air", spellID = 17562 });
     tinsert(transmutes.spellList, { internalID = 6, name = "Water to Undeath", spellID = 17564 });

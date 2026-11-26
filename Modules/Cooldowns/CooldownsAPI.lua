@@ -5,25 +5,30 @@
 ---@field character string
 ---@field className string
 
---- Disable if forever
-if (UtilityHub.Constants.IsForever) then
-  return;
-end
+---@param professionData Profession
+local function KnowsProfession(professionData)
+  if (UtilityHub.Constants.IsForever) then
+    for professionIndex, index in pairs({ GetProfessions() }) do
+      local _, _, _, _, _, _, professionID = GetProfessionInfo(professionIndex);
 
----@param profession Profession
-local function KnowsProfession(profession)
-  for _, spellID, value in ipairs(profession.spellIDs) do
-    if (C_SpellBook.IsSpellKnown(spellID)) then
-      return true;
+      if (professionIndex ~= nil and professionData.id == professionID) then
+        return true;
+      end
     end
-  end
+  else
+    for _, spellID, value in ipairs(professionData.spellIDs) do
+      if (C_SpellBook.IsSpellKnown(spellID)) then
+        return true;
+      end
+    end
 
-  --- Fallback to skill lines
-  for i = 1, GetNumSkillLines() do
-    local name = GetSkillLineInfo(i);
+    --- Fallback to skill lines
+    for i = 1, GetNumSkillLines() do
+      local name = GetSkillLineInfo(i);
 
-    if (name == profession.name) then
-      return true;
+      if (name == professionData.name) then
+        return true;
+      end
     end
   end
 
@@ -106,37 +111,65 @@ local function GetCooldownByInternalID(internalID)
 end
 --- It will only update the cooldowns of the current selected profession
 local function UpdateCooldownsFromTradeSkill()
-  for i = 1, GetNumTradeSkills() do
-    local skillName, skillType = GetTradeSkillInfo(i);
+  if (UtilityHub.Constants.IsForever) then
+    local recipes = C_TradeSkillUI.GetAllRecipeIDs();
 
-    -- Skip headers/subheaders, they have no recipe link
-    if (skillType ~= "header" and skillType ~= "subheader") then
-      local link = GetTradeSkillRecipeLink(i);
+    for _, recipeID in ipairs(recipes) do
+      local cooldown, professionID = GetCooldownBySpellID(recipeID);
 
-      if (link) then
-        local spellID = tonumber(link:match("|H%w+:(%d+)"));
+      if (cooldown) then
+        local currentCD = C_TradeSkillUI.GetRecipeCooldown(recipeID);
+        local professionTable = GetProfessionTable(professionID);
+        local cooldownTable, isCooldownTableNew = GetCooldownTable(professionTable, cooldown.internalID);
+        local endCD = nil;
 
-        if (spellID) then
-          local cooldown, professionID = GetCooldownBySpellID(spellID);
+        if (isCooldownTableNew) then
+          cooldownTable.source = "TRADE_SKILL_FRAME";
+          cooldownTable.name = cooldown.name;
+          cooldownTable.internalID = cooldown.internalID;
+        end
 
-          if (cooldown ~= nil) then
-            local currentCD = GetTradeSkillCooldown(i) or 0;
-            local endCD = 0;
-            local professionTable = GetProfessionTable(professionID);
-            local cooldownTable, isCooldownTableNew = GetCooldownTable(professionTable, cooldown.internalID);
+        if (currentCD and currentCD > 0) then
+          endCD = GetServerTime() + currentCD;
+        end
 
-            if (isCooldownTableNew) then
+        cooldownTable.source = "TRADE_SKILL_FRAME";
+        cooldownTable.endTime = endCD;
+      end
+    end
+  else
+    for i = 1, GetNumTradeSkills() do
+      local skillName, skillType = GetTradeSkillInfo(i);
+
+      -- Skip headers/subheaders, they have no recipe link
+      if (skillType ~= "header" and skillType ~= "subheader") then
+        local link = GetTradeSkillRecipeLink(i);
+
+        if (link) then
+          local spellID = tonumber(link:match("|H%w+:(%d+)"));
+
+          if (spellID) then
+            local cooldown, professionID = GetCooldownBySpellID(spellID);
+
+            if (cooldown ~= nil) then
+              local currentCD = GetTradeSkillCooldown(i) or 0;
+              local endCD = 0;
+              local professionTable = GetProfessionTable(professionID);
+              local cooldownTable, isCooldownTableNew = GetCooldownTable(professionTable, cooldown.internalID);
+
+              if (isCooldownTableNew) then
+                cooldownTable.source = "TRADE_SKILL_FRAME";
+                cooldownTable.name = cooldown.name;
+                cooldownTable.internalID = cooldown.internalID;
+              end
+
+              if (currentCD > 0) then
+                endCD = GetServerTime() + currentCD;
+              end
+
               cooldownTable.source = "TRADE_SKILL_FRAME";
-              cooldownTable.name = cooldown.name;
-              cooldownTable.internalID = cooldown.internalID;
+              cooldownTable.endTime = endCD;
             end
-
-            if (currentCD > 0) then
-              endCD = GetServerTime() + currentCD;
-            end
-
-            cooldownTable.source = "TRADE_SKILL_FRAME";
-            cooldownTable.endTime = endCD;
           end
         end
       end
@@ -387,21 +420,31 @@ local function UpdateCooldowns()
     return;
   end
 
-  -- If there is a tradeSkill loaded in the frame so we can access the functions, but if there is a filter and its empty, we cant access the hidden recipes
-  if (TradeSkillFrame) then
+  -- In forever, we have the good functions
+  if (UtilityHub.Constants.IsForever) then
     UpdateCooldownsFromTradeSkill();
-  end
+  else
+    -- If there is a tradeSkill loaded in the frame so we can access the functions, but if there is a filter and its empty, we cant access the hidden recipes
+    if (TradeSkillFrame) then
+      UpdateCooldownsFromTradeSkill();
+    end
 
-  UpdateCooldownsFromOtherSources();
-  ProcessNotifications();
+    UpdateCooldownsFromOtherSources();
+    ProcessNotifications();
+  end
 
   UtilityHub.Events:TriggerEvent("COOLDOWNS_UPDATED");
 end
 
 EventRegistry:RegisterFrameEventAndCallback("TRADE_SKILL_LIST_UPDATE", UpdateCooldowns);
-if (UtilityHub.Constants.IsClassic or UtilityHub.Constants.IsTBC) then
+
+if (UtilityHub.Constants.IsForever) then
+  EventRegistry:RegisterFrameEventAndCallback("SPELLS_CHANGED", UpdateCooldowns);
+  EventRegistry:RegisterFrameEventAndCallback("TRADE_SKILL_DATA_SOURCE_CHANGED", UpdateCooldowns);
+else
   EventRegistry:RegisterFrameEventAndCallback("TRADE_SKILL_UPDATE", UpdateCooldowns);
 end
+
 
 UtilityHub.Events:RegisterCallback("CHARACTER_UPDATE_NEEDED", UpdateCooldowns);
 UtilityHub.Events:RegisterCallback("CHARACTERS_IMPORT_COMPLETED", UpdateCooldowns);

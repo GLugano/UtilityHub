@@ -496,7 +496,7 @@ function UtilityHub.Addon:OnInitialize()
     UtilityHub.Addon:EnableModule("AutoBuy");
   end
 
-  if (not UtilityHub.Constants.IsForever and UtilityHub.Database.global.options.cooldowns) then
+  if (UtilityHub.Database.global.options.cooldowns) then
     UtilityHub.Addon:EnableModule("Cooldowns");
   end
 
