@@ -5,6 +5,8 @@
 ---@field character string
 ---@field className string
 
+local pendingOutsideCombat = false;
+
 ---@param professionData Profession
 local function KnowsProfession(professionData)
   if (UtilityHub.Constants.IsForever) then
@@ -420,6 +422,12 @@ local function UpdateCooldowns()
     return;
   end
 
+  -- Prevent problems with secrets when is forever
+  if (UtilityHub.Constants.IsForever and InCombatLockdown()) then
+    pendingOutsideCombat = true;
+    return;
+  end
+
   -- In forever, we have the good functions
   if (UtilityHub.Constants.IsForever) then
     UpdateCooldownsFromTradeSkill();
@@ -428,12 +436,20 @@ local function UpdateCooldowns()
     if (TradeSkillFrame) then
       UpdateCooldownsFromTradeSkill();
     end
-
-    UpdateCooldownsFromOtherSources();
-    ProcessNotifications();
   end
 
+
+  UpdateCooldownsFromOtherSources();
+  ProcessNotifications();
+
   UtilityHub.Events:TriggerEvent("COOLDOWNS_UPDATED");
+end
+
+local function OnCombatEnded()
+  if (pendingOutsideCombat) then
+    pendingOutsideCombat = false;
+    UpdateCooldowns();
+  end
 end
 
 EventRegistry:RegisterFrameEventAndCallback("TRADE_SKILL_LIST_UPDATE", UpdateCooldowns);
@@ -445,6 +461,7 @@ else
   EventRegistry:RegisterFrameEventAndCallback("TRADE_SKILL_UPDATE", UpdateCooldowns);
 end
 
+EventRegistry:RegisterFrameEventAndCallback("PLAYER_REGEN_ENABLED", OnCombatEnded);
 
 UtilityHub.Events:RegisterCallback("CHARACTER_UPDATE_NEEDED", UpdateCooldowns);
 UtilityHub.Events:RegisterCallback("CHARACTERS_IMPORT_COMPLETED", UpdateCooldowns);
